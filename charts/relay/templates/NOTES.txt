@@ -1,0 +1,1 @@
+This chart is intended for use as a nitro relay. There are a variety of options which should be set according to you particular use case. The documentation for running a nitro relay can be found at https://docs.arbitrum.io/node-running/how-tos/running-a-feed-relay . The config options are set as YAML under the configmap.data section in values.yaml.

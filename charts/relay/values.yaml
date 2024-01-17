@@ -1,0 +1,175 @@
+## @section Relay
+
+## @param replicaCount Number of replicas to deploy
+replicaCount: 1
+
+## @param image.repository Docker image repository
+## @param image.pullPolicy Docker image pull policy
+## @param image.tag Docker image tag ovverrides the chart appVersion
+image:
+  repository: offchainlabs/nitro-node
+  pullPolicy: IfNotPresent
+  tag: ""
+
+## @param imagePullSecrets Docker registry pull secret
+imagePullSecrets: []
+
+## @param nameOverride String to partially override relay fullname
+nameOverride: ""
+
+## @param fullnameOverride String to fully override relay fullname
+fullnameOverride: ""
+
+## @param autoscaling.enabled Enable autoscaling
+## @param autoscaling.minReplicas Minimum number of replicas
+## @param autoscaling.maxReplicas Maximum number of replicas
+## @param autoscaling.averageCpuUtilization Average CPU utilization
+## @param autoscaling.averageMemoryUtilization Average memory utilization
+## @param autoscaling.scaleUpPercent Percent to scale up
+## @param autoscaling.scaleUpPeriodSeconds Period to scale up
+## @param autoscaling.scaleUpstabilizationWindowSeconds Stabilization window to scale up
+## @param autoscaling.scaleDownPercent Percent to scale down
+## @param autoscaling.scaleDownPeriodSeconds Period to scale down
+## @param autoscaling.scaleDownstabilizationWindowSeconds Stabilization window to scale down
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 6
+  averageCpuUtilization: 75
+  averageMemoryUtilization: 75
+  scaleUpPercent: 100
+  scaleUpPeriodSeconds: 30
+  scaleUpstabilizationWindowSeconds: 30
+  scaleDownPercent: 10
+  scaleDownPeriodSeconds: 600
+  scaleDownstabilizationWindowSeconds: 600
+
+## @param commandOverride Command override for the relay container
+commandOverride: {}
+
+## @param livenessProbe.enabled Enable built in liveness probe
+## @param livenessProbe.httpGet.path Path for liveness probe
+## @param livenessProbe.httpGet.port Port for liveness probe
+## @param livenessProbe.initialDelaySeconds Initial delay for liveness probe
+## @param livenessProbe.periodSeconds Period for liveness probe
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /livenessprobe
+    port: feed
+  initialDelaySeconds: 10
+  periodSeconds: 1
+
+## @param readinessProbe.enabled Enable built in readiness probe
+## @param readinessProbe.tcpSocket.port Port for readiness probe
+## @param readinessProbe.initialDelaySeconds Initial delay for readiness probe
+## @param readinessProbe.periodSeconds Period for readiness probe
+readinessProbe:
+  enabled: true
+  tcpSocket:
+    port: feed
+  initialDelaySeconds: 20
+  periodSeconds: 1
+
+## @param startupProbe.enabled Enable built in startup probe
+startupProbe:
+  enabled: false
+
+## @param serviceMonitor.enabled Enable prometheus service monitor
+## @param serviceMonitor.portName Port name for prometheus service monitor
+## @param serviceMonitor.path Path for prometheus service monitor
+## @param serviceMonitor.interval Interval for prometheus service monitor
+serviceMonitor:
+  enabled: false
+  portName: metrics
+  path: /debug/metrics/prometheus
+  interval: 5s
+
+## @param perReplicaService.enabled Enable per replica service
+perReplicaService:
+  enabled: false
+
+## @param pdb.enabled Enable pod disruption budget
+## @param pdb.minAvailable Minimum number of available pods
+## @param pdb.maxUnavailable Maximum number of unavailable pods
+pdb:
+  enabled: false
+  minAvailable: "75%"
+  maxUnavailable: ""
+
+## @param serviceAccount.create Create a service account
+## @param serviceAccount.annotations Annotations for the service account
+## @param serviceAccount.name Name of the service account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+## @param podAnnotations Annotations for the pod
+podAnnotations: {}
+
+## @param podSecurityContext Security context for the pod
+podSecurityContext: {}
+
+## @param securityContext Security context for the container
+securityContext: {}
+
+## @param service.type Service type
+service:
+  type: ClusterIP
+
+## @param resources Resources for the container
+resources: {}
+
+## @param nodeSelector Node selector for the pod
+nodeSelector: {}
+
+## @param tolerations Tolerations for the pod
+tolerations: []
+
+## @param topologySpreadConstraints Topology spread constraints for the pod
+topologySpreadConstraints: []
+
+## @param affinity Affinity for the pod
+affinity: {}
+
+## @section Relay Configmap
+
+configmap:
+  ## @param configmap.enabled Enable configmap
+  enabled: true
+  ## @extra confimap.data See Configuration Options for the full list of options
+  data:
+    ## @param configmap.data.chain.id Chain id
+    chain:
+      id: 42161
+
+    ## @param configmap.data.log-type Log type
+    log-type: "json"
+
+    ## @param configmap.data.metrics Enable metrics
+    metrics: false
+
+    ## @param configmap.data.metrics-server.addr Metrics server address
+    ## @param configmap.data.metrics-server.port Metrics server port
+    metrics-server:
+      addr: 0.0.0.0
+      port: 6070
+
+    node:
+      feed:
+        ## @param configmap.data.node.feed.input.url Feed input url
+        ## @param configmap.data.node.feed.input.reconnect-initial-backoff Feed input reconnect initial backoff
+        ## @param configmap.data.node.feed.input.reconnect-maximum-backoff Feed input reconnect maximum backoff
+        ## @param configmap.data.node.feed.input.timeout Feed input timeout
+        input:
+          url: ""
+          reconnect-initial-backoff: "50ms"
+          reconnect-maximum-backoff: "800ms"
+          timeout: "10s"
+
+        ## @param configmap.data.node.feed.output.addr Feed output address
+        ## @param configmap.data.node.feed.output.port Feed output port
+        output:
+          addr: 0.0.0.0
+          port: 9642

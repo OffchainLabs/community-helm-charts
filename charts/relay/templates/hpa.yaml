@@ -1,0 +1,43 @@
+{{- if .Values.autoscaling.enabled }}
+{{- if semverCompare ">=1.23-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: autoscaling/v2
+{{- else -}}
+apiVersion:  autoscaling/v2beta2
+{{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ template "relay.fullname" . }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "relay.fullname" . }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: {{  .Values.autoscaling.averageMemoryUtilization }}
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{  .Values.autoscaling.averageCpuUtilization }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: {{ .Values.autoscaling.scaleDownstabilizationWindowSeconds}}
+      policies:
+      - type: Percent
+        value: {{ .Values.autoscaling.scaleDownPercent }}
+        periodSeconds: {{ .Values.autoscaling.scaleDownPeriodSeconds }}
+    scaleUp:
+      stabilizationWindowSeconds: {{ .Values.autoscaling.scaleUpstabilizationWindowSeconds}}
+      policies:
+      - type: Percent
+        value: {{ .Values.autoscaling.scaleUpPercent }}
+        periodSeconds: {{ .Values.autoscaling.scaleUpPeriodSeconds }}
+{{- end }}

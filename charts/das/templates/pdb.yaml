@@ -1,0 +1,18 @@
+{{- if .Values.pdb.enabled -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "das.fullname" . }}
+  labels:
+    {{- include "das.labels" . | nindent 4 }}
+spec:
+  {{- if and (.Values.pdb.minAvailable) (not .Values.pdb.maxUnavailable) }}
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  {{- end }}
+  {{- if and (.Values.pdb.maxUnavailable) (not .Values.pdb.minAvailable) }}
+  maxUnavailable: {{ .Values.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "das.selectorLabels" . | nindent 6 }}
+{{- end }}

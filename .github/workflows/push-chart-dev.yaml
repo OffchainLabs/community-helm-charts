@@ -1,0 +1,67 @@
+name: Build & Push Updated Charts (DEV)
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  get-modified-charts:
+    runs-on: ubuntu-latest
+    outputs:
+      paths: ${{ steps.get-modified-charts.outputs.paths }}
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 0
+
+      - name: Get modified charts
+        id: get-modified-charts
+        run: |
+          paths=$(git diff origin/main... --name-only | grep ^charts/ | cut -d/ -f1,2 | uniq | tr '\n' ' ')
+          echo "paths=${paths}" >> $GITHUB_OUTPUT
+
+  push-charts:
+    needs: get-modified-charts
+    runs-on: ubuntu-latest
+    if: ${{ needs.get-modified-charts.outputs.paths != '' }}
+    steps:
+      - uses: actions/checkout@master
+
+      # Create and push git tags
+      - name: Create and push git tags
+        run: |
+          IFS=' ' read -ra ADDR <<< "${{ needs.get-modified-charts.outputs.paths }}"
+          for path in "${ADDR[@]}"; do
+            # Extract the chart name from the path
+            chart_name=$(basename $path)
+            
+            # Only capture the first occurrence of 'version:' to ignore dependencies
+            version=$(grep -m1 'version:' $path/Chart.yaml | awk '{print $2}')
+            
+            # Create the tag name by prepending the chart name and adding '-dev'
+            tag="${chart_name}-${version}-dev"
+
+            # Configure git
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            
+            # Delete existing tag if exists
+            git tag -d $tag || true
+            git push origin :refs/tags/$tag || true
+            
+            # Create and push new tag
+            git tag $tag
+            git push origin $tag
+          done
+
+      - uses: a-thomas-22/helm-push-action@v0.0.28
+        env:
+          PATHS: ${{ needs.get-modified-charts.outputs.paths }}
+          FORCE: "True"
+          DEV: "True"
+          CHARTMUSEUM_URL: "chartmuseum-external.iue1v1-0.i.arbitrum-internal.io/public"
+          CHARTMUSEUM_ALIAS: "chartmuseum.offchainlabs.internal"
+          CHARTMUSEUM_CA_CERT: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZrakNDQTNxZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREJwTVFzd0NRWURWUVFHRXdKVlV6RVcKTUJRR0ExVUVDaE1OVDJabVkyaGhhVzRnVEdGaWN6RWVNQndHQTFVRUN4TVZiMlptWTJoaGFXNXNZV0p6TG1sdQpkR1Z5Ym1Gc01TSXdJQVlEVlFRREV4bFBabVpqYUdGcGJpQk1ZV0p6SUVsdWRHVnlibUZzSUVOQk1CNFhEVEl6Ck1ETXhOekUyTVRZek9Gb1hEVE16TURNeE56RTJNall6Tmxvd2FURUxNQWtHQTFVRUJoTUNWVk14RmpBVUJnTlYKQkFvVERVOW1abU5vWVdsdUlFeGhZbk14SGpBY0JnTlZCQXNURlc5bVptTm9ZV2x1YkdGaWN5NXBiblJsY201aApiREVpTUNBR0ExVUVBeE1aVDJabVkyaGhhVzRnVEdGaWN5QkpiblJsY201aGJDQkRRVENDQWlJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnSVBBRENDQWdvQ2dnSUJBS1BFMGhQZUR3a0Rqa2xvdFgyaVJoelc0c0RKRitQNnlURzUKQWZNK21ENDM1WVEyeXFrdmVQbStCOVJMUDVlRXdCU3ltZXo5MGloVWJ4aFYzSG1Kc3ozSDUxYU5UZVJudlEyMAo0eks0cUZTcU1XWDF1UVdOSy9hclRlVmV4cFp5T0ZKajRsbGp4Rm5HOGg5VlBtK0hleXpEYm9QUGNyL2xDN3lvCmx6TFFWZUhVMjNxaXYwZGhoUTBYYXdsbGI2VitZNFNjNDBoY2dnWXNPbXBzOGJIR1JiNHZOa1hyNUwvdzZ0TWcKN0JRak1lVEFMS05menlXWUZtUGlhcGNabDhZQWduUTQ5bmhqd1VLbWQwVE1DZ1RiZ3RuYVlVTDRjd2NJNUhZZwp5NmdtQjQyMUYxOFZpTXE5VDBxWnV6QW5GZE42UUg1YlJQTzlSRGdGckh6T3JpeG5xeldOZkZJMmUzcEVmdEZHCk1UOXpJRHBnaWo4MUhzbzFLZWxOTmV6bDRCZXk4bm00WUpTalRMTWN0eGhJaEZFRUhWV1dyVVJzNjgxS0dVTjEKdUQyamlua1U5M3hnTUx2bmRvZHVuM2hFNkVKczR4WTdCZUVKbWNaWFJGNEdyS2xjcDR0WUhlMjlkUjRkSXROVgp1Ky9rM2dxSk9IaTRETC91dHh0dzFib1E2VUJEVFc0a2g2L2lWdHYvZjgvQXhlY0VxKzcyaUxrUCs3cHJhUy91CmY1WFowQlU4SmNVT3VFNko0WWdpVXVKNU9uQ3FTcGZJcllNRXdBNnYxUlVETjFobm00ODcvRmV1TDkrelo0NnAKSnk1WVFlZHQ3dVNZbDhMQW1pUlNTMVZFRk9pRmtmQlFjUkVVRCttYkV4MVBabi9RRzFodnJydzcrMmYvTHRXaAprUjJRRlY2akFnTUJBQUdqUlRCRE1BNEdBMVVkRHdFQi93UUVBd0lCQmpBU0JnTlZIUk1CQWY4RUNEQUdBUUgvCkFnRUFNQjBHQTFVZERnUVdCQlJsUHE0U21wc2FnbU52dWp6aGhMbE82bmExbVRBTkJna3Foa2lHOXcwQkFRc0YKQUFPQ0FnRUFBVE1HU3hvb0xJKzVrVVpjTG1ZZEx3dnhBWGN1WnhOb1R4dktxZzhocndUTlhwRlNyWUVzdXJBSQpMWUVNaUFsa05zb1BULzl1ZWQ5Q3ltSVRlc0pPcWdEYk9iSVBDUjB0bjlQR2ptNGQ4RldJdzJrK3JMUHhvRFA3CmRwN0RsQzRIRnBzNWNkUHE0MzFOTUpid1NmV3VqRHBObysyQ1VKQWQ0eGpIU0xDWU1OM1hFcmY5NWh5YnBITGcKcWlsd1BHclgrKzBwcnA1TW9oN0NZNVhhaUxFSFlVamJCcVJIZjdxb0E5MXJGdm5uMFo1MkQzMDV2N1NQSnBycwpQRjJHank1RFYrdGFnN0F5L3RmL3o2VkNteDFzb3lGekcyK0gvdXY2VE9oS1dnbnhEWTZva2pqUFY2ZUkvSUY0CnAveDNCQnFhc1cwVUVJOXNvd29mdVcxcjd1NGpiVEg4L2IwNXNVZllEZlp5TG0wMXVOVHZxUkt6TXF5WlFTNjkKMG90c3NQWkhFWi9SNzd4aEk4aEhTYXVZTHZCeFU3MGptNXFjQmR3Qjg2UFB6SU9IR2VBUHZlM0NCY0hTR1d5WApUZjVvS0k3blFQUldaa2lndFNrRXAxM2tOemxvUkY4YmNKV3QvekFxcExHU1UyV3RDZVoxUGJoSVNkaG1rMHEzCnZ5clNPVWt1QnMwLzVCMXJISXFaVWZNcjRUSWplOTlDZ0NBVitSUExEVjErQVVRSS9JMnlrcUc4VVBsVGRMbUwKT21rSTZnZUpVbnZINm5CU0x4SitnQlczcm1ZSkVlTlBGNUw0YUtoZVdObjIrQWJpZVFKQjNMblpDYkNFWXZvbwpIVi8xd3VvbVYrditaOU1zWEVVTXVNZ21vU3VHUmwydS9PNE1vRHA5bXdqSGpUOXVUYzA9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+          CHARTMUSEUM_KEY: "${{ secrets.CHARTMUSEUM_KEY }}"
+          CHARTMUSEUM_CERT: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVrekNDQW51Z0F3SUJBZ0lSQU1aVlQ3TkgrMEphaUd3L2Z3NDAvWFF3RFFZSktvWklodmNOQVFFTEJRQXcKYVRFTE1Ba0dBMVVFQmhNQ1ZWTXhGakFVQmdOVkJBb1REVTltWm1Ob1lXbHVJRXhoWW5NeEhqQWNCZ05WQkFzVApGVzltWm1Ob1lXbHViR0ZpY3k1cGJuUmxjbTVoYkRFaU1DQUdBMVVFQXhNWlQyWm1ZMmhoYVc0Z1RHRmljeUJKCmJuUmxjbTVoYkNCRFFUQWVGdzB5TXpBMk1qVXlNakEzTVROYUZ3MHpNekF6TVRjeE5qSTJNelphTUM0eExEQXEKQmdOVkJBTVRJMmRwZEdoMVltRmpkR2x2Ym5NdWIyWm1ZMmhoYVc1c1lXSnpMbWx1ZEdWeWJtRnNNSUlCSWpBTgpCZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2V3hqRVdYR2lkeXI4TG02THV3Sis0Sk4zcXozCktLb25oZGY3UHNIdmpDb2RPQ0t0REFKWTkxbkFDb0wxSWlsZVNQSlJXOG4wZlZPZFlrYXcrdGN5cERCNXdueGEKOVBQd2U1K3JnZGEzSXR5cjJwbFQrcXpEYXNnNFJ6U2w1MlFXN0tadHVqbFVRa04vZjYzSy9kcjhZOGsrL3poVwo2OVE4Wjdha25LZllGSWgwd3djS0VIM1F1ZTFHT0VSYW5Bekx6clo4OUhoR3JhRzl6TFVtcXlCSC83NUJoeTZkCnVzdjdIdFNzOWVYWUJscTBuMnA3eDc1WHplS01zSnpqcUl0NjAvYytweS9ZeDBXQVR3TDVzKzdkS2V3K2lnK0kKWkw4ZDFxUVBtRVdicDFGZ1BkdGtJa0NiU3dhbWpLT0wrNzhUNU93MTBsaHNRMS9iTE1PcVlheGgzUUlEQVFBQgpvM0V3YnpBT0JnTlZIUThCQWY4RUJBTUNBN2d3SFFZRFZSMGxCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGCkJ3TUNNQjBHQTFVZERnUVdCQlE5RC8zaXdMZWZHT3JjUmRpampkazgzaEo1T3pBZkJnTlZIU01FR0RBV2dCUmwKUHE0U21wc2FnbU52dWp6aGhMbE82bmExbVRBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQWdFQU1nWm1yNHVDaWhjZgpNNXNGcnhwYitCU0w5UnRFUUJoTmppSTV0eFZZWjlOTTVBN0xQSEVodVNyVnZGajJ6RGU0eU5zeFQ4ZCtXdnVWCjU0YTlvL1BhUDh2TFY3ZmZCQW0wTk11bnFkbVpwaTNwZGRIVzcvTldTZ21Mc1lqYkJBSC8xb2FpZlQ1bkJvNEcKVUc3NzdkTmxBSXhSNGdxcXlHQTR0Z1VCT2xCRENUbkdLZUE2S09jZ1hNUEgzRmNrRHpRV1JBNkpsOFZiZHkrRApTdGhHaHNqNmw4VjI3V1B6c1R4Snl2SUZpN3dJQ2xMSVR1THRXcCtva2dnNThlbXNSME0xUHZDckdaWURBWXFvCk5jT0tNWGEzdStiUzJIdTRINUtNd2xSVFlqOVJIem9xYjZCcGtQL2N6d1BsWHIzMEFIYmJVc3h0V1RqelBHaXYKcFF3NzRsWlFZNk9Na0R1ckd5ajZCVVhDTEtMOFJOWkUraGRVakc5K2trTnBnbFlaSmY5eGFHaFZMaU9JM0ZydgpTR0pKbG1JVjdIMTZqUHR1SFE0bXhJS2JOdEIrNDdaYk5XR3VWM2hJNHVRWVFUR0pOT1NOMWlsMVVNSTlkVXZ1CjB4ZWxqNk4xbEw4WSttbUxCZWtsMm9kTWRSMHBlOGNsOTAvemVXeDljaGlINGJvQ05kZnUvRVYyUk0rUHVQKzcKVWdFRHI2cEFITmdXeFhJSGFmNElnYnlFdzFISERoMHp1eU8zWUgrVENzMDFyeGtkcC96c245dVJUdmdNWDNUegpMMHByNVRyRmxseU1PVkwzbkMwT1RMTFJDUTlhQWExQ1pmdHdEdkYwTkJYeWtkMUpWR2ViVVJid3VESzNzL1hECjBuaGRvRjROZ2ZrZGFYcDBPNHZJRzVmTjBiZjNraXc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"

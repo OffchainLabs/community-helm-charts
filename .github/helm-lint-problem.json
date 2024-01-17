@@ -1,0 +1,17 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "helm-lint",
+            "pattern": [
+                {
+                    "regexp": "^\\[(ERROR|WARNING|INFO)\\]\\stemplates\/:\\stemplate:\\s(.*):(\\d+):(\\d+):\\s(.*)$",
+                    "file": 2,
+                    "line": 3,
+                    "column": 4,
+                    "severity": 1,
+                    "message": 5,
+                }
+            ]
+        }
+    ]
+}

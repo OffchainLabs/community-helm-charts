@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "relay.fullname" . }}
+  labels:
+    {{- include "relay.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    {{- if and .Values.configmap.data.node .Values.configmap.data.node.feed .Values.configmap.data.node.feed.output .Values.configmap.data.node.feed.output.port }}
+    - port: {{ .Values.configmap.data.node.feed.output.port }}
+      targetPort: feed
+      protocol: TCP
+      name: feed
+    {{- end }}
+    {{- if .Values.configmap.data.metrics }}
+    - port: {{ index .Values "configmap" "data" "metrics-server" "port" }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+    {{- end }}
+    
+  selector:
+    {{- include "relay.selectorLabels" . | nindent 4 }}

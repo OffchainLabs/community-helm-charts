@@ -1,0 +1,22 @@
+{{- if .Values.perReplicaService.enabled }}
+{{- $replicas := .Values.statefulset.replicas }}
+{{- range until $replicas }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "das.fullname" $ }}-{{ . }}
+  labels:
+    {{- include "das.labels" $ | nindent 4 }}
+spec:
+  ports:
+    {{- range .Values.service.ports }}
+    - port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: {{ .protocol | default "TCP" }}
+      name: {{ .name }}
+    {{- end }}
+  selector:
+    statefulset.kubernetes.io/pod-name: {{ include "das.fullname" $ }}-{{ . }}
+  type: {{ $.Values.service.type }}
+{{- end }}
+{{- end }}

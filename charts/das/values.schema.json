@@ -1,0 +1,471 @@
+{
+  "title": "Chart Values",
+  "type": "object",
+  "properties": {
+    "replicaCount": {
+      "type": "number",
+      "description": "Number of replicas",
+      "default": 1
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "description": "Docker image repository",
+          "default": "offchainlabs/nitro-node"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "description": "Docker image pull policy",
+          "default": "IfNotPresent"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Docker image tag ovverrides the chart appVersion",
+          "default": ""
+        }
+      }
+    },
+    "imagePullSecrets": {
+      "type": "array",
+      "description": "Docker registry pull secret",
+      "default": [],
+      "items": {}
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "String to partially override das fullname",
+      "default": ""
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "String to fully override das fullname",
+      "default": ""
+    },
+    "diagnosticMode": {
+      "type": "boolean",
+      "description": "Enable diagnostics mode (sleep infinity)",
+      "default": false
+    },
+    "commandOverride": {
+      "type": "object",
+      "description": "Command override for the das container",
+      "default": {}
+    },
+    "livenessProbe": {
+      "type": "object",
+      "description": "Liveness probe configuration",
+      "default": {}
+    },
+    "readinessProbe": {
+      "type": "object",
+      "description": "Readiness probe configuration",
+      "default": {}
+    },
+    "startupProbe": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable built in startup probe",
+          "default": true
+        },
+        "failureThreshold": {
+          "type": "number",
+          "description": "Number of failures before pod is considered unhealthy",
+          "default": 2419200
+        },
+        "periodSeconds": {
+          "type": "number",
+          "description": "Number of seconds between startup probes",
+          "default": 1
+        }
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "properties": {
+        "localdbstorage": {
+          "type": "object",
+          "properties": {
+            "size": {
+              "type": "string",
+              "description": "Size of the persistent volume claim",
+              "default": "100Gi"
+            },
+            "storageClassName": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Storage class of the persistent volume claim",
+              "default": null,
+              "nullable": true
+            }
+          }
+        },
+        "localfilestorage": {
+          "type": "object",
+          "properties": {
+            "size": {
+              "type": "string",
+              "description": "Size of the persistent volume claim",
+              "default": "100Gi"
+            },
+            "storageClassName": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Storage class of the persistent volume claim",
+              "default": null,
+              "nullable": true
+            }
+          }
+        }
+      }
+    },
+    "serviceMonitor": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable service monitor CRD for prometheus operator",
+          "default": false
+        },
+        "portName": {
+          "type": "string",
+          "description": "Name of the port to monitor",
+          "default": "metrics"
+        },
+        "path": {
+          "type": "string",
+          "description": "Path to monitor",
+          "default": "/debug/metrics/prometheus"
+        },
+        "interval": {
+          "type": "string",
+          "description": "Interval to monitor",
+          "default": "5s"
+        }
+      }
+    },
+    "perReplicaService": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable per replica service",
+          "default": false
+        }
+      }
+    },
+    "headlessservice": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable headless service",
+          "default": false
+        }
+      }
+    },
+    "pdb": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable pod disruption budget",
+          "default": false
+        },
+        "minAvailable": {
+          "type": "string",
+          "description": "Minimum number of available pods",
+          "default": ""
+        },
+        "maxUnavailable": {
+          "type": "string",
+          "description": "Maximum number of unavailable pods",
+          "default": "1"
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "Create a service account",
+          "default": true
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations for the service account",
+          "default": {}
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the service account",
+          "default": ""
+        }
+      }
+    },
+    "podAnnotations": {
+      "type": "object",
+      "description": "Annotations for the das pod",
+      "default": {}
+    },
+    "podSecurityContext": {
+      "type": "object",
+      "description": "Security context for the das pod",
+      "default": {}
+    },
+    "securityContext": {
+      "type": "object",
+      "description": "Security context for the das container",
+      "default": {}
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Service type",
+          "default": "ClusterIP"
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "description": "Resource requests and limits for the das container",
+      "default": {}
+    },
+    "nodeSelector": {
+      "type": "object",
+      "description": "Node selector for the das pod",
+      "default": {}
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "Tolerations for the das pod",
+      "default": [],
+      "items": {}
+    },
+    "affinity": {
+      "type": "object",
+      "description": "Affinity for the das pod",
+      "default": {}
+    },
+    "dasecretName": {
+      "type": "string",
+      "description": "Name of the das bls secret that contains the bls key",
+      "default": ""
+    },
+    "configmap": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable configmap",
+          "default": true
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "log-type": {
+              "type": "string",
+              "description": "Log type",
+              "default": "json"
+            },
+            "log-level": {
+              "type": "number",
+              "description": "Log level",
+              "default": 3
+            },
+            "enable-rest": {
+              "type": "boolean",
+              "description": "Enable rest api",
+              "default": true
+            },
+            "rest-addr": {
+              "type": "string",
+              "description": "Rest api address",
+              "default": "0.0.0.0"
+            },
+            "rest-port": {
+              "type": "number",
+              "description": "Rest api port",
+              "default": 9877
+            },
+            "enable-rpc": {
+              "type": "boolean",
+              "description": "Enable rpc api",
+              "default": true
+            },
+            "rpc-addr": {
+              "type": "string",
+              "description": "rpc api address",
+              "default": "0.0.0.0"
+            },
+            "rpc-port": {
+              "type": "number",
+              "description": "rpc api port",
+              "default": 9876
+            },
+            "data-availability": {
+              "type": "object",
+              "properties": {
+                "parent-chain-node-url": {
+                  "type": "string",
+                  "description": "Parent chain node url",
+                  "default": ""
+                },
+                "sequencer-inbox-address": {
+                  "type": "string",
+                  "description": "Sequencer inbox address",
+                  "default": ""
+                },
+                "local-db-storage": {
+                  "type": "object",
+                  "properties": {
+                    "enable": {
+                      "type": "boolean",
+                      "description": "Enable local db storage",
+                      "default": false
+                    },
+                    "data-dir": {
+                      "type": "string",
+                      "description": "Data directory",
+                      "default": ""
+                    },
+                    "discard-after-timeout": {
+                      "type": "string",
+                      "description": "Discard after timeout",
+                      "default": ""
+                    }
+                  }
+                },
+                "local-file-storage": {
+                  "type": "object",
+                  "properties": {
+                    "enable": {
+                      "type": "boolean",
+                      "description": "Enable local file storage",
+                      "default": false
+                    },
+                    "data-dir": {
+                      "type": "string",
+                      "description": "",
+                      "default": ""
+                    }
+                  }
+                },
+                "s3-storage": {
+                  "type": "object",
+                  "properties": {
+                    "enable": {
+                      "type": "boolean",
+                      "description": "Enable s3 storage",
+                      "default": false
+                    },
+                    "access-key": {
+                      "type": "string",
+                      "description": "s3 access key",
+                      "default": ""
+                    },
+                    "bucket": {
+                      "type": "string",
+                      "description": "s3 bucket",
+                      "default": ""
+                    },
+                    "discard-after-timeout": {
+                      "type": "string",
+                      "description": "discard after timeout",
+                      "default": ""
+                    },
+                    "object-prefix": {
+                      "type": "string",
+                      "description": "object prefix",
+                      "default": ""
+                    },
+                    "region": {
+                      "type": "string",
+                      "description": "region",
+                      "default": ""
+                    },
+                    "secret-key": {
+                      "type": "string",
+                      "description": "s3 secret key",
+                      "default": ""
+                    }
+                  }
+                },
+                "ipfs-storage": {
+                  "type": "object",
+                  "properties": {
+                    "enable": {
+                      "type": "boolean",
+                      "description": "Enable ipfs storage",
+                      "default": false
+                    },
+                    "profiles": {
+                      "type": "string",
+                      "description": "ipfs profiles",
+                      "default": ""
+                    },
+                    "read-timeout": {
+                      "type": "string",
+                      "description": "ipfs read timeout",
+                      "default": "1m0s"
+                    }
+                  }
+                },
+                "local-cache": {
+                  "type": "object",
+                  "properties": {
+                    "enable": {
+                      "type": "boolean",
+                      "description": "Enable local cache",
+                      "default": false
+                    },
+                    "expiration": {
+                      "type": "string",
+                      "description": "local cache expiration",
+                      "default": "1h0m0s"
+                    }
+                  }
+                }
+              }
+            },
+            "metrics": {
+              "type": "boolean",
+              "description": "Enable metrics",
+              "default": false
+            },
+            "metrics-server": {
+              "type": "object",
+              "properties": {
+                "addr": {
+                  "type": "string",
+                  "description": "Metrics server address",
+                  "default": "0.0.0.0"
+                },
+                "port": {
+                  "type": "number",
+                  "description": "Metrics server port",
+                  "default": 6070
+                },
+                "update-interval": {
+                  "type": "string",
+                  "description": "Metrics server update interval",
+                  "default": "5s"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

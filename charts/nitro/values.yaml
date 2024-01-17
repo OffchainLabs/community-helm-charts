@@ -1,0 +1,249 @@
+## @section Nitro Deployment Options
+
+## @param replicaCount Number of replicas to deploy
+##
+replicaCount: 1
+
+## @param image.repository Docker image repository
+## @param image.pullPolicy Docker image pull policy
+## @param image.tag Docker image tag. Overrides the chart appVersion.
+image:
+  repository: offchainlabs/nitro-node
+  pullPolicy: IfNotPresent
+  tag: ""
+
+## @param imagePullSecrets Docker registry pull secret names as an array
+imagePullSecrets: []
+## @param nameOverride String to partially override nitro.fullname
+nameOverride: ""
+
+## @param fullnameOverride String to fully override nitro.fullname
+fullnameOverride: ""
+
+## @param commandOverride Command override for the nitro container
+commandOverride: {}
+
+## @param livenessProbe Liveness probe configuration
+livenessProbe: {}
+
+## @param readinessProbe Readiness probe configuration
+readinessProbe: {}
+
+## @param startupProbe.enabled Enable built in startup probe
+## @param startupProbe.failureThreshold Number of failures before pod is considered unhealthy
+## @param startupProbe.periodSeconds Number of seconds between startup probes
+startupProbe:
+  enabled: true
+  failureThreshold: 2419200
+  periodSeconds: 1
+
+## @param updateStrategy.type Update strategy type
+## @param updateStrategy.rollingUpdate.partition Partition to update
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    partition: 0
+
+## @param persistence.enabled Enable persistence
+## @param persistence.size Size of the persistent volume claim
+## @param persistence.storageClassName [string, nullable] Storage class of the persistent volume claim
+persistence:
+  enabled: true
+  size: 500Gi
+  storageClassName: null
+
+## @param serviceMonitor.enabled Enable service monitor CRD for prometheus operator
+## @param serviceMonitor.portName Name of the port to monitor
+## @param serviceMonitor.path Path to monitor
+## @param serviceMonitor.interval Interval to monitor
+serviceMonitor:
+  enabled: false
+  portName: metrics
+  path: /debug/metrics/prometheus
+  interval: 5s
+
+## @param perReplicaService.enabled Enable a service for each sts replica
+perReplicaService:
+  enabled: false
+
+## @param jwtSecret.enabled Enable a jwt secret for use with the stateless validator
+## @param jwtSecret.value Value of the jwt secret for use with the stateless validator
+jwtSecret:
+  enabled: false
+  value: ""
+
+## @param auth.enabled Enable auth for the stateless validator
+auth:
+  enabled: false
+
+## @param pdb.enabled Enable pod disruption budget
+## @param pdb.minAvailable Minimum number of pods available
+## @param pdb.maxUnavailable Maximum number of pods unavailable
+pdb:
+  enabled: false
+  minAvailable: "75%"
+  maxUnavailable: ""
+
+## @param serviceAccount.create Create a service account
+## @param serviceAccount.annotations Annotations for the service account
+## @param serviceAccount.name Name of the service account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+## @param podAnnotations Annotations for the pod
+podAnnotations: {}
+
+## @param podSecurityContext.fsGroup Group id for the pod
+podSecurityContext:
+  fsGroup: 1000
+
+## @param securityContext Security context for the container
+securityContext: {}
+
+## @param service.type Service type
+service:
+  type: ClusterIP
+
+## @param resources Resources for the container
+resources: {}
+
+## @param nodeSelector Node selector for the pod
+nodeSelector: {}
+
+## @param tolerations Tolerations for the pod
+tolerations: []
+
+## @param affinity Affinity for the pod
+affinity: {}
+
+## @param additionalVolumeClaims Additional volume claims for the pod
+additionalVolumeClaims: []
+
+configmap:
+  ## @param configmap.enabled Enable a configmap for the nitro container
+  enabled: true
+  ## @extra confimap.data See Configuration Options for the full list of options
+  data:
+    ## @param configmap.data.http.addr Address to bind http service to
+    ## @param configmap.data.http.api List of apis to enable
+    ## @param configmap.data.http.corsdomain CORS domain
+    ## @param configmap.data.http.port Port to bind http service to
+    ## @param configmap.data.http.rpcprefix Prefix for rpc calls
+    ## @param configmap.data.http.vhosts Vhosts to allow
+    http:
+      addr: "0.0.0.0"
+      api: ["arb", "personal", "eth", "net", "web3", "txpool", "arbdebug"]
+      corsdomain: "*"
+      port: 8547
+      rpcprefix: "/rpc"
+      vhosts: "*"
+
+    ## @param configmap.data.parent-chain.id ID of the parent chain
+    ## @param configmap.data.parent-chain.connection.url URL of the parent chain
+    parent-chain:
+      id: 1
+      connection:
+        url: ""
+
+    ## @param configmap.data.chain.id ID of the chain
+    chain:
+      id: 42161
+
+    ## @param configmap.data.log-type Type of log
+    log-type: "json"
+
+    ## @param configmap.data.metrics Enable metrics
+    ## @param configmap.data.metrics-server.addr Address to bind metrics server to
+    ## @param configmap.data.metrics-server.port Port to bind metrics server to
+    metrics: false
+    metrics-server:
+      addr: "0.0.0.0"
+      port: 6070
+
+    ## @param configmap.data.persistent.chain Path to persistent chain data
+    persistent:
+      chain: "/home/user/data/"
+
+    ## @param configmap.data.ws.addr Address to bind ws service to
+    ## @param configmap.data.ws.api List of apis to enable
+    ## @param configmap.data.ws.port Port to bind ws service to
+    ## @param configmap.data.ws.rpcprefix Prefix for rpc calls
+    ws:
+      addr: 0.0.0.0
+      api: ["net", "web3", "eth", "arb"]
+      port: 8548
+      rpcprefix: "/ws"
+
+## @section Stateless Validator
+
+validator:
+  ## @param validator.enabled Enable the stateless validator
+  enabled: false
+  configmap:
+    data:
+      ## @param validator.configmap.data.auth.addr Address to bind auth service to
+      ## @param validator.configmap.data.auth.port Port to bind auth service to
+      ## @param validator.configmap.data.auth.origins Origins to allow to access auth service
+      ## @param validator.configmap.data.auth.jwtsecret Path to jwt secret for auth service
+      auth:
+        addr: "0.0.0.0"
+        port: 8549
+        origins: "*"
+        jwtsecret: "/secrets/jwtsecret"
+
+  ## @param validator.extraArgs Extra arguments for the validator container
+  extraArgs: []
+
+  statefulset:
+    ## @param validator.statefulset.useConfigmap Use the configmap for the validator container
+    useConfigmap: true
+
+    ## @param validator.statefulset.auth.enabled Enable the auth service for the validator statefulset
+    ## @param validator.statefulset.auth.port Port to bind auth service to
+    auth:
+      enabled: true
+      port: 8549
+
+    ## @param validator.statefulset.extraLabels Extra labels for the liveness probe
+    extraLabels: {}
+
+    ## @param validator.statefulset.livenessProbe.enabled Enable the liveness probe for the validator statefulset
+    ## @param validator.statefulset.livenessProbe.tcpSocket.port Port to probe
+    ## @param validator.statefulset.livenessProbe.initialDelaySeconds Initial delay for the liveness probe
+    ## @param validator.statefulset.livenessProbe.periodSeconds Period for the liveness probe
+    livenessProbe:
+      enabled: true
+      tcpSocket:
+        port: auth
+      initialDelaySeconds: 30
+      periodSeconds: 10
+
+    ## @param validator.statefulset.readinessProbe.enabled Enable the readiness probe for the validator statefulset
+    ## @param validator.statefulset.readinessProbe.tcpSocket.port Port to probe
+    ## @param validator.statefulset.readinessProbe.initialDelaySeconds Initial delay for the readiness probe
+    ## @param validator.statefulset.readinessProbe.periodSeconds Period for the readiness probe
+    readinessProbe:
+      enabled: true
+      tcpSocket:
+        port: auth
+      initialDelaySeconds: 3
+      periodSeconds: 3
+
+    ## @param validator.statefulset.startupProbe.enabled Enable the startup probe for the validator statefulset
+    startupProbe:
+      enabled: false
+
+    ## @param validator.statefulset.resources Resources for the validator container
+    resources: {}
+
+    ## @param validator.statefulset.extraEnv Extra environment variables for the validator container
+    extraEnv: {}
+
+    ## @param validator.statefulset.metrics.enabled Enable metrics for the validator statefulset
+    metrics:
+      enabled: false
+
+    ## @param validator.statefulset.podAnnotations Annotations for the stateless validator pod
+    podAnnotations: {}

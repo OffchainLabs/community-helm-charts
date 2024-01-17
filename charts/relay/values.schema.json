@@ -1,0 +1,414 @@
+{
+  "title": "Chart Values",
+  "type": "object",
+  "properties": {
+    "replicaCount": {
+      "type": "number",
+      "description": "Number of replicas to deploy",
+      "default": 1
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "description": "Docker image repository",
+          "default": "offchainlabs/nitro-node"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "description": "Docker image pull policy",
+          "default": "IfNotPresent"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Docker image tag ovverrides the chart appVersion",
+          "default": ""
+        }
+      }
+    },
+    "imagePullSecrets": {
+      "type": "array",
+      "description": "Docker registry pull secret",
+      "default": [],
+      "items": {}
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "String to partially override relay fullname",
+      "default": ""
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "String to fully override relay fullname",
+      "default": ""
+    },
+    "autoscaling": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable autoscaling",
+          "default": false
+        },
+        "minReplicas": {
+          "type": "number",
+          "description": "Minimum number of replicas",
+          "default": 1
+        },
+        "maxReplicas": {
+          "type": "number",
+          "description": "Maximum number of replicas",
+          "default": 6
+        },
+        "averageCpuUtilization": {
+          "type": "number",
+          "description": "Average CPU utilization",
+          "default": 75
+        },
+        "averageMemoryUtilization": {
+          "type": "number",
+          "description": "Average memory utilization",
+          "default": 75
+        },
+        "scaleUpPercent": {
+          "type": "number",
+          "description": "Percent to scale up",
+          "default": 100
+        },
+        "scaleUpPeriodSeconds": {
+          "type": "number",
+          "description": "Period to scale up",
+          "default": 30
+        },
+        "scaleUpstabilizationWindowSeconds": {
+          "type": "number",
+          "description": "Stabilization window to scale up",
+          "default": 30
+        },
+        "scaleDownPercent": {
+          "type": "number",
+          "description": "Percent to scale down",
+          "default": 10
+        },
+        "scaleDownPeriodSeconds": {
+          "type": "number",
+          "description": "Period to scale down",
+          "default": 600
+        },
+        "scaleDownstabilizationWindowSeconds": {
+          "type": "number",
+          "description": "Stabilization window to scale down",
+          "default": 600
+        }
+      }
+    },
+    "commandOverride": {
+      "type": "object",
+      "description": "Command override for the relay container",
+      "default": {}
+    },
+    "livenessProbe": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable built in liveness probe",
+          "default": true
+        },
+        "httpGet": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path for liveness probe",
+              "default": "/livenessprobe"
+            },
+            "port": {
+              "type": "string",
+              "description": "Port for liveness probe",
+              "default": "feed"
+            }
+          }
+        },
+        "initialDelaySeconds": {
+          "type": "number",
+          "description": "Initial delay for liveness probe",
+          "default": 10
+        },
+        "periodSeconds": {
+          "type": "number",
+          "description": "Period for liveness probe",
+          "default": 1
+        }
+      }
+    },
+    "readinessProbe": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable built in readiness probe",
+          "default": true
+        },
+        "tcpSocket": {
+          "type": "object",
+          "properties": {
+            "port": {
+              "type": "string",
+              "description": "Port for readiness probe",
+              "default": "feed"
+            }
+          }
+        },
+        "initialDelaySeconds": {
+          "type": "number",
+          "description": "Initial delay for readiness probe",
+          "default": 20
+        },
+        "periodSeconds": {
+          "type": "number",
+          "description": "Period for readiness probe",
+          "default": 1
+        }
+      }
+    },
+    "startupProbe": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable built in startup probe",
+          "default": false
+        }
+      }
+    },
+    "serviceMonitor": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable prometheus service monitor",
+          "default": false
+        },
+        "portName": {
+          "type": "string",
+          "description": "Port name for prometheus service monitor",
+          "default": "metrics"
+        },
+        "path": {
+          "type": "string",
+          "description": "Path for prometheus service monitor",
+          "default": "/debug/metrics/prometheus"
+        },
+        "interval": {
+          "type": "string",
+          "description": "Interval for prometheus service monitor",
+          "default": "5s"
+        }
+      }
+    },
+    "perReplicaService": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable per replica service",
+          "default": false
+        }
+      }
+    },
+    "pdb": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable pod disruption budget",
+          "default": false
+        },
+        "minAvailable": {
+          "type": "string",
+          "description": "Minimum number of available pods",
+          "default": "75%"
+        },
+        "maxUnavailable": {
+          "type": "string",
+          "description": "Maximum number of unavailable pods",
+          "default": ""
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "Create a service account",
+          "default": true
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations for the service account",
+          "default": {}
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the service account",
+          "default": ""
+        }
+      }
+    },
+    "podAnnotations": {
+      "type": "object",
+      "description": "Annotations for the pod",
+      "default": {}
+    },
+    "podSecurityContext": {
+      "type": "object",
+      "description": "Security context for the pod",
+      "default": {}
+    },
+    "securityContext": {
+      "type": "object",
+      "description": "Security context for the container",
+      "default": {}
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Service type",
+          "default": "ClusterIP"
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "description": "Resources for the container",
+      "default": {}
+    },
+    "nodeSelector": {
+      "type": "object",
+      "description": "Node selector for the pod",
+      "default": {}
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "Tolerations for the pod",
+      "default": [],
+      "items": {}
+    },
+    "topologySpreadConstraints": {
+      "type": "array",
+      "description": "Topology spread constraints for the pod",
+      "default": [],
+      "items": {}
+    },
+    "affinity": {
+      "type": "object",
+      "description": "Affinity for the pod",
+      "default": {}
+    },
+    "configmap": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable configmap",
+          "default": true
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "chain": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "description": "Chain id",
+                  "default": 42161
+                }
+              }
+            },
+            "log-type": {
+              "type": "string",
+              "description": "Log type",
+              "default": "json"
+            },
+            "metrics": {
+              "type": "boolean",
+              "description": "Enable metrics",
+              "default": false
+            },
+            "metrics-server": {
+              "type": "object",
+              "properties": {
+                "addr": {
+                  "type": "string",
+                  "description": "Metrics server address",
+                  "default": "0.0.0.0"
+                },
+                "port": {
+                  "type": "number",
+                  "description": "Metrics server port",
+                  "default": 6070
+                }
+              }
+            },
+            "node": {
+              "type": "object",
+              "properties": {
+                "feed": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "description": "Feed input url",
+                          "default": ""
+                        },
+                        "reconnect-initial-backoff": {
+                          "type": "string",
+                          "description": "Feed input reconnect initial backoff",
+                          "default": "50ms"
+                        },
+                        "reconnect-maximum-backoff": {
+                          "type": "string",
+                          "description": "Feed input reconnect maximum backoff",
+                          "default": "800ms"
+                        },
+                        "timeout": {
+                          "type": "string",
+                          "description": "Feed input timeout",
+                          "default": "10s"
+                        }
+                      }
+                    },
+                    "output": {
+                      "type": "object",
+                      "properties": {
+                        "addr": {
+                          "type": "string",
+                          "description": "Feed output address",
+                          "default": "0.0.0.0"
+                        },
+                        "port": {
+                          "type": "number",
+                          "description": "Feed output port",
+                          "default": 9642
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

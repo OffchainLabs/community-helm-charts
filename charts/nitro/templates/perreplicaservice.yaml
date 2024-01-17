@@ -1,0 +1,41 @@
+{{- if .Values.perReplicaService.enabled }}
+{{- range $i := until ($.Values.replicaCount | int) }}
+{{- $iStr := ($i | print)}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nitro.fullname" $ }}-{{ $i }}
+  labels:
+    {{- include "nitro.labels" $ | nindent 4 }}
+spec:
+  ports:
+    {{- if and $.Values.configmap.data.http $.Values.configmap.data.http.port }}
+    - port: {{ index $.Values.configmap.data.http.port }}
+      targetPort: http-rpc
+      protocol: TCP
+      name: http-rpc
+    {{- end }}
+    {{- if and $.Values.configmap.data.ws $.Values.configmap.data.ws.port }}
+    - port: {{ index $.Values.configmap.data.ws.port }}
+      targetPort: ws
+      protocol: TCP
+      name: ws
+    {{- end }}
+    {{- if and $.Values.configmap.data.node $.Values.configmap.data.node.feed $.Values.configmap.data.node.feed.output $.Values.configmap.data.node.feed.output.port }}
+    - port: {{ $.Values.configmap.data.node.feed.output.port }}
+      targetPort: feed
+      protocol: TCP
+      name: feed
+    {{- end }}
+    {{- if $.Values.configmap.data.metrics }}
+    - port: {{ index $.Values "configmap" "data" "metrics-server" "port" }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+    {{- end }}
+  selector:
+    statefulset.kubernetes.io/pod-name: {{ include "nitro.fullname" $ }}-{{ . }}
+  type: {{ $.Values.service.type }}
+{{- end }}
+{{- end }}

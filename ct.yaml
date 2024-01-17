@@ -1,0 +1,13 @@
+# See https://github.com/helm/chart-testing#configuration
+remote: origin
+target-branch: main
+chart-dirs:
+  - charts
+chart-repos:
+  - bitnami=https://charts.bitnami.com/bitnami
+  - istio=https://istio-release.storage.googleapis.com/charts
+  - eks=https://aws.github.io/eks-charts
+# - offchainprivate=https://chartmuseum.iue1v1-0.i.arbitrum-internal.io
+# helm-repo-extra-args:
+# - offchainprivate=--username ${{ secrets.CHARTMUSEUM_USER }} --password ${{ secrets.CHARTMUSEUM_PASSWORD }}
+

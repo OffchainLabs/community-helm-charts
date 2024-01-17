@@ -1,0 +1,222 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "nitro.fullname" . }}
+  labels:
+    {{- include "nitro.labels" . | nindent 4 }}
+  annotations:
+    nitro.arbitrum.io/desiredReplicas: {{ $.Values.replicaCount | quote }}
+spec:
+  serviceName: "{{ include "nitro.fullname" . }}"
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "nitro.selectorLabels" . | nindent 6 }}
+  podManagementPolicy: Parallel
+  {{- if .Values.updateStrategy }}
+  {{- with .Values.updateStrategy }}
+  updateStrategy: 
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  template:
+    metadata:
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "nitro.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nitro.serviceAccountName" . }}
+      securityContext:
+        {{- with .Values.podSecurityContext }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+      initContainers:
+        {{- if .Values.initContainers }}
+        {{- toYaml .Values.initContainers | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.diagnosticMode }}
+          command: ["sleep"]
+          args: ["infinity"]
+          {{- else if .Values.commandOverride.enabled }}
+          {{- with .Values.commandOverride.command }}
+          command: {{- toYaml . | nindent 8}}
+          {{- end }}
+          {{- with .Values.commandOverride.args }}
+          args: {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- else }}
+          command: [/usr/local/bin/nitro]
+          args:
+            {{- if .Values.configmap.data.metrics}}
+            - --metrics
+            {{- end }}
+            {{- if .Values.configmap.enabled }}
+            - --conf.file=/config/config.json
+            {{- end }}
+            {{- if .Values.customArgs }}
+            {{- include "nitro.customArgs" . | nindent 12 }}
+            {{- end }}
+          ports:
+            {{- if and .Values.configmap.data.http .Values.configmap.data.http.port}}
+            - name: http-rpc
+              containerPort: {{ .Values.configmap.data.http.port }}
+              protocol: TCP
+            {{- end }}
+            {{- if and .Values.configmap.data.ws .Values.configmap.data.ws.port }}
+            - name: ws
+              containerPort: {{ .Values.configmap.data.ws.port }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.configmap.data.metrics }}
+            - name: metrics
+              containerPort: {{ index .Values "configmap" "data" "metrics-server" "port" }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.configmap.data.pprof }}
+            - name: pprof
+              containerPort: {{ index .Values "configmap" "data" "pprof-cfg" "port" }}
+              protocol: TCP
+            {{- end }}
+            {{- if and .Values.configmap.data.node .Values.configmap.data.node.feed .Values.configmap.data.node.feed.output .Values.configmap.data.node.feed.output.port }}
+            - name: feed
+              containerPort: {{ .Values.configmap.data.node.feed.output.port }}
+              protocol: TCP
+            {{- end }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            {{- if and .Values.livenessProbe.exec (kindIs "string" .Values.livenessProbe.exec.command) }}
+            {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
+            exec:
+              command:
+                {{- tpl .Values.livenessProbe.exec.command . | nindent 14 }}
+            {{- else }}
+            {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 10 }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 10 }}
+          {{- end }}
+          {{- if and .Values.startupProbe.enabled .Values.configmap.data.http .Values.configmap.data.http.port }}
+          startupProbe:
+            exec:
+              command:
+                - "bash"
+                - "-c"
+                - |
+                  {{- include "startupProbe" . | nindent 18 }}
+            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+          {{- end }}
+          env:
+          {{- with .Values.extraEnv }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+          {{- if .Values.jwtSecret.enabled }}
+          - name: jwt-secret
+            mountPath: /secrets/jwtsecret
+            subPath: jwtSecret
+            readOnly: true
+        {{- end }}
+          - name: nitrodata
+            mountPath: {{ .Values.configmap.data.persistent.chain }}
+          {{- end }}
+          {{- if .Values.configmap.enabled }}
+          - name: config
+            mountPath: /config/
+          {{- end }}
+          {{- if .Values.extraVolumeMounts }}
+          {{- toYaml .Values.extraVolumeMounts | nindent 8}}
+          {{- end }}
+          {{- range .Values.additionalVolumeClaims }}
+          {{- if .enabled }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+          {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+      {{- if .Values.jwtSecret.enabled }}
+      - name: jwt-secret
+        secret:
+          secretName: {{ include "nitro.fullname" . }}-jwt
+      {{- end }}
+      {{- if .Values.configmap.enabled }}
+      - name: config
+        configMap:
+          name: {{ include "nitro.fullname" . }}
+      {{- end }}
+      {{- range .Values.additionalVolumeClaims }}
+      {{- if .enabled }}
+      - name: {{ .name }}
+        persistentVolumeClaim:
+          claimName: {{ .name }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 600 }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range $constraint := . }}
+      - {{ toYaml $constraint | nindent 8 | trim }}
+        {{- if not $constraint.labelSelector }}
+        labelSelector:
+          matchLabels:
+            {{- include "nitro.selectorLabels" $ | nindent 12 }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+  volumeClaimTemplates:
+    {{- if .Values.persistence.enabled }}
+    - metadata:
+        name: nitrodata
+        {{- with .Values.storageAnnotations }}
+        annotations:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        labels:
+          app: {{ template "nitro.name" . }}
+          release: {{ .Release.Name }}
+          heritage: {{ .Release.Service }}
+          {{- if .Values.persistence.snapshotValue }}
+          snapshot: {{ .Values.persistence.snapshotValue }}
+          {{- end }}
+      spec:
+        accessModes:
+        - "ReadWriteOnce"
+        {{- if .Values.persistence.storageClassName }}
+        storageClassName: {{ .Values.persistence.storageClassName | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+      {{- end }}

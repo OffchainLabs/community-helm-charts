@@ -1,0 +1,25 @@
+{{- if and $.Values.validator.enabled $.Values.validator.statefulset.metrics.enabled }}
+{{- $fullName := include "nitro.fullname" . }}
+{{- $labels := include "nitro.labels" . }}
+{{- $selectorLabels := include "nitro.selectorLabels" .}}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ $fullName }}-validator
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- $selectorLabels | nindent 6 }}
+      function: arb-validator
+  endpoints:
+  - port: metrics
+    interval: 5s
+    path: /debug/metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+{{- end }}

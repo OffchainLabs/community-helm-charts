@@ -1,0 +1,15 @@
+{{- if .Values.headlessservice.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "das.fullname" . }}-headless
+  labels:
+    {{- include "das.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  clusterIPs:
+  - None
+  selector:
+    {{- include "das.selectorLabels" . | nindent 4 }}
+{{- end }}

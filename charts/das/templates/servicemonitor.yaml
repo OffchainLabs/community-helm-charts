@@ -1,0 +1,36 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "das.fullname" . }}
+  labels:
+    {{- include "das.labels" . | nindent 4 }}
+    {{- if .Values.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- end }}
+spec:
+  endpoints:
+    - port: {{ .Values.serviceMonitor.portName | default "http" }}
+      {{- if .Values.serviceMonitor.interval }}
+      interval: {{ .Values.serviceMonitor.interval }}
+      {{- end }}
+      {{- if .Values.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+      {{- if .Values.serviceMonitor.path }}
+      path: {{ .Values.serviceMonitor.path }}
+      {{- end }}
+      {{- if .Values.serviceMonitor.scheme }}
+      scheme: {{ .Values.serviceMonitor.scheme }}
+      {{- end }}
+      {{- if .Values.serviceMonitor.tlsConfig }}
+      tlsConfig: 
+        {{- toYaml .Values.serviceMonitor.tlsConfig | nindent 8 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "das.selectorLabels" . | nindent 6 }}
+{{- end }}

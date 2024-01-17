@@ -1,0 +1,157 @@
+{{- if .Values.validator.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "nitro.fullname" . }}-validator
+  labels:
+    {{- include "nitro.labels" . | nindent 4 }}
+    {{- if .Values.validator.statefulset.extraLabels }}
+    {{- with .Values.validator.statefulset.extraLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- end }}
+spec:
+  {{- if .Values.validator.statefulset.updateStrategy }}
+  {{- with .Values.validator.statefulset.updateStrategy }}
+  updateStrategy: 
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  podManagementPolicy: Parallel
+  replicas: {{ .Values.replicas }}
+  serviceName: {{ template "nitro.name" . }}-validator
+  selector:
+    matchLabels:
+      {{- include "nitro.selectorLabels" . | nindent 8 }}
+  template:
+    metadata:
+      {{- with .Values.validator.statefulset.podAnnotations }}
+      annotations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "nitro.selectorLabels" . | nindent 8 }}
+        {{- with .ValuesvalpodLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        function: arb-validator
+    spec:
+      serviceAccountName: {{ include "nitro.serviceAccountName" . }}
+      {{- with .Values.validator.statefulset.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.validator.statefulset.terminationGracePeriodSeconds | default 60 }}
+      {{- with .Values.validator.statefulset.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.validator.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.validator.statefulset.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range $constraint := . }}
+        - {{ toYaml $constraint | nindent 10 | trim }}
+          {{- if not $constraint.labelSelector }}
+          labelSelector:
+            matchLabels:
+              {{- include "nitro.selectorLabels" $ | nindent 14 }}
+              function: arb-validator
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.validator.statefulset.podSecurityContext | nindent 8 }}
+      initContainers:
+      {{- with .Values.validator.statefulset.extraInitContainers }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      containers:
+      - name: validator
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        command: ["/usr/local/bin/nitro-val"]
+        args:
+          - --conf.env-prefix=NITRO
+          {{- if .Values.validator.statefulset.useConfigmap }}
+          - --conf.file=/config/config.json
+          {{- end }}
+          {{- if .Values.validator.statefulset.extraArgs }}
+          {{- range .Values.validator.statefulset.extraArgs }}
+          - {{ . }}
+          {{- end }}
+          {{- end }}
+        ports:
+        {{- if .Values.validator.statefulset.auth.enabled }}
+        - name: auth
+          containerPort: {{ .Values.validator.statefulset.auth.port }}
+        {{- end }}
+        volumeMounts:
+          {{- if .Values.jwtSecret.enabled }}
+          - name: jwt-secret
+            mountPath: /secrets/jwtsecret
+            subPath: jwtSecret
+            readOnly: true
+          {{- end }}
+          {{- if .Values.validator.useConfigmap}}
+          - name: config-validator
+            mountPath: /config/
+          {{- end }}
+          {{- if .Values.validator.extraVolumeMounts }}
+          {{- toYaml .Values.validator.extraVolumeMounts | nindent 10}}
+          {{- end }}
+        {{- if .Values.validator.statefulset.livenessProbe.enabled }}
+        livenessProbe:
+          {{- if and .Values.validator.statefulset.livenessProbe.exec (kindIs "string" .Values.validator.statefulset.livenessProbe.exec.command) }}
+          {{- omit .Values.validator.statefulset.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
+          exec:
+            command:
+              {{- tpl .Values.validator.statefulset.livenessProbe.exec.command . | nindent 14 }}
+          {{- else }}
+          {{- omit .Values.validator.statefulset.livenessProbe "enabled" | toYaml | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.validator.statefulset.readinessProbe.enabled }}
+        readinessProbe:
+          {{- omit .Values.validator.statefulset.readinessProbe "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        {{- if .Values.validator.statefulset.startupProbe.enabled }}
+        startupProbe:
+          {{- omit .Values.validator.statefulset.startupProbe "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        {{- if .Values.validator.statefulset.extraEnv }}
+        env:
+        {{- with .Values.validator.statefulset.extraEnv }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- end }}
+        volumeMounts:
+        {{- if .Values.jwtSecret.enabled }}
+        - name: jwt-secret
+          mountPath: /secrets/jwtsecret
+          subPath: jwtSecret
+          readOnly: true
+        {{- end }}
+        {{- if .Values.validator.statefulset.useConfigmap }}
+        - name: config-validator
+          mountPath: /config/
+        {{- end }}
+        {{- if .Values.validator.statefulset.extraVolumeMounts }}
+        {{- toYaml .Values.validator.statefulset.extraVolumeMounts | nindent 8}}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.validator.statefulset.resources | nindent 10 }}
+      volumes:
+      {{- if .Values.jwtSecret.enabled }}
+      - name: jwt-secret
+        secret:
+          secretName: {{ include "nitro.fullname" . }}-jwt
+      {{- end }}
+      {{- if .Values.validator.statefulset.useConfigmap }}
+      - name: config-validator
+        configMap:
+          name: {{ include "nitro.fullname" . }}-validator
+      {{- end }}
+      {{- if .Values.validator.statefulset.extraVolumes}}
+      {{- toYaml .Values.validator.statefulset.extraVolumes | nindent 6 }}
+      {{- end }}
+{{- end }}

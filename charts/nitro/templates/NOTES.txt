@@ -1,0 +1,1 @@
+This chart is intended for use as a nitro node. There are a variety of options which should be set according to you particular use case. The documentation for running a nitro node can be found at https://docs.arbitrum.io/node-running/how-tos/running-a-full-node . The config options are set as YAML under the configmap.data section in values.yaml.

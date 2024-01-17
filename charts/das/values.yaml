@@ -1,0 +1,211 @@
+## @section DAS Deployment Options
+
+## @param replicaCount Number of replicas
+replicaCount: 1
+
+## @param image.repository Docker image repository
+## @param image.pullPolicy Docker image pull policy
+## @param image.tag Docker image tag ovverrides the chart appVersion
+image:
+  repository: offchainlabs/nitro-node
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+## @param imagePullSecrets Docker registry pull secret
+imagePullSecrets: []
+
+## @param nameOverride String to partially override das fullname
+nameOverride: ""
+
+## @param fullnameOverride String to fully override das fullname
+fullnameOverride: ""
+
+## @param diagnosticMode Enable diagnostics mode (sleep infinity)
+diagnosticMode: false
+
+## @param commandOverride Command override for the das container
+commandOverride: {}
+
+## @param livenessProbe Liveness probe configuration
+livenessProbe: {}
+
+## @param readinessProbe Readiness probe configuration
+readinessProbe: {}
+
+## @param startupProbe.enabled Enable built in startup probe
+## @param startupProbe.failureThreshold Number of failures before pod is considered unhealthy
+## @param startupProbe.periodSeconds Number of seconds between startup probes
+startupProbe:
+  enabled: true
+  failureThreshold: 2419200
+  periodSeconds: 1
+
+persistence:
+  ## @extra persistence.localdbstorage This will only be created if local db storage is enabled in the configmap
+  ## @param persistence.localdbstorage.size Size of the persistent volume claim
+  ## @param persistence.localdbstorage.storageClassName [string, nullable] Storage class of the persistent volume claim
+  localdbstorage:
+    size: 100Gi
+    storageClassName: null
+  ## @extra persistence.localfilestorage This will only be created if local file storage is enabled in the configmap
+  ## @param persistence.localfilestorage.size Size of the persistent volume claim
+  ## @param persistence.localfilestorage.storageClassName [string, nullable] Storage class of the persistent volume claim
+  localfilestorage:
+    size: 100Gi
+    storageClassName: null
+
+## @param serviceMonitor.enabled Enable service monitor CRD for prometheus operator
+## @param serviceMonitor.portName Name of the port to monitor
+## @param serviceMonitor.path Path to monitor
+## @param serviceMonitor.interval Interval to monitor
+serviceMonitor:
+  enabled: false
+  portName: metrics
+  path: /debug/metrics/prometheus
+  interval: 5s
+
+## @param perReplicaService.enabled Enable per replica service
+perReplicaService:
+  enabled: false
+
+## @param headlessservice.enabled Enable headless service
+headlessservice:
+  enabled: false
+
+## @param pdb.enabled Enable pod disruption budget
+## @param pdb.minAvailable Minimum number of available pods
+## @param pdb.maxUnavailable Maximum number of unavailable pods
+pdb:
+  enabled: false
+  minAvailable: ""
+  maxUnavailable: "1"
+
+## @param serviceAccount.create Create a service account
+## @param serviceAccount.annotations Annotations for the service account
+## @param serviceAccount.name Name of the service account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+## @param podAnnotations Annotations for the das pod
+podAnnotations: {}
+
+## @param podSecurityContext Security context for the das pod
+podSecurityContext: {}
+
+## @param securityContext Security context for the das container
+securityContext: {}
+
+## @param service.type Service type
+service:
+  type: ClusterIP
+
+## @param resources Resource requests and limits for the das container
+resources: {}
+
+## @param nodeSelector Node selector for the das pod
+nodeSelector: {}
+
+## @param tolerations Tolerations for the das pod
+tolerations: []
+
+## @param affinity Affinity for the das pod
+affinity: {}
+
+## @param dasecretName Name of the das bls secret that contains the bls key
+dasecretName: ""
+
+## @section DAS Config options
+
+configmap:
+  ## @param configmap.enabled Enable configmap
+  enabled: true
+
+  ## @extra configmap.data Data for the configmap. See Configuration Options for the full list of available options
+  data:
+    ## @param configmap.data.log-type Log type
+    log-type: "json"
+
+    ## @param configmap.data.log-level Log level
+    log-level: 3
+
+    ## @param configmap.data.enable-rest Enable rest api
+    enable-rest: true
+
+    ## @param configmap.data.rest-addr Rest api address
+    rest-addr: 0.0.0.0
+
+    ## @param configmap.data.rest-port Rest api port
+    rest-port: 9877
+
+    ## @param configmap.data.enable-rpc Enable rpc api
+    enable-rpc: true
+
+    ## @param configmap.data.rpc-addr rpc api address
+    rpc-port: 9876
+
+    ## @param configmap.data.rpc-port rpc api port
+    rpc-addr: 0.0.0.0
+
+    ## @param configmap.data.data-availability.parent-chain-node-url Parent chain node url
+    ## @param configmap.data.data-availability.sequencer-inbox-address Sequencer inbox address
+    data-availability:
+      parent-chain-node-url: ""
+      sequencer-inbox-address: ""
+
+      ## @param configmap.data.data-availability.local-db-storage.enable Enable local db storage
+      ## @param configmap.data.data-availability.local-db-storage.data-dir Data directory
+      ## @param configmap.data.data-availability.local-db-storage.discard-after-timeout Discard after timeout
+      local-db-storage:
+        enable: false
+        data-dir: ""
+        discard-after-timeout: ""
+
+      ## @param configmap.data.data-availability.local-file-storage.enable Enable local file storage
+      ## @param configmap.data.data-availability.local-file-storage.data-dir
+      local-file-storage:
+        enable: false
+        data-dir: ""
+
+      ## @param configmap.data.data-availability.s3-storage.enable Enable s3 storage
+      ## @param configmap.data.data-availability.s3-storage.access-key s3 access key
+      ## @param configmap.data.data-availability.s3-storage.bucket  s3 bucket
+      ## @param configmap.data.data-availability.s3-storage.discard-after-timeout discard after timeout
+      ## @param configmap.data.data-availability.s3-storage.object-prefix object prefix
+      ## @param configmap.data.data-availability.s3-storage.region region
+      ## @param configmap.data.data-availability.s3-storage.secret-key s3 secret key
+      s3-storage:
+        enable: false
+        access-key: ""
+        bucket: ""
+        discard-after-timeout: ""
+        object-prefix: ""
+        region: ""
+        secret-key: ""
+
+      ## @param configmap.data.data-availability.ipfs-storage.enable Enable ipfs storage
+      ## @param configmap.data.data-availability.ipfs-storage.profiles ipfs profiles
+      ## @param configmap.data.data-availability.ipfs-storage.read-timeout ipfs read timeout
+      ipfs-storage:
+        enable: false
+        profiles: ""
+        read-timeout: 1m0s
+
+      ## @param configmap.data.data-availability.local-cache.enable Enable local cache
+      ## @param configmap.data.data-availability.local-cache.expiration local cache expiration
+      local-cache:
+        enable: false
+        expiration: 1h0m0s
+
+    ## @param configmap.data.metrics Enable metrics
+    metrics: false
+
+    ## @param configmap.data.metrics-server.addr Metrics server address
+    ## @param configmap.data.metrics-server.port Metrics server port
+    ## @param configmap.data.metrics-server.update-interval Metrics server update interval
+    metrics-server:
+      addr: "0.0.0.0"
+      port: 6070
+      update-interval: "5s"

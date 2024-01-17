@@ -1,0 +1,33 @@
+{{- if .Values.validator.enabled }}
+{{- $fullName := include "nitro.fullname" . }}
+{{- $labels := include "nitro.labels" . }}
+{{- $selectorLabels := include "nitro.selectorLabels" .}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}-validator
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  {{- if $.Values.validator.statefulset.auth.enabled }}
+    - port: {{ $.Values.validator.statefulset.auth.port }}
+      targetPort: {{ $.Values.validator.statefulset.auth.port }}
+      protocol: TCP
+      name: auth
+  {{- end }}
+  {{- if $.Values.validator.statefulset.metrics.enabled }}
+    - port: {{ $.Values.validator.statefulset.metrics.port }}
+      targetPort: {{ $.Values.validator.statefulset.metrics.port }}
+      protocol: TCP
+      name: metrics
+  {{- end }}
+  {{- with $.Values.validator.statefulset.extraServicePorts }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    {{- $selectorLabels | nindent 4 }}
+    function: arb-validator
+{{- end }}

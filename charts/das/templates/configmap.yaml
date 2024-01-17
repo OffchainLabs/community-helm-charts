@@ -1,0 +1,13 @@
+{{- if  .Values.configmap.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "das.fullname" . }}
+  labels:
+    {{- include "das.labels" . | nindent 4 }}
+data:
+  config.json: |
+    {{- if .Values.configmap.enabled }}
+    {{- .Values.configmap.data | toPrettyJson | nindent 4 }}
+    {{- end }}
+{{- end }}

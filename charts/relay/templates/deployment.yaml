@@ -1,0 +1,140 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "relay.fullname" . }}
+  labels:
+    {{- include "relay.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "relay.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "relay.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "relay.serviceAccountName" . }}
+      securityContext:
+        {{- with .Values.podSecurityContext }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+        fsGroup: 1000
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.diagnosticMode }}
+          command: ["sleep"]
+          args: ["infinity"]
+          {{- else if .Values.commandOverride.enabled }}
+          {{- with .Values.commandOverride.command }}
+          command: {{- toYaml . | nindent 8}}
+          {{- end }}
+          {{- with .Values.commandOverride.args }}
+          args: {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- else }}
+          command: [/usr/local/bin/relay]
+          args:
+            {{- if .Values.configmap.enabled }}
+            - --conf.file=/config/config.json
+            {{- end }}
+            {{- if .Values.configmap.data.metrics }}
+            - --metrics
+            {{- end }}
+            {{- range $key, $value := .Values.customArgs }}
+            - --{{ $key }}={{ $value | quote }}
+            {{- end }}
+          ports:
+            {{- if and .Values.configmap.data.node .Values.configmap.data.node.feed .Values.configmap.data.node.feed.output .Values.configmap.data.node.feed.output.port }}
+            - name: feed
+              containerPort: {{ .Values.configmap.data.node.feed.output.port }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.configmap.data.metrics }}
+            - name: metrics
+              containerPort: {{ index .Values "configmap" "data" "metrics-server" "port" }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.configmap.data.pprof }}
+            - name: pprof
+              containerPort: {{ index .Values "configmap" "data" "pprof-cfg" "port" }}
+              protocol: TCP
+            {{- end }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            {{- if and .Values.livenessProbe.exec (kindIs "string" .Values.livenessProbe.exec.command) }}
+            {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
+            exec:
+              command:
+                {{- tpl .Values.livenessProbe.exec.command . | nindent 14 }}
+            {{- else }}
+            {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.startupProbe.enabled }}
+          startupProbe:
+            {{- omit .Values.startupProbe "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          env:
+          {{- with .Values.extraEnv }}
+          {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- end }}
+          volumeMounts:
+          {{- if .Values.configmap.enabled }}
+          - name: config
+            mountPath: /config/
+          {{- end }}
+          {{- if .Values.extraVolumeMounts }}
+          {{- toYaml .Values.extraVolumeMounts | nindent 8}}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+      {{- if .Values.configmap.enabled }}
+      - name: config
+        configMap:
+          name: {{ include "relay.fullname" . }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range $constraint := . }}
+      - {{ toYaml $constraint | nindent 8 | trim }}
+        {{- if not $constraint.labelSelector }}
+        labelSelector:
+          matchLabels:
+            {{- include "relay.selectorLabels" $ | nindent 12 }}
+        {{- end }}
+        {{- end }}
+      {{- end }}

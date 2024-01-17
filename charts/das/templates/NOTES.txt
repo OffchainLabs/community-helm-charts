@@ -1,0 +1,10 @@
+This chart is intended for use as a DAS or DAS mirror. There are a variety of options which should be set according to you particular use case. The documentation for running a DAS can be found at https://docs.arbitrum.io/node-running/how-tos/running-a-daserver . The config options are set as YAML under the configmap.data section in values.yaml.
+
+The following options are required:
+    sequencer-inbox-address
+    parent-chain-node-url
+
+    And at least one storage type must be enabled.
+
+If you are running a DAS as part of the DAC the bls key can be stored as a kubernetes secret. The secret name should be set using dasecretName in values.yaml. The secret should contain the top level yaml keys das_bls, and das_bls.pub. The secret will be loaded to the location specified in the key-dir configmap value.
+
