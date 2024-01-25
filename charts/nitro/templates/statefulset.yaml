@@ -42,6 +42,7 @@ spec:
         {{- if .Values.initContainers }}
         {{- toYaml .Values.initContainers | nindent 8 }}
         {{- end }}
+        {{- include "nitro.initContainers" . | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

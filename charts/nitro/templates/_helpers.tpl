@@ -81,3 +81,6 @@ nitro args
 {{- $customArgs | compact | toStrings | toYaml -}}
 
 {{- end -}}
+
+{{- define "nitro.initContainers" -}}
+{{- end }}
