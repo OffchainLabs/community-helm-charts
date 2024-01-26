@@ -61,7 +61,7 @@
 | Name                                                       | Description                                            | Value     |
 | ---------------------------------------------------------- | ------------------------------------------------------ | --------- |
 | `configmap.enabled`                                        | Enable configmap                                       | `true`    |
-| `confimap.data`                                            | See Configuration Options for the full list of options |           |
+| `configmap.data`                                            | See Configuration Options for the full list of options |           |
 | `configmap.data.chain.id`                                  | Chain id                                               | `42161`   |
 | `configmap.data.log-type`                                  | Log type                                               | `json`    |
 | `configmap.data.metrics`                                   | Enable metrics                                         | `false`   |

@@ -124,7 +124,7 @@ additionalVolumeClaims: []
 configmap:
   ## @param configmap.enabled Enable a configmap for the nitro container
   enabled: true
-  ## @extra confimap.data See Configuration Options for the full list of options
+  ## @extra configmap.data See Configuration Options for the full list of options
   data:
     ## @param configmap.data.http.addr Address to bind http service to
     ## @param configmap.data.http.api List of apis to enable

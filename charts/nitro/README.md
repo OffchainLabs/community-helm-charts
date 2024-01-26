@@ -48,7 +48,7 @@
 | `affinity`                                   | Affinity for the pod                                         | `{}`                                                        |
 | `additionalVolumeClaims`                     | Additional volume claims for the pod                         | `[]`                                                        |
 | `configmap.enabled`                          | Enable a configmap for the nitro container                   | `true`                                                      |
-| `confimap.data`                              | See Configuration Options for the full list of options       |                                                             |
+| `configmap.data`                              | See Configuration Options for the full list of options       |                                                             |
 | `configmap.data.http.addr`                   | Address to bind http service to                              | `0.0.0.0`                                                   |
 | `configmap.data.http.api`                    | List of apis to enable                                       | `["arb","personal","eth","net","web3","txpool","arbdebug"]` |
 | `configmap.data.http.corsdomain`             | CORS domain                                                  | `*`                                                         |
