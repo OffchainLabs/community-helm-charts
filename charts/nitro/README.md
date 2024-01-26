@@ -120,6 +120,7 @@ Option | Description | Default
 `conf.dump` | print out currently active configuration file | None
 `conf.env-prefix` | string                                                                          environment variables with given prefix will be loaded as configuration values | None
 `conf.file` | strings                                                                               name of configuration file | None
+`conf.reload-interval` | duration                                                                   how often to reload configuration (0=disable periodic reloading) | None
 `conf.s3.access-key` | string                                                                       S3 access key | None
 `conf.s3.bucket` | string                                                                           S3 bucket | None
 `conf.s3.object-key` | string                                                                       S3 object key | None
@@ -130,11 +131,14 @@ Option | Description | Default
 `execution.caching.block-age` | duration                                                            minimum age of recent blocks to keep in memory | `30m0s`
 `execution.caching.block-count` | uint                                                              minimum number of recent blocks to keep in memory | `128`
 `execution.caching.database-cache` | int                                                            amount of memory in megabytes to cache database contents with | `2048`
+`execution.caching.max-amount-of-gas-to-skip-state-saving` | uint                                   maximum amount of gas in blocks to skip saving state to Persistent storage (archive node only) -- warning: this option seems to cause issues | None
+`execution.caching.max-number-of-blocks-to-skip-state-saving` | uint32                              maximum number of blocks to skip state saving to persistent storage (archive node only) -- warning: this option seems to cause issues | None
 `execution.caching.snapshot-cache` | int                                                            amount of memory in megabytes to cache state snapshots with | `400`
 `execution.caching.snapshot-restore-gas-limit` | uint                                               maximum gas rolled back to recover snapshot | `300000000000`
 `execution.caching.trie-clean-cache` | int                                                          amount of memory in megabytes to cache unchanged state trie nodes with | `600`
 `execution.caching.trie-dirty-cache` | int                                                          amount of memory in megabytes to cache state diffs against disk with (larger cache lowers database growth) | `1024`
 `execution.caching.trie-time-limit` | duration                                                      maximum block processing time before trie is written to hard-disk | `1h0m0s`
+`execution.dangerous.reorg-to-block` | int                                                          DANGEROUS! forces a reorg to an old block height. To be used for testing only. -1 to disable | `-1`
 `execution.forwarder.connection-timeout` | duration                                                 total time to wait before cancelling connection | `30s`
 `execution.forwarder.idle-connection-timeout` | duration                                            time until idle connections are closed | `15s`
 `execution.forwarder.max-idle-connections` | int                                                    maximum number of idle connections to keep open | `1`
@@ -142,12 +146,14 @@ Option | Description | Default
 `execution.forwarder.retry-interval` | duration                                                     minimal time between update retries | `100ms`
 `execution.forwarder.update-interval` | duration                                                    forwarding target update interval | `1s`
 `execution.forwarding-target` | string                                                              transaction forwarding target URL, or "null" to disable forwarding (iff not sequencer) | None
+`execution.parent-chain-reader.dangerous.wait-for-tx-approval-safe-poll` | duration                 Dangerous! only meant to be used by system tests | None
 `execution.parent-chain-reader.enable` | enable reader connection | `true`
 `execution.parent-chain-reader.old-header-timeout` | duration                                       warns if the latest l1 block is at least this old | `5m0s`
 `execution.parent-chain-reader.poll-interval` | duration                                            interval when polling endpoint | `15s`
 `execution.parent-chain-reader.poll-only` | do not attempt to subscribe to header events | None
 `execution.parent-chain-reader.subscribe-err-interval` | duration                                   interval for subscribe error | `5m0s`
 `execution.parent-chain-reader.tx-timeout` | duration                                               timeout when waiting for a transaction | `5m0s`
+`execution.parent-chain-reader.use-finality-data` | use l1 data about finalized/safe blocks | `true`
 `execution.recording-database.trie-clean-cache` | int                                               like trie-clean-cache for the separate, recording database (used for validation) | `16`
 `execution.recording-database.trie-dirty-cache` | int                                               like trie-dirty-cache for the separate, recording database (used for validation) | `1024`
 `execution.rpc.allow-method` | strings                                                              list of whitelisted rpc methods | None
@@ -155,10 +161,16 @@ Option | Description | Default
 `execution.rpc.arbdebug.timeout-queue-bound` | uint                                                 bounds the length of timeout queues arbdebug calls may return | `512`
 `execution.rpc.bloom-bits-blocks` | uint                                                            number of blocks a single bloom bit section vector holds | `16384`
 `execution.rpc.bloom-confirms` | uint                                                               number of confirmation blocks before a bloom section is considered final | `256`
+`execution.rpc.classic-redirect` | string                                                           url to redirect classic requests, use "error:[CODE:]MESSAGE" to return specified error instead of redirecting | None
+`execution.rpc.classic-redirect-timeout` | duration                                                 timeout for forwarded classic requests, where 0 = no timeout | None
+`execution.rpc.evm-timeout` | duration                                                              timeout used for eth_call (0=infinite) | `5s`
 `execution.rpc.feehistory-max-block-count` | uint                                                   max number of blocks a fee history request may cover | `1024`
 `execution.rpc.filter-log-cache-size` | int                                                         log filter system maximum number of cached blocks | `32`
 `execution.rpc.filter-timeout` | duration                                                           log filter system maximum time filters stay active | `5m0s`
+`execution.rpc.gas-cap` | uint                                                                      cap on computation gas that can be used in eth_call/estimateGas (0=infinite) | `50000000`
+`execution.rpc.max-recreate-state-depth` | int                                                      maximum depth for recreating state, measured in l2 gas (0=don't recreate state, -1=infinite, -2=use default value for archive or non-archive node (whichever is configured)) | `-2`
 `execution.rpc.tx-allow-unprotected` | allow transactions that aren't EIP-155 replay protected to be submitted over the RPC | `true`
+`execution.rpc.tx-fee-cap` | float                                                                  cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
 `execution.secondary-forwarding-target` | strings                                                   secondary transaction forwarding target URL | None
 `execution.sequencer.enable` | act and post to l1 as sequencer | None
 `execution.sequencer.forwarder.connection-timeout` | duration                                       total time to wait before cancelling connection | `30s`
@@ -177,20 +189,31 @@ Option | Description | Default
 `execution.sequencer.queue-size` | int                                                              size of the pending tx queue | `1024`
 `execution.sequencer.queue-timeout` | duration                                                      maximum amount of time transaction can wait in queue | `12s`
 `execution.sequencer.sender-whitelist` | string                                                     comma separated whitelist of authorized senders (if empty, everyone is allowed) | None
+`execution.tx-lookup-limit` | uint                                                                  retain the ability to lookup transactions by hash for the past N blocks (0 = all blocks) | `126230400`
+`execution.tx-pre-checker.required-state-age` | int                                                 how long ago should the storage conditions from eth_SendRawTransactionConditional be true, 0 = don't check old state | `2`
+`execution.tx-pre-checker.required-state-max-blocks` | uint                                         maximum number of blocks to look back while looking for the <required-state-age> seconds old state, 0 = don't limit the search | `4`
+`execution.tx-pre-checker.strictness` | uint                                                        how strict to be when checking txs before forwarding them. 0 = accept anything, 10 = should never reject anything that'd succeed, 20 = likely won't reject anything that'd succeed, 30 = full validation which may reject txs that would succeed | None
 `file-logging.buf-size` | int                                                                       size of intermediate log records buffer | `512`
 `file-logging.compress` | enable compression of old log files | `true`
 `file-logging.enable` | enable logging to file | `true`
 `file-logging.file` | string                                                                        path to log file | `nitro.log`
+`file-logging.local-time` | if true: local time will be used in old log filename timestamps | None
+`file-logging.max-age` | int                                                                        maximum number of days to retain old log files based on the timestamp encoded in their filename (0 = no limit) | None
+`file-logging.max-backups` | int                                                                    maximum number of old log files to retain (0 = no limit) | `20`
+`file-logging.max-size` | int                                                                       log file size in Mb that will trigger log file rotation (0 = trigger disabled) | `5`
 `graphql.corsdomain` | strings                                                                      Comma separated list of domains from which to accept cross origin requests (browser enforced) | None
 `graphql.enable` | Enable graphql endpoint on the rpc endpoint | None
+`graphql.vhosts` | strings                                                                          Comma separated list of virtual hostnames from which to accept requests (server enforced). Accepts '*' wildcard | `[localhost]`
 `http.addr` | string                                                                                HTTP-RPC server listening interface | None
 `http.api` | strings                                                                                APIs offered over the HTTP-RPC interface | `[net,web3,eth,arb]`
 `http.corsdomain` | strings                                                                         Comma separated list of domains from which to accept cross origin requests (browser enforced) | None
 `http.port` | int                                                                                   HTTP-RPC server listening port | `8547`
+`http.rpcprefix` | string                                                                           HTTP path path prefix on which JSON-RPC is served. Use '/' to serve on all paths | None
 `http.server-timeouts.idle-timeout` | duration                                                      the maximum amount of time to wait for the next request when keep-alives are enabled (http.Server.IdleTimeout) | `2m0s`
 `http.server-timeouts.read-header-timeout` | duration                                               the amount of time allowed to read the request headers (http.Server.ReadHeaderTimeout) | `30s`
 `http.server-timeouts.read-timeout` | duration                                                      the maximum duration for reading the entire request (http.Server.ReadTimeout) | `30s`
 `http.server-timeouts.write-timeout` | duration                                                     the maximum duration before timing out writes of the response (http.Server.WriteTimeout) | `30s`
+`http.vhosts` | strings                                                                             Comma separated list of virtual hostnames from which to accept requests (server enforced). Accepts '*' wildcard | `[localhost]`
 `init.accounts-per-sync` | uint                                                                     during init - sync database every X accounts. Lower value for low-memory systems. 0 disables. | `100000`
 `init.dev-init` | init with dev data (1 account with balance) instead of file import | None
 `init.dev-init-address` | string                                                                    Address of dev-account. Leave empty to use the dev-wallet. | None
@@ -198,8 +221,11 @@ Option | Description | Default
 `init.download-path` | string                                                                       path to save temp downloaded file | `/tmp/`
 `init.download-poll` | duration                                                                     how long to wait between polling attempts | `1m0s`
 `init.empty` | init with empty state | None
+`init.force` | if true: in case database exists init code will be reexecuted and genesis block compared to database | None
 `init.import-file` | string                                                                         path for json data to import | None
+`init.prune` | string                                                                               pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                      the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
+`init.reset-to-message` | int                                                                       forces a reset to an old message height. Also set max-reorg-resequence-depth=0 to force re-reading messages | `-1`
 `init.then-quit` | quit after init is done | None
 `init.url` | string                                                                                 url to download initializtion data - will poll if download fails | None
 `ipc.path` | string                                                                                 Requested location to place the IPC endpoint. An empty path disables IPC. | None
@@ -222,7 +248,9 @@ Option | Description | Default
 `node.batch-poster.data-poster.external-signer.root-ca` | string                                    external signer root CA | None
 `node.batch-poster.data-poster.external-signer.url` | string                                        external signer url | None
 `node.batch-poster.data-poster.legacy-storage-encoding` | encodes items in a legacy way (as it was before dropping generics) | None
-`node.batch-poster.data-poster.max-fee-cap-formula` | string                                        mathematical formula to calculate maximum fee cap gwei the result of which would be float64. | None
+`node.batch-poster.data-poster.max-fee-cap-formula` | string                                        mathematical formula to calculate maximum fee cap gwei the result of which would be float64. This expression is expected to be evaluated please refer https://github.com/Knetic/govaluate/blob/master/MANUAL.md to find all available mathematical operators. Currently available variables to construct the formula are BacklogOfBatches, UrgencyGWei, ElapsedTime, ElapsedTimeBase, ElapsedTimeImportance, and TargetPriceGWei (default "((BacklogOfBatches * UrgencyGWei) ** 2) + ((ElapsedTime/ElapsedTimeBase) ** 2) * ElapsedTimeImportance + TargetPriceGWei") | None
+`node.batch-poster.data-poster.max-mempool-transactions` | uint                                     the maximum number of transactions to have queued in the mempool at once (0 = unlimited) | `20`
+`node.batch-poster.data-poster.max-queued-transactions` | int                                       the maximum number of unconfirmed transactions to track at once (0 = unlimited) | None
 `node.batch-poster.data-poster.max-tip-cap-gwei` | float                                            the maximum tip cap to post transactions at | `5`
 `node.batch-poster.data-poster.min-fee-cap-gwei` | float                                            the minimum fee cap to post transactions at | None
 `node.batch-poster.data-poster.min-tip-cap-gwei` | float                                            the minimum tip cap to post transactions at | `0.05`
@@ -241,6 +269,7 @@ Option | Description | Default
 `node.batch-poster.error-delay` | duration                                                          how long to delay after error posting batch | `10s`
 `node.batch-poster.extra-batch-gas` | uint                                                          use this much more gas than estimation says is necessary to post batches | `50000`
 `node.batch-poster.gas-refunder-address` | string                                                   The gas refunder contract address (optional) | None
+`node.batch-poster.l1-block-bound` | string                                                         only post messages to batches when they're within the max future block/timestamp as of this L1 block tag ("safe", "finalized", "latest", or "ignore" to ignore this check) | None
 `node.batch-poster.l1-block-bound-bypass` | duration                                                post batches even if not within the layer 1 future bounds if we're within this margin of the max delay | `1h0m0s`
 `node.batch-poster.max-delay` | duration                                                            maximum batch posting delay | `1h0m0s`
 `node.batch-poster.max-size` | int                                                                  maximum batch size | `100000`
@@ -258,6 +287,7 @@ Option | Description | Default
 `node.batch-poster.redis-lock.refresh-duration` | duration                                          how long between consecutive calls to redis | `10s`
 `node.batch-poster.redis-url` | string                                                              if non-empty, the Redis URL to store queued transactions in | None
 `node.batch-poster.wait-for-max-delay` | wait for the max batch delay, even if the batch is full | None
+`node.block-validator.current-module-root` | string                                                 current wasm module root ('current' read from chain, 'latest' from machines/latest dir, or provide hash) | `current`
 `node.block-validator.dangerous.reset-block-validation` | resets block-by-block validation, starting again at genesis | None
 `node.block-validator.enable` | enable block-by-block validation | None
 `node.block-validator.failure-is-fatal` | failing a validation is treated as a fatal error | `true`
@@ -273,24 +303,41 @@ Option | Description | Default
 `node.block-validator.validation-server.retry-errors` | string                                      Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
 `node.block-validator.validation-server.timeout` | duration                                         per-response timeout (0-disabled) | None
 `node.block-validator.validation-server.url` | string                                               url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
+`node.dangerous.no-l1-listener` | DANGEROUS! disables listening to L1. To be used in test nodes only | None
+`node.dangerous.no-sequencer-coordinator` | DANGEROUS! allows sequencing without sequencer-coordinator | None
 `node.data-availability.enable` | enable Anytrust Data Availability mode | None
+`node.data-availability.ipfs-storage.enable` | enable storage/retrieval of sequencer batch data from IPFS | None
+`node.data-availability.ipfs-storage.peers` | strings                                               list of IPFS peers to connect to, eg /ip4/1.2.3.4/tcp/12345/p2p/abc...xyz | None
 `node.data-availability.ipfs-storage.pin-after-get` | pin sequencer batch data in IPFS | `true`
 `node.data-availability.ipfs-storage.pin-percentage` | float                                        percent of sequencer batch data to pin, as a floating point number in the range 0.0 to 100.0 | `100`
+`node.data-availability.ipfs-storage.profiles` | string                                             comma separated list of IPFS profiles to use, see https://docs.ipfs.tech/how-to/default-profile | None
 `node.data-availability.ipfs-storage.read-timeout` | duration                                       timeout for IPFS reads, since by default it will wait forever. Treat timeout as not found | `1m0s`
 `node.data-availability.ipfs-storage.repo-dir` | string                                             directory to use to store the local IPFS repo | None
 `node.data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
+`node.data-availability.parent-chain-connection-attempts` | int                                     parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
+`node.data-availability.parent-chain-node-url` | string                                             URL for parent chain node, only used in standalone daserver; when running as part of a node that node's L1 configuration is used | None
 `node.data-availability.request-timeout` | duration                                                 Data Availability Service timeout duration for Store requests | `5s`
+`node.data-availability.rest-aggregator.enable` | enable retrieval of sequencer batch data from a list of remote REST endpoints; if other DAS storage types are enabled, this mode is used as a fallback | None
+`node.data-availability.rest-aggregator.max-per-endpoint-stats` | int                               number of stats entries (latency and success rate) to keep for each REST endpoint; controls whether strategy is faster or slower to respond to changing conditions | `20`
+`node.data-availability.rest-aggregator.online-url-list` | string                                   a URL to a list of URLs of REST das endpoints that is checked at startup; additive with the url option | None
 `node.data-availability.rest-aggregator.online-url-list-fetch-interval` | duration                  time interval to periodically fetch url list from online-url-list | `1h0m0s`
 `node.data-availability.rest-aggregator.simple-explore-exploit-strategy.exploit-iterations` | int   number of consecutive GetByHash calls to the aggregator where each call will cause it to select from REST endpoints in order of best latency and success rate, before switching to explore mode | `1000`
 `node.data-availability.rest-aggregator.simple-explore-exploit-strategy.explore-iterations` | int   number of consecutive GetByHash calls to the aggregator where each call will cause it to randomly select from REST endpoints until one returns successfully, before switching to exploit mode | `20`
+`node.data-availability.rest-aggregator.strategy` | string                                          strategy to use to determine order and parallelism of calling REST endpoint URLs; valid options are 'simple-explore-exploit' | `simple-explore-exploit`
 `node.data-availability.rest-aggregator.strategy-update-interval` | duration                        how frequently to update the strategy with endpoint latency and error rate data | `10s`
 `node.data-availability.rest-aggregator.sync-to-storage.check-already-exists` | check if the data already exists in this DAS's storage. Must be disabled for fast sync with an IPFS backend | `true`
 `node.data-availability.rest-aggregator.sync-to-storage.delay-on-error` | duration                  time to wait if encountered an error before retrying | `1s`
+`node.data-availability.rest-aggregator.sync-to-storage.eager` | eagerly sync batch data to this DAS's storage from the rest endpoints, using L1 as the index of batch data hashes; otherwise only sync lazily | None
 `node.data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block` | uint             when eagerly syncing, start indexing forward from this L1 block. Only used if there is no sync state | None
+`node.data-availability.rest-aggregator.sync-to-storage.ignore-write-errors` | log only on failures to write when syncing; otherwise treat it as an error | `true`
 `node.data-availability.rest-aggregator.sync-to-storage.parent-chain-blocks-per-read` | uint        when eagerly syncing, max l1 blocks to read per poll | `100`
 `node.data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                period to retain synced data (defaults to forever) | `2562047h47m16.854775807s`
 `node.data-availability.rest-aggregator.sync-to-storage.state-dir` | string                         directory to store the sync state in, ie the block number currently synced up to, so that we don't sync from scratch each time | None
+`node.data-availability.rest-aggregator.urls` | strings                                             list of URLs including 'http://' or 'https://' prefixes and port numbers to REST DAS endpoints; additive with the online-url-list option | None
+`node.data-availability.rest-aggregator.wait-before-try-next` | duration                            time to wait until trying the next set of REST endpoints while waiting for a response; the next set of REST endpoints is determined by the strategy selected | `2s`
+`node.data-availability.rpc-aggregator.assumed-honest` | int                                        Number of assumed honest backends (H). If there are N backends, K=N+1-H valid responses are required to consider an Store request to be successful. | None
 `node.data-availability.rpc-aggregator.backends` | string                                           JSON RPC backend configuration | None
+`node.data-availability.rpc-aggregator.enable` | enable storage/retrieval of sequencer batch data from a list of RPC endpoints; this should only be used by the batch poster and not in combination with other DAS storage types | None
 `node.data-availability.sequencer-inbox-address` | string                                           parent chain address of SequencerInbox contract | None
 `node.delayed-sequencer.enable` | enable delayed sequencer | None
 `node.delayed-sequencer.finalize-distance` | int                                                    how many blocks in the past L1 block is considered final (ignored when using Merge finality) | `20`
@@ -312,6 +359,9 @@ Option | Description | Default
 `node.feed.output.client-delay` | duration                                                          delay the first messages sent to each client by this amount | None
 `node.feed.output.client-timeout` | duration                                                        duration to wait before timing out connections to client | `15s`
 `node.feed.output.connection-limits.enable` | enable broadcaster per-client connection limiting | None
+`node.feed.output.connection-limits.per-ip-limit` | int                                             limit clients, as identified by IPv4/v6 address, to this many connections to this relay | `5`
+`node.feed.output.connection-limits.per-ipv6-cidr-48-limit` | int                                   limit ipv6 clients, as identified by IPv6 address masked with /48, to this many connections to this relay | `20`
+`node.feed.output.connection-limits.per-ipv6-cidr-64-limit` | int                                   limit ipv6 clients, as identified by IPv6 address masked with /64, to this many connections to this relay | `10`
 `node.feed.output.connection-limits.reconnect-cooldown-period` | duration                           time to wait after a relay client disconnects before the disconnect is registered with respect to the limit for this client | None
 `node.feed.output.disable-signing` | don't sign feed messages | `true`
 `node.feed.output.enable` | enable broadcaster | None
@@ -344,15 +394,18 @@ Option | Description | Default
 `node.maintenance.lock.lockout-duration` | duration                                                 how long lock is held | `1m0s`
 `node.maintenance.lock.my-id` | string                                                              this node's id prefix when acquiring the lock (optional) | None
 `node.maintenance.lock.refresh-duration` | duration                                                 how long between consecutive calls to redis | `10s`
+`node.maintenance.time-of-day` | string                                                             UTC 24-hour time of day to run maintenance (currently only db compaction) at (e.g. 15:00) | None
 `node.message-pruner.enable` | enable message pruning | `true`
 `node.message-pruner.min-batches-left` | uint                                                       min number of batches not pruned | `2`
 `node.message-pruner.prune-interval` | duration                                                     interval for running message pruner | `1m0s`
+`node.parent-chain-reader.dangerous.wait-for-tx-approval-safe-poll` | duration                      Dangerous! only meant to be used by system tests | None
 `node.parent-chain-reader.enable` | enable reader connection | `true`
 `node.parent-chain-reader.old-header-timeout` | duration                                            warns if the latest l1 block is at least this old | `5m0s`
 `node.parent-chain-reader.poll-interval` | duration                                                 interval when polling endpoint | `15s`
 `node.parent-chain-reader.poll-only` | do not attempt to subscribe to header events | None
 `node.parent-chain-reader.subscribe-err-interval` | duration                                        interval for subscribe error | `5m0s`
 `node.parent-chain-reader.tx-timeout` | duration                                                    timeout when waiting for a transaction | `5m0s`
+`node.parent-chain-reader.use-finality-data` | use l1 data about finalized/safe blocks | `true`
 `node.seq-coordinator.chosen-healthcheck-addr` | string                                             if non-empty, launch an HTTP service binding to this address that returns status code 200 when chosen and 503 otherwise | None
 `node.seq-coordinator.enable` | enable sequence coordinator | None
 `node.seq-coordinator.handoff-timeout` | duration                                                   the maximum amount of time to spend waiting for another sequencer to accept the lockout when handing it off on shutdown or db compaction | `30s`
@@ -377,6 +430,8 @@ Option | Description | Default
 `node.sequencer` | enable sequencer | None
 `node.staker.confirmation-blocks` | int                                                             confirmation blocks | `12`
 `node.staker.contract-wallet-address` | string                                                      validator smart contract wallet public address | None
+`node.staker.dangerous.ignore-rollup-wasm-module-root` | DANGEROUS! make assertions even when the wasm module root is wrong | None
+`node.staker.dangerous.without-block-validator` | DANGEROUS! allows running an L1 validator without a block validator | None
 `node.staker.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
 `node.staker.data-poster.dangerous.clear-dbstorage` | clear database storage | None
 `node.staker.data-poster.elapsed-time-base` | duration                                              unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
@@ -388,7 +443,9 @@ Option | Description | Default
 `node.staker.data-poster.external-signer.root-ca` | string                                          external signer root CA | None
 `node.staker.data-poster.external-signer.url` | string                                              external signer url | None
 `node.staker.data-poster.legacy-storage-encoding` | encodes items in a legacy way (as it was before dropping generics) | None
-`node.staker.data-poster.max-fee-cap-formula` | string                                              mathematical formula to calculate maximum fee cap gwei the result of which would be float64. | None
+`node.staker.data-poster.max-fee-cap-formula` | string                                              mathematical formula to calculate maximum fee cap gwei the result of which would be float64. This expression is expected to be evaluated please refer https://github.com/Knetic/govaluate/blob/master/MANUAL.md to find all available mathematical operators. Currently available variables to construct the formula are BacklogOfBatches, UrgencyGWei, ElapsedTime, ElapsedTimeBase, ElapsedTimeImportance, and TargetPriceGWei (default "((BacklogOfBatches * UrgencyGWei) ** 2) + ((ElapsedTime/ElapsedTimeBase) ** 2) * ElapsedTimeImportance + TargetPriceGWei") | None
+`node.staker.data-poster.max-mempool-transactions` | uint                                           the maximum number of transactions to have queued in the mempool at once (0 = unlimited) | `1`
+`node.staker.data-poster.max-queued-transactions` | int                                             the maximum number of unconfirmed transactions to track at once (0 = unlimited) | None
 `node.staker.data-poster.max-tip-cap-gwei` | float                                                  the maximum tip cap to post transactions at | `5`
 `node.staker.data-poster.min-fee-cap-gwei` | float                                                  the minimum fee cap to post transactions at | None
 `node.staker.data-poster.min-tip-cap-gwei` | float                                                  the minimum tip cap to post transactions at | `0.05`
@@ -425,6 +482,7 @@ Option | Description | Default
 `node.sync-monitor.coordinator-msg-lag` | uint                                                      allowed lag between local and remote messages | `15`
 `node.transaction-streamer.execute-message-loop-delay` | duration                                   delay when polling calls to execute messages | `100ms`
 `node.transaction-streamer.max-broadcaster-queue-size` | int                                        maximum cache of pending broadcaster messages | `50000`
+`node.transaction-streamer.max-reorg-resequence-depth` | int                                        maximum number of messages to attempt to resequence on reorg (0 = never resequence, -1 = always resequence) | `1024`
 `parent-chain.connection.arg-log-limit` | uint                                                      limit size of arguments in log entries | `2048`
 `parent-chain.connection.connection-wait` | duration                                                how long to wait for initial connection | `1m0s`
 `parent-chain.connection.jwtsecret` | string                                                        path to file with jwtsecret for validation - ignored if url is self or self-auth | None
@@ -468,5 +526,6 @@ Option | Description | Default
 `ws.expose-all` | expose private api via websocket | None
 `ws.origins` | strings                                                                              Origins from which to accept websockets requests | None
 `ws.port` | int                                                                                     WS-RPC server listening port | `8548`
+`ws.rpcprefix` | string                                                                             WS path path prefix on which JSON-RPC is served. Use '/' to serve on all paths | None
 
 ## Notes
