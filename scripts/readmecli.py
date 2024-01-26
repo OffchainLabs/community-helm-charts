@@ -63,20 +63,55 @@ def run_docker_help(image_repository, image_tag, entry_command):
 
 
 def format_cli_help_to_markdown(cli_output):
-    cli_regex = re.compile(
-        r'(--[\w.-]+)\s+([\w\s().,\'"-]+?)(\(default\s+["\']?(.+?)["\']?\))?$', re.MULTILINE)
+    # Split the output into lines
+    lines = cli_output.split('\n')
 
+    # Prepare to collect command configurations
     configs = []
-    for match in cli_regex.finditer(cli_output):
-        flag, description, _, default = match.groups()
-        # remove the leading dashes
-        flag = flag.strip('-')
-        config_item = {
-            'name': '`' + flag + '`',
-            'description': description.strip(),
-            'default': '`' + default.strip() + '`' if default else None
-        }
-        configs.append(config_item)
+
+    # Variables to keep track of the current command being processed
+    current_command = None
+    current_description = []
+    current_default = None
+
+    for line in lines:
+        # Check for a line with a command
+        command_match = re.match(r'\s*--([\w.-]+)\s+(.*)', line)
+
+        if command_match:
+            # If there's a current command, save it before starting a new one
+            if current_command:
+                configs.append({
+                    'name': f'`{current_command}`',
+                    'description': ' '.join(current_description).strip(),
+                    'default': f'`{current_default}`' if current_default else None
+                })
+
+            # Reset the current command info
+            current_command, rest_of_line = command_match.groups()
+            current_description = [rest_of_line]
+            current_default = None
+
+            # Check for a default value in the rest of the line
+            default_match = re.search(
+                r'\(default\s+["\']?(.+?)["\']?\)$', rest_of_line)
+            if default_match:
+                current_default = default_match.group(1)
+                current_description[-1] = current_description[-1].replace(
+                    default_match.group(0), '').strip()
+
+        elif current_command and (line.startswith('      ') or not line.strip()):
+            # This is a continuation of the description of the current command
+            current_description.append(line.strip())
+
+    # Add the last command if there was one being processed
+    if current_command:
+        configs.append({
+            'name': f'`{current_command}`',
+            'description': ' '.join(current_description).strip(),
+            'default': f'`{current_default}`' if current_default else None
+        })
+
     return configs
 
 

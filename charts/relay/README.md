@@ -83,6 +83,7 @@ Option | Description | Default
 `conf.dump` | print out currently active configuration file | None
 `conf.env-prefix` | string                                                  environment variables with given prefix will be loaded as configuration values | None
 `conf.file` | strings                                                       name of configuration file | None
+`conf.reload-interval` | duration                                           how often to reload configuration (0=disable periodic reloading) | None
 `conf.s3.access-key` | string                                               S3 access key | None
 `conf.s3.bucket` | string                                                   S3 bucket | None
 `conf.s3.object-key` | string                                               S3 object key | None
@@ -111,6 +112,9 @@ Option | Description | Default
 `node.feed.output.client-delay` | duration                                  delay the first messages sent to each client by this amount | None
 `node.feed.output.client-timeout` | duration                                duration to wait before timing out connections to client | `15s`
 `node.feed.output.connection-limits.enable` | enable broadcaster per-client connection limiting | None
+`node.feed.output.connection-limits.per-ip-limit` | int                     limit clients, as identified by IPv4/v6 address, to this many connections to this relay | `5`
+`node.feed.output.connection-limits.per-ipv6-cidr-48-limit` | int           limit ipv6 clients, as identified by IPv6 address masked with /48, to this many connections to this relay | `20`
+`node.feed.output.connection-limits.per-ipv6-cidr-64-limit` | int           limit ipv6 clients, as identified by IPv6 address masked with /64, to this many connections to this relay | `10`
 `node.feed.output.connection-limits.reconnect-cooldown-period` | duration   time to wait after a relay client disconnects before the disconnect is registered with respect to the limit for this client | None
 `node.feed.output.disable-signing` | don't sign feed messages | `true`
 `node.feed.output.enable` | enable broadcaster | None
