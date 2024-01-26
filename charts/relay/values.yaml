@@ -138,7 +138,7 @@ affinity: {}
 configmap:
   ## @param configmap.enabled Enable configmap
   enabled: true
-  ## @extra confimap.data See Configuration Options for the full list of options
+  ## @extra configmap.data See Configuration Options for the full list of options
   data:
     ## @param configmap.data.chain.id Chain id
     chain:
