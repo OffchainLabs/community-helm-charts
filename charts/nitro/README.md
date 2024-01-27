@@ -11,14 +11,14 @@ helm install <my-release> offchainlabs/nitro
 ```
 
 ### Required Parameters
-Chart defaults are for launching an arbitrum one node. At a minimum, you must provide a parent chain url.
+Chart defaults are for launching an arbitrum one node. At a minimum, you must provide a parent chain url and an init method(downloading from snapshot is in the example).
 
 ```console
 helm install <my-release> offchainlabs/nitro \
 --set configmap.data.parent-chain.connection.url=<ETH_RPC_URL> \
 --set configmap.data.init.url=https://snapshot.arbitrum.foundation/arb1/nitro-genesis.tar
 ```
-Remove init.url after the snapshot has downloaded and the node has launched. The above snapshot will sync from nitro's gensis block. There are other snapshot options on the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) that may be more suitable for your use case. The snapshots and chain state can be quite large, so it is recommended to review the storage defaults and adjust as needed.
+Remove init.url after the snapshot has downloaded and the node has launched. The above snapshot will sync from nitro's gensis block. There are other snapshot options on the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) that may be more suitable for your use case. The snapshots and chain state can be quite large, so it is recommended to review the storage defaults and adjust as needed. Particular attention should be paid to the `persistence`, `configmap.data.persistent.chain`, and `init.download-path` parameters.
 
 ### Examples
 
