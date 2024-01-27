@@ -441,6 +441,21 @@
     "validator": {
       "type": "object",
       "properties": {
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Docker image repository",
+              "default": ""
+            },
+            "tag": {
+              "type": "string",
+              "description": "Docker image tag",
+              "default": ""
+            }
+          }
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the stateless validator",

@@ -72,6 +72,8 @@
 
 | Name                                                       | Description                                              | Value                |
 | ---------------------------------------------------------- | -------------------------------------------------------- | -------------------- |
+| `validator.image.repository`                               | Docker image repository                                  | `""`                 |
+| `validator.image.tag`                                      | Docker image tag                                         | `""`                 |
 | `validator.enabled`                                        | Enable the stateless validator                           | `false`              |
 | `validator.configmap.data.auth.addr`                       | Address to bind auth service to                          | `0.0.0.0`            |
 | `validator.configmap.data.auth.port`                       | Port to bind auth service to                             | `8549`               |
