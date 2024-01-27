@@ -179,6 +179,11 @@ configmap:
 ## @section Stateless Validator
 
 validator:
+  image:
+    ## @param validator.image.repository Docker image repository
+    repository: ""
+    ## @param validator.image.pullPolicy Docker image pull policy
+    tag: ""
   ## @param validator.enabled Enable the stateless validator
   enabled: false
   configmap:
