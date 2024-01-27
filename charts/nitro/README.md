@@ -15,7 +15,7 @@ Chart defaults are for launching an arbitrum one node. At a minimum, you must pr
 
 ```console
 helm install <my-release> offchainlabs/nitro \
-  --set configmap.data.parent-chain.connection.url=<ETH_RPC_URL> \
+--set configmap.data.parent-chain.connection.url=<ETH_RPC_URL> \
 --set configmap.data.init.url=https://snapshot.arbitrum.foundation/arb1/nitro-genesis.tar
 ```
 Remove init.url after the snapshot has downloaded and the node has launched. The above snapshot will sync from nitro's gensis block. There are other snapshot options on the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) that may be more suitable for your use case.
@@ -27,9 +27,9 @@ Launching a node on another network requires additional configuration. See the [
 Arbitrum Sepolia
 ```console
 helm install <my-release> offchainlabs/nitro \
-  --set configmap.data.parent-chain.id=11155111 \
-  --set configmap.data.parent-chain.connection.url=<SEPOLIA_RPC_URL> \
-  --set configmap.data.chain.id=421614
+--set configmap.data.parent-chain.id=11155111 \
+--set configmap.data.parent-chain.connection.url=<SEPOLIA_RPC_URL> \
+--set configmap.data.chain.id=421614
 ```
 There are snapshots available to speed up the sync process for Arbitrum Sepolia. See the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) for more details.
     
