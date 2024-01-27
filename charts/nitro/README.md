@@ -24,7 +24,7 @@ Remove init.url after the snapshot has downloaded and the node has launched. The
 
 Launching a node on another network requires additional configuration. See the [Nitro Deployment Options](#nitro-deployment-options) and [Configuration Options](#configuration-options) sections for more details. Here are two examples of networks and the additional configuration they require.
 
-Arbitrum Sepolia
+#### Arbitrum Sepolia
 ```console
 helm install <my-release> offchainlabs/nitro \
 --set configmap.data.parent-chain.id=11155111 \
@@ -33,8 +33,8 @@ helm install <my-release> offchainlabs/nitro \
 ```
 There are snapshots available to speed up the sync process for Arbitrum Sepolia. See the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) for more details.
     
-Xai
-Sample values.yaml
+#### Xai
+values.yaml
 ```yaml
 configmap:
   data:
