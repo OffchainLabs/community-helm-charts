@@ -15,7 +15,8 @@ Chart defaults are for launching an arbitrum one node. At a minimum, you must pr
 
 ```console
 helm install <my-release> offchainlabs/nitro \
-  --set configmap.data.parent-chain.connection.url=<ETH_RPC_URL> --set configmap.data.init.url=https://snapshot.arbitrum.foundation/arb1/nitro-genesis.tar
+  --set configmap.data.parent-chain.connection.url=<ETH_RPC_URL> \
+--set configmap.data.init.url=https://snapshot.arbitrum.foundation/arb1/nitro-genesis.tar
 ```
 Remove init.url after the snapshot has downloaded and the node has launched. The above snapshot will sync from nitro's gensis block. There are other snapshot options on the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) that may be more suitable for your use case.
 
