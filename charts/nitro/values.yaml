@@ -182,7 +182,7 @@ validator:
   image:
     ## @param validator.image.repository Docker image repository
     repository: ""
-    ## @param validator.image.pullPolicy Docker image pull policy
+    ## @param validator.image.tag Docker image tag
     tag: ""
   ## @param validator.enabled Enable the stateless validator
   enabled: false
