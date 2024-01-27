@@ -39,6 +39,8 @@ jobs:
       - name: Run chart-testing (lint)
         if: steps.list-changed.outputs.changed == 'true'
         run: |
+          # Print base branch name
+          echo "Base branch: ${{ github.base_ref }}"
           ARGS="--target-branch ${{ github.base_ref }} --lint-conf lintconf.yaml --config ct.yaml"
           # Add an additional argument if the base branch is 'dev'
           if [ "${{ github.base_ref }}" == "dev" ]; then
