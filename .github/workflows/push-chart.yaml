@@ -56,7 +56,7 @@ jobs:
             git push origin $tag
           done
 
-      - uses: a-thomas-22/helm-push-action@v0.0.28
+      - uses: a-thomas-22/helm-push-action@v0.0.29
         env:
           PATHS: ${{ needs.get-modified-charts.outputs.paths }}
           FORCE: "True"
