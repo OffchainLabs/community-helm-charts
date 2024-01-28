@@ -1,63 +1,31 @@
-name: Build & Push Updated Charts (DEV)
+name: Build & Push Updated Charts (MANUAL)
 
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: 'Name of the branch to checkout (e.g., main, develop)'
+        required: true
+        default: 'main'
+      chart_dir:
+        description: 'Directory of the chart to be pushed (e.g., charts/my-chart)'
+        required: true
+      chart_version:
+        description: 'Version of the chart to be pushed (e.g., 1.2.3). Will be appended with -dev'
+        required: true
 
 jobs:
-  get-modified-charts:
-    runs-on: ubuntu-latest
-    outputs:
-      paths: ${{ steps.get-modified-charts.outputs.paths }}
-    steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 0
-
-      - name: Get modified charts
-        id: get-modified-charts
-        run: |
-          paths=$(git diff origin/main... --name-only | grep ^charts/ | cut -d/ -f1,2 | uniq | tr '\n' ' ')
-          echo "paths=${paths}" >> $GITHUB_OUTPUT
-
   push-charts:
-    needs: get-modified-charts
     runs-on: ubuntu-latest
-    if: ${{ needs.get-modified-charts.outputs.paths != '' }}
     steps:
-      - uses: actions/checkout@master
-
-      # Create and push git tags
-      - name: Create and push git tags
-        run: |
-          IFS=' ' read -ra ADDR <<< "${{ needs.get-modified-charts.outputs.paths }}"
-          for path in "${ADDR[@]}"; do
-            # Extract the chart name from the path
-            chart_name=$(basename $path)
-            
-            # Only capture the first occurrence of 'version:' to ignore dependencies
-            version=$(grep -m1 'version:' $path/Chart.yaml | awk '{print $2}')
-            
-            # Create the tag name by prepending the chart name and adding '-dev'
-            tag="${chart_name}-${version}-dev"
-
-            # Configure git
-            git config user.name "GitHub Actions"
-            git config user.email "actions@github.com"
-            
-            # Delete existing tag if exists
-            git tag -d $tag || true
-            git push origin :refs/tags/$tag || true
-            
-            # Create and push new tag
-            git tag $tag
-            git push origin $tag
-          done
+      - name: Checkout code
+        uses: actions/checkout@master
+        with:
+          ref: ${{ github.event.inputs.branch_name }}
 
       - uses: a-thomas-22/helm-push-action@v0.0.28
         env:
-          PATHS: ${{ needs.get-modified-charts.outputs.paths }}
+          PATHS: ${{ github.event.inputs.chart_dir }} 
           FORCE: "True"
           DEV: "True"
           CHARTMUSEUM_URL: "chartmuseum-external.iue1v1-0.i.arbitrum-internal.io/public"
