@@ -1,4 +1,69 @@
-# Nitro
+# Arbitrum Nitro
+
+## Quickstart
+
+```console
+helm repo add offchainlabs https://charts.arbitrum.io
+```
+
+```console
+helm install <my-release> offchainlabs/nitro
+```
+
+### Required Parameters
+Chart defaults are for launching an arbitrum one node. At a minimum, you must provide a parent chain url and an init method(downloading from snapshot is in the example).
+
+```console
+helm install <my-release> offchainlabs/nitro \
+--set configmap.data.parent-chain.connection.url=<ETH_RPC_URL> \
+--set configmap.data.init.url=https://snapshot.arbitrum.foundation/arb1/nitro-genesis.tar
+```
+Remove init.url after the snapshot has downloaded and the node has launched. The above snapshot will sync from nitro's gensis block. There are other snapshot options on the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) that may be more suitable for your use case. The snapshots and chain state can be quite large, so it is recommended to review the storage defaults and adjust as needed. Particular attention should be paid to the `persistence`, `configmap.data.persistent.chain`, and `init.download-path` parameters.
+
+### Examples
+
+Launching a node on another network requires additional configuration. See the [Nitro Deployment Options](#nitro-deployment-options) and [Configuration Options](#configuration-options) sections for more details. Here are two examples of networks and the additional configuration they require.
+
+#### Arbitrum Sepolia
+```console
+helm install <my-release> offchainlabs/nitro \
+--set configmap.data.parent-chain.id=11155111 \
+--set configmap.data.parent-chain.connection.url=<SEPOLIA_RPC_URL> \
+--set configmap.data.chain.id=421614
+```
+There are snapshots available to speed up the sync process for Arbitrum Sepolia. See the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) for more details.
+    
+#### Xai
+values.yaml
+```yaml
+configmap:
+  data:
+    parent-chain:
+      id: 42161
+      connection:
+        url: <ARBITRUM_ONE_RPC_URL>
+    chain:
+      id: 660279
+      name: Xai
+      info-json: '[{"chain-id":660279,"parent-chain-id":42161,"parent-chain-is-arbitrum":true,"chain-name":"Xai","chain-config":{"homesteadBlock":0,"daoForkBlock":null,"daoForkSupport":true,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"muirGlacierBlock":0,"berlinBlock":0,"londonBlock":0,"clique":{"period":0,"epoch":0},"arbitrum":{"EnableArbOS":true,"AllowDebugPrecompiles":false,"DataAvailabilityCommittee":true,"InitialArbOSVersion":11,"GenesisBlockNum":0,"MaxCodeSize":40960,"MaxInitCodeSize":81920,"InitialChainOwner":"0xc7185e37A4aB4Af0E77bC08249CD2590AE3E1b51"},"chainId":660279},"rollup":{"bridge":"0x7dd8A76bdAeBE3BBBaCD7Aa87f1D4FDa1E60f94f","inbox":"0xaE21fDA3de92dE2FDAF606233b2863782Ba046F9","sequencer-inbox":"0x995a9d3ca121D48d21087eDE20bc8acb2398c8B1","rollup":"0xC47DacFbAa80Bd9D8112F4e8069482c2A3221336","validator-utils":"0x6c21303F5986180B1394d2C89f3e883890E2867b","validator-wallet-creator":"0x2b0E04Dc90e3fA58165CB41E2834B44A56E766aF","deployed-at":166757506}}]'
+    execution:
+      forwarding-target: https://xai-chain.net/rpc
+    node:
+      data-availability:
+        enable: true
+        sequencer-inbox-address: 0x995a9d3ca121D48d21087eDE20bc8acb2398c8B1
+        parent-chain-node-url: <ARBITRUM_ONE_RPC_URL>
+        rest-aggregator:
+          enable: true
+          online-url-list: https://xai-chain.net/das-servers
+      feed:
+        input:
+          url: wss://xai-chain.net/feed
+```
+
+```console
+helm install xai offchainlabs/nitro -f values.yaml
+```
 
 ## Parameters
 
