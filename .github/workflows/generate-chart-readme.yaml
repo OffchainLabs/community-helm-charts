@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - "charts/**"
 
 permissions: {} # Remove all permissions by default
 
