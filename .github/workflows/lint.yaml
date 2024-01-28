@@ -42,6 +42,6 @@ jobs:
           ARGS="--target-branch ${{ github.base_ref }} --lint-conf lintconf.yaml --config ct.yaml"
           # Add an additional argument if the base branch is 'dev'
           if [ "${{ github.base_ref }}" == "dev" ]; then
-            ARGS="$ARGS --check-version-increment false"
+            ARGS="$ARGS --check-version-increment=false"
           fi
           ct lint $ARGS

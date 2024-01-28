@@ -11,5 +11,5 @@ helm repo add offchainlabs https://charts.arbitrum.io
 ```
 
 ```console
-helm install my-release offchainlabs/<chart>
+helm install <my-release> offchainlabs/<chart>
 ```
