@@ -1,5 +1,33 @@
 # Relay
 
+## Quickstart
+
+```console
+helm repo add offchainlabs https://charts.arbitrum.io
+```
+
+```console
+helm install <my-release> offchainlabs/relay
+```
+
+### Required Parameters
+Chart defaults are for launching an Arbitrum One relay. At a minimum, you must provide a feed input url.
+
+```console
+helm install <my-release> offchainlabs/relay \
+--set configmap.data.node.feed.input.url=wss://arb1.arbitrum.io/feed
+``` 
+
+### Examples
+
+Runninng a relay for a network other than arbitrum one requires setting the chain id. For instance, to run a relay for Arbitrum Sepolia.
+
+```console
+helm install <my-release> offchainlabs/relay \
+--set configmap.data.chain.id=421614 \
+--set configmap.data.node.feed.input.url=wss://sepolia-rollup.arbitrum.io/feed
+```
+
 ## Parameters
 
 ### Relay
