@@ -35,13 +35,13 @@ jobs:
           echo "Updating READMEs for modified charts: ${ADDR[@]}"
           for chart in "${ADDR[@]}"; do
             echo "Updating README.md for ${chart}"
-            readme-generator --values "${chart}/values.yaml" --readme "${chart}/README.md" --schema "${chart}/values.schema.json"
+            readme-generator --values "${chart}/values.yaml" --readme "${chart}/README.md"
             if [[ $? -ne 0 ]]; then
               echo "Error: Failed to update README for ${chart}"
               exit 1
             fi
             # fix schema for nullable
-            cat <<< $(jq '(..|objects|select(.nullable)).type |= ["string","null"]' "${chart}/values.schema.json") > "${chart}/values.schema.json"
+            # cat <<< $(jq '(..|objects|select(.nullable)).type |= ["string","null"]' "${chart}/values.schema.json") > "${chart}/values.schema.json"
           done
           
 
