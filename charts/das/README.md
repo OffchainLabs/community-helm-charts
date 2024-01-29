@@ -1,5 +1,159 @@
 # Nitro DAS
 
+A Helm chart for Arbitrum Nitro Data Availabity Servers and Mirrors. For full details on running a DAS, please see the official [Arbitrum Documentation](https://docs.arbitrum.io/node-running/how-tos/data-availability-committee/introduction).
+
+> [!WARNING]
+> There are many configuration options available for running a DAS and DAS Mirror. The chart defaults and intructions below are intended to get the server running. This is insufficient for production use. Please see the [Configuration Options](#configuration-options) section for the exhaustive list of options.
+
+## Quickstart
+
+```console
+helm repo add offchainlabs https://charts.arbitrum.io
+```
+
+```console
+helm install <my-release> offchainlabs/das
+```
+
+### Required Parameters
+This chart supports running as a DAS mirror or a DAS as a member of a DAC. At a minimum, you must provide a parent chain node url, the sequencer inbox address, and a storage type. However, it is recommended to use multiple storage types for redundancy.
+
+#### DAS Mirror
+```console
+helm install <my-release> offchainlabs/das \
+--set configmap.data.data-availability.parent-chain-node-url=<PARENT_CHAIN_NODE_URL> \
+--set configmap.data.data-availability.sequencer-inbox-address=<SEQUENCER_INBOX_ADDRESS> \
+--set configmap.data.data-availability.local-file-storage.enable=true \ 
+--set configmap.data.data-availability.local-file-storage.data-dir="/data/das-file-storage"
+```
+
+#### DAS
+Running a DAS requires a bls key. The key can be provided as a secret or as a file. See the [Nitro Deployment Options](#nitro-deployment-options) section for more details.
+
+das-key.yaml
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: das-bls
+data:
+  das_bls: <BASE_64_ENCODED_PRIVATE_KEY>
+  das_bls.pub: <BASE64_ENCODED_PUB_KEY
+```
+
+```console
+helm install <my-release> offchainlabs/das \
+--set configmap.data.data-availability.parent-chain-node-url=<PARENT_CHAIN_NODE_URL> \
+--set configmap.data.data-availability.sequencer-inbox-address=<SEQUENCER_INBOX_ADDRESS> \
+--set configmap.data.data-availability.local-file-storage.enable=true \
+--set configmap.data.data-availability.local-file-storage.data-dir="/data/das-file-storage" \
+--set dasecretName=das-bls
+```
+
+### Examples
+
+Examples are included below of values files that may be useful as a starting point for production use cases.
+
+#### DAS Mirror
+
+values.yaml
+```yaml
+configmap:
+  data:
+    conf:
+      env-prefix: "NITRO"
+    data-availability:
+      parent-chain-node-url: <PARENT_CHAIN_URL>
+      sequencer-inbox-address: <SEQUENCER_INBOX_ADDRESS>
+      local-db-storage:
+        enable: true
+        data-dir: "/data/das-db"
+        discard-after-timeout: false
+      local-file-storage:
+        enable: true
+        data-dir: "/data/das-storage"
+      s3-storage:
+        enable: true
+        access-key: <S3_ACCESS_KEY>
+        bucket: <S3_BUCKET_NAME>
+        region: <S3_BUCKET_REGION>
+      rest-aggregator:
+        enable: true
+        online-url-list: <DAS_URL_LIST> #URL with a list of active DAS endpoints such as https://nova.arbitrum.io/das-servers
+        urls:
+          - <INTERNAL_DAS_REST_ENDPOINT> #Useful if also running a DAS
+        sync-to-storage:
+          eager: true
+          eager-lower-bound-block: <PARENT_CHAIN_BLOCK_CHAIN_WAS_DEPLOYED>
+          state-dir: /data/das-storage/syncState
+
+extraEnv:
+  - name: POD_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.name
+  - name: NITRO_DATA__AVAILABILITY_S3__STORAGE_OBJECT__PREFIX
+    value: "$(POD_NAME)/"
+  - name: NITRO_DATA__AVAILABILITY_S3__STORAGE_SECRET__KEY
+    valueFrom:
+      secretKeyRef:
+        name: das-s3-credentials
+        key: secretKey
+```
+
+#### DAS
+
+values.yaml
+```yaml
+configmap:
+  data:
+    conf:
+      env-prefix: "NITRO"
+    data-availability:
+      parent-chain-node-url: <PARENT_CHAIN_URL>
+      sequencer-inbox-address: <SEQUENCER_INBOX_ADDRESS>
+      key:
+        key-dir: "/data/das-key"
+      local-db-storage:
+        enable: true
+        data-dir: "/data/das-db"
+        discard-after-timeout: false
+      local-file-storage:
+        enable: true
+        data-dir: "/data/das-storage"
+      s3-storage:
+        enable: true
+        access-key: <S3_ACCESS_KEY>
+        bucket: <S3_BUCKET_NAME>
+        region: <S3_BUCKET_REGION>
+      rest-aggregator:
+        enable: true
+        online-url-list: <DAS_URL_LIST> #URL with a list of active DAS endpoints such as https://nova.arbitrum.io/das-servers
+        urls:
+          - <INTERNAL_DAS_REST_ENDPOINT> #Useful if also running a DAS
+        sync-to-storage:
+          eager: true
+          eager-lower-bound-block: <PARENT_CHAIN_BLOCK_CHAIN_WAS_DEPLOYED>
+          state-dir: /data/das-storage/syncState
+
+dasecretName: <BLS_KEY_SECRET_NAME>
+
+extraEnv:
+  - name: POD_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.name
+  - name: NITRO_DATA__AVAILABILITY_S3__STORAGE_OBJECT__PREFIX
+    value: "$(POD_NAME)/"
+  - name: NITRO_DATA__AVAILABILITY_S3__STORAGE_SECRET__KEY
+    valueFrom:
+      secretKeyRef:
+        name: das-s3-credentials
+        key: secretKey
+
+```
+
+
 ## Parameters
 
 ### DAS Deployment Options
