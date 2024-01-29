@@ -366,9 +366,12 @@
                       "type": "object",
                       "properties": {
                         "url": {
-                          "type": "string",
+                          "type": "array",
                           "description": "Feed input url",
-                          "default": ""
+                          "default": "[]",
+                          "items": {
+                            "type": "string"
+                          }
                         },
                         "reconnect-initial-backoff": {
                           "type": "string",
