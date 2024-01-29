@@ -1,5 +1,7 @@
 # Relay
 
+A Helm chart for Arbitrum Nitro Relays. For full details on running a feed relay, please see the official [Arbitrum Documentation](https://docs.arbitrum.io/node-running/how-tos/running-a-feed-relay).
+
 ## Quickstart
 
 ```console
