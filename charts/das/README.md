@@ -28,7 +28,7 @@ helm install <my-release> offchainlabs/das \
 ```
 
 #### DAS
-Running a DAS requires a bls key. The key can be provided as a secret or as a file. See the [Nitro Deployment Options](#nitro-deployment-options) section for more details.
+Running a DAS requires a bls key. The key can be provided as a secret or as a file. See the [Nitro Deployment Options](#configuration-options) section for more details.
 
 ```yaml
 apiVersion: v1
