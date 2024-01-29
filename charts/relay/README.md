@@ -97,7 +97,7 @@ helm install <my-release> offchainlabs/relay \
 | `configmap.data.metrics`                                   | Enable metrics                                         | `false`   |
 | `configmap.data.metrics-server.addr`                       | Metrics server address                                 | `0.0.0.0` |
 | `configmap.data.metrics-server.port`                       | Metrics server port                                    | `6070`    |
-| `configmap.data.node.feed.input.url`                       | Feed input url                                         | `""`      |
+| `configmap.data.node.feed.input.url`                       | Feed input url                                         | `[]`      |
 | `configmap.data.node.feed.input.reconnect-initial-backoff` | Feed input reconnect initial backoff                   | `50ms`    |
 | `configmap.data.node.feed.input.reconnect-maximum-backoff` | Feed input reconnect maximum backoff                   | `800ms`   |
 | `configmap.data.node.feed.input.timeout`                   | Feed input timeout                                     | `10s`     |
