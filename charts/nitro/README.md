@@ -36,7 +36,7 @@ helm install <my-release> offchainlabs/nitro \
 There are snapshots available to speed up the sync process for Arbitrum Sepolia. See the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) for more details.
     
 #### Xai
-values.yaml
+
 ```yaml
 configmap:
   data:

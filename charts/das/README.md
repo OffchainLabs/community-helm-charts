@@ -30,7 +30,6 @@ helm install <my-release> offchainlabs/das \
 #### DAS
 Running a DAS requires a bls key. The key can be provided as a secret or as a file. See the [Nitro Deployment Options](#nitro-deployment-options) section for more details.
 
-das-key.yaml
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -56,7 +55,6 @@ Examples are included below of values files that may be useful as a starting poi
 
 #### DAS Mirror
 
-values.yaml
 ```yaml
 configmap:
   data:
@@ -103,7 +101,6 @@ extraEnv:
 
 #### DAS
 
-values.yaml
 ```yaml
 configmap:
   data:
