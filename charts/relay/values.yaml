@@ -158,7 +158,7 @@ configmap:
 
     node:
       feed:
-        ## @param configmap.data.node.feed.input.url [array, string] Feed input url
+        ## @param configmap.data.node.feed.input.url [string, array] Feed input url
         ## @param configmap.data.node.feed.input.reconnect-initial-backoff Feed input reconnect initial backoff
         ## @param configmap.data.node.feed.input.reconnect-maximum-backoff Feed input reconnect maximum backoff
         ## @param configmap.data.node.feed.input.timeout Feed input timeout
