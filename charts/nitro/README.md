@@ -1,5 +1,7 @@
 # Arbitrum Nitro
 
+A Helm chart for Arbitrum Nitro. For full details on running a node, please see the official [Arbitrum Documentation](https://docs.arbitrum.io/node-running/quickstart-running-a-node).
+
 ## Quickstart
 
 ```console
