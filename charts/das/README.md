@@ -23,7 +23,7 @@ This chart supports running as a DAS mirror or a DAS as a member of a DAC. At a 
 helm install <my-release> offchainlabs/das \
 --set configmap.data.data-availability.parent-chain-node-url=<PARENT_CHAIN_NODE_URL> \
 --set configmap.data.data-availability.sequencer-inbox-address=<SEQUENCER_INBOX_ADDRESS> \
---set configmap.data.data-availability.local-file-storage.enable=true \ 
+--set configmap.data.data-availability.local-file-storage.enable=true \
 --set configmap.data.data-availability.local-file-storage.data-dir="/data/das-file-storage"
 ```
 
@@ -150,7 +150,6 @@ extraEnv:
       secretKeyRef:
         name: das-s3-credentials
         key: secretKey
-
 ```
 
 
