@@ -79,7 +79,7 @@ configmap:
         enable: true
         online-url-list: <DAS_URL_LIST> #URL with a list of active DAS endpoints such as https://nova.arbitrum.io/das-servers
         urls:
-          - <INTERNAL_DAS_REST_ENDPOINT> #Useful if also running a DAS
+          - <INTERNAL_DAS_REST_ENDPOINT> #Useful to include an internal REST endpoint if also running a DAS
         sync-to-storage:
           eager: true
           eager-lower-bound-block: <PARENT_CHAIN_BLOCK_CHAIN_WAS_DEPLOYED>
