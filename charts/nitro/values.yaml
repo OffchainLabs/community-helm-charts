@@ -121,6 +121,9 @@ affinity: {}
 ## @param additionalVolumeClaims Additional volume claims for the pod
 additionalVolumeClaims: []
 
+## @param extraPorts Additional ports for the pod
+extraPorts: []
+
 configmap:
   ## @param configmap.enabled Enable a configmap for the nitro container
   enabled: true
@@ -245,6 +248,9 @@ validator:
 
     ## @param validator.statefulset.extraEnv Extra environment variables for the validator container
     extraEnv: {}
+
+    ## @param validator.statefulset.extraPorts Additional ports for the stateless validator pod
+    extraPorts: []
 
     ## @param validator.statefulset.metrics.enabled Enable metrics for the validator statefulset
     metrics:

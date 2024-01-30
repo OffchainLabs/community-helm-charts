@@ -24,8 +24,13 @@ spec:
       protocol: TCP
       name: metrics
   {{- end }}
-  {{- with $.Values.validator.statefulset.extraServicePorts }}
-    {{- toYaml . | nindent 4 }}
+  {{- range .Values.validator.statefulset.extraPorts }}
+  {{- if .serviceEnabled | default true }}
+  - name: {{ .name }}
+    port: {{ .port }}
+    targetPort: {{ .port }}
+    protocol: {{ .protocol | default "TCP" }}
+  {{- end }}
   {{- end }}
   selector:
     {{- $selectorLabels | nindent 4 }}

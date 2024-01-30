@@ -114,6 +114,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `tolerations`                                | Tolerations for the pod                                      | `[]`                                                        |
 | `affinity`                                   | Affinity for the pod                                         | `{}`                                                        |
 | `additionalVolumeClaims`                     | Additional volume claims for the pod                         | `[]`                                                        |
+| `extraPorts`                                 | Additional ports for the pod                                 | `[]`                                                        |
 | `configmap.enabled`                          | Enable a configmap for the nitro container                   | `true`                                                      |
 | `configmap.data`                             | See Configuration Options for the full list of options       |                                                             |
 | `configmap.data.http.addr`                   | Address to bind http service to                              | `0.0.0.0`                                                   |
@@ -162,6 +163,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.statefulset.startupProbe.enabled`               | Enable the startup probe for the validator statefulset   | `false`              |
 | `validator.statefulset.resources`                          | Resources for the validator container                    | `{}`                 |
 | `validator.statefulset.extraEnv`                           | Extra environment variables for the validator container  | `{}`                 |
+| `validator.statefulset.extraPorts`                         | Additional ports for the stateless validator pod         | `[]`                 |
 | `validator.statefulset.metrics.enabled`                    | Enable metrics for the validator statefulset             | `false`              |
 | `validator.statefulset.podAnnotations`                     | Annotations for the stateless validator pod              | `{}`                 |
 
