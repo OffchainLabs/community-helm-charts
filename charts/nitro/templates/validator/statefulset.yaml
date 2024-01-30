@@ -85,6 +85,11 @@ spec:
         - name: auth
           containerPort: {{ .Values.validator.statefulset.auth.port }}
         {{- end }}
+        {{- range .Values.validator.statefulset.extraPorts }}
+        - name: {{ .name }}
+          containerPort: {{ .port }}
+          protocol: {{ .protocol | default "TCP" }}
+        {{- end }}
         volumeMounts:
           {{- if .Values.jwtSecret.enabled }}
           - name: jwt-secret

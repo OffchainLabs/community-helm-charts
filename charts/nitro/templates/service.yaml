@@ -38,5 +38,13 @@ spec:
       protocol: TCP
       name: metrics
     {{- end }}
+    {{- range .Values.extraPorts }}
+    {{- if .serviceEnabled | default true }}
+    - name: {{ .name }}
+      port: {{ .servicePort | default .port }}
+      targetPort: {{ .port }}
+      protocol: {{ .protocol | default "TCP" }}
+    {{- end }}
+    {{- end }}
   selector:
     {{- include "nitro.selectorLabels" . | nindent 4 }}
