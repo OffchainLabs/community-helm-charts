@@ -8,7 +8,7 @@ replicaCount: 1
 ## @param image.tag Docker image tag ovverrides the chart appVersion
 image:
   repository: offchainlabs/nitro-node
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   tag: ""
 
 ## @param imagePullSecrets Docker registry pull secret
