@@ -38,7 +38,7 @@ helm install <my-release> offchainlabs/relay \
 | ------------------------------------------------- | ------------------------------------------------ | --------------------------- |
 | `replicaCount`                                    | Number of replicas to deploy                     | `1`                         |
 | `image.repository`                                | Docker image repository                          | `offchainlabs/nitro-node`   |
-| `image.pullPolicy`                                | Docker image pull policy                         | `IfNotPresent`              |
+| `image.pullPolicy`                                | Docker image pull policy                         | `Always`                    |
 | `image.tag`                                       | Docker image tag ovverrides the chart appVersion | `""`                        |
 | `imagePullSecrets`                                | Docker registry pull secret                      | `[]`                        |
 | `nameOverride`                                    | String to partially override relay fullname      | `""`                        |
