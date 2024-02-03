@@ -75,7 +75,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | -------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------- |
 | `replicaCount`                               | Number of replicas to deploy                                 | `1`                                                         |
 | `image.repository`                           | Docker image repository                                      | `offchainlabs/nitro-node`                                   |
-| `image.pullPolicy`                           | Docker image pull policy                                     | `IfNotPresent`                                              |
+| `image.pullPolicy`                           | Docker image pull policy                                     | `Always`                                                    |
 | `image.tag`                                  | Docker image tag. Overrides the chart appVersion.            | `""`                                                        |
 | `imagePullSecrets`                           | Docker registry pull secret names as an array                | `[]`                                                        |
 | `nameOverride`                               | String to partially override nitro.fullname                  | `""`                                                        |
