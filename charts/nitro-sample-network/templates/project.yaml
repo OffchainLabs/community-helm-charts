@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $.Values.cluster }}-{{ $.Values.envName  }}
+spec:
+  description: {{ $.Values.envName  }}-{{ $.Values.cluster }}
+  sourceRepos:
+   - "https://github.com/OffchainLabs/community-helm-charts.git"
+  destinations:
+  {{- range .Values.namespaces }}
+    - name: {{ $.Values.cluster }}
+      namespace: "*"
+  {{- end }}
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+

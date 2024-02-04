@@ -1,0 +1,41 @@
+# values.yaml
+
+envName: "test"
+cluster: "in-cluster"
+version: "main"
+
+chartGitRepo:
+  url: https://github.com/OffchainLabs/community-helm-charts.git
+  version: main
+valuesGitRepo:
+  url: https://github.com/OffchainLabs/community-helm-charts.git
+  version: main
+
+projects:
+  test:
+    namespaces:
+      seq:
+        components:
+          seq:
+            chart: "nitro"
+          val:
+            chart: "nitro"
+          seq-relay:
+            chart: "relay"
+      val:
+        components:
+          val:
+            chart: "nitro"
+      rpc:
+        components:
+          rpc:
+            chart: "nitro"
+          public-feed:
+            chart: "relay"
+      common:
+        components:
+          blockscout:
+            chart: "blockscout"
+            sourceType: "helm"
+          redis:
+            chart: "redis"

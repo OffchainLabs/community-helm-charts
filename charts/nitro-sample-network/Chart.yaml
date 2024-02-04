@@ -1,0 +1,12 @@
+apiVersion: v2
+name: nitro-sample-network-deploy
+description: A Helm chart for demonstrating an Arbitrum Nitro network deployment using ArgoCD Applications
+
+maintainers:
+  - name: OffchainLabs
+
+type: application
+
+version: 0.0.1
+
+appVersion: ""

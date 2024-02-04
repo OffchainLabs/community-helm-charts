@@ -1,0 +1,48 @@
+{{- range $projectName, $project := .Values.projects }} # Loop over projects
+{{- $currentProject := $projectName }} # Store the current project name
+{{- range $namespaceName, $namespace := $project.namespaces }} # Loop over namespaces within the current project
+{{- if or (not (hasKey $namespace "enabled")) ($namespace.enabled) }} # Check if the namespace is enabled or default to enabled if not set
+{{- $currentNamespace := $namespaceName }} # Store the current namespace name
+{{- range $componentName, $component := $namespace.components }} # Loop over components within the current namespace
+{{- if or (not (hasKey $component "enabled")) ($component.enabled) }} # Check if the component is enabled or default to enabled if not set
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $.Values.envName | trunc 24 }}-{{ $currentProject }}-{{ $currentNamespace }}-{{ $componentName }}
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ $.Values.cluster }}-{{ $.Values.envName }}-{{ $currentProject }}
+  source:
+    {{- $sourceType := default "git" $component.sourceType }}
+    {{- if eq $sourceType "git" }}
+    - repoURL: {{ $.Values.chartGitRepo.url }}
+      path: charts/{{ $component.chart }}
+      targetRevision: {{ $.Values.chartGitRepo.version }}
+      helm:
+        valueFiles:
+          - $values/{{ $.Values.cluster }}/{{ $.Values.envName }}/{{ $currentNamespace }}/{{ $componentName }}.yaml
+    {{- else if eq $sourceType "helm" }}
+    - chart: {{ $component.chart }}
+      repoURL: {{ $component.repoURL }}
+      targetRevision: {{ $component.targetRevision }}
+    {{- end }}
+    - repoURL: {{ $.Values.valuesGitRepo.url }}
+      targetRevision: {{ $.Values.valuesGitRepo.version }}
+      ref: values
+  destination:
+    name: {{ $.Values.cluster }}
+    namespace: {{ $.Values.envName | trunc 24 }}-{{ $currentNamespace }}
+  syncPolicy:
+    managedNamespaceMetadata:
+      labels:
+        prometheus.io/scrape: "true"
+    syncOptions:
+    - CreateNamespace=true
+---
+{{- end }} # End if component is enabled
+{{- end }} # End components loop
+{{- end }} # End if namespace is enabled
+{{- end }} # End namespaces loop
+{{- end }} # End projects loop
