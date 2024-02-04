@@ -1,17 +1,25 @@
+{{- range $projectName, $project := .Values.projects }} # Loop over projects
+{{- $currentProject := $projectName }} # Store the current project name
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: {{ $.Values.cluster }}-{{ $.Values.envName  }}
+  name: {{ $.Values.cluster }}-{{ $.Values.envName }}-{{ $currentProject }}
 spec:
-  description: {{ $.Values.envName  }}-{{ $.Values.cluster }}
+  description: {{ $.Values.cluster }}-{{ $.Values.envName }}-{{ $currentProject }}
   sourceRepos:
    - "https://github.com/OffchainLabs/community-helm-charts.git"
   destinations:
-  {{- range .Values.namespaces }}
+  {{- range $namespaceName, $namespace := $project.namespaces }} # Loop over namespaces within the current project
+  {{- if or (not (hasKey $namespace "enabled")) ($namespace.enabled) }} # Check if the namespace is enabled or default to enabled if not set
+  {{- $currentNamespace := $namespaceName }} # Store the current namespace name
     - name: {{ $.Values.cluster }}
-      namespace: "*"
-  {{- end }}
+      server: {{ $.Values.cluster }}
+      namespace: {{ $.Values.envName | trunc 24 }}-{{ $namespaceName }}
+  {{- end }} # End if namespace is enabled
+  {{- end }} # End namespaces loop
   clusterResourceWhitelist:
   - group: '*'
     kind: '*'
+
+{{- end }} # End projects loop
 

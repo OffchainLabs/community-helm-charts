@@ -14,7 +14,7 @@ metadata:
   - resources-finalizer.argocd.argoproj.io
 spec:
   project: {{ $.Values.cluster }}-{{ $.Values.envName }}-{{ $currentProject }}
-  source:
+  sources:
     {{- $sourceType := default "git" $component.sourceType }}
     {{- if eq $sourceType "git" }}
     - repoURL: {{ $.Values.chartGitRepo.url }}
@@ -22,7 +22,7 @@ spec:
       targetRevision: {{ $.Values.chartGitRepo.version }}
       helm:
         valueFiles:
-          - $values/{{ $.Values.cluster }}/{{ $.Values.envName }}/{{ $currentNamespace }}/{{ $componentName }}.yaml
+          - $values/nitro-sample-network-configs/{{ $.Values.cluster }}/{{ $.Values.envName }}/{{ $currentNamespace }}/{{ $componentName }}.yaml
     {{- else if eq $sourceType "helm" }}
     - chart: {{ $component.chart }}
       repoURL: {{ $component.repoURL }}

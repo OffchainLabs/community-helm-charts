@@ -2,14 +2,14 @@
 
 envName: "test"
 cluster: "in-cluster"
-version: "main"
+version: "at/add-integration-test"
 
 chartGitRepo:
   url: https://github.com/OffchainLabs/community-helm-charts.git
-  version: main
+  version: at/add-integration-test
 valuesGitRepo:
   url: https://github.com/OffchainLabs/community-helm-charts.git
-  version: main
+  version: at/add-integration-test
 
 projects:
   test:
@@ -32,10 +32,3 @@ projects:
             chart: "nitro"
           public-feed:
             chart: "relay"
-      common:
-        components:
-          blockscout:
-            chart: "blockscout"
-            sourceType: "helm"
-          redis:
-            chart: "redis"
