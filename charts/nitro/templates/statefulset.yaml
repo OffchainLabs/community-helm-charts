@@ -28,6 +28,7 @@ spec:
         {{- end }}
       labels:
         {{- include "nitro.selectorLabels" . | nindent 8 }}
+        function: nitro
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -198,6 +199,7 @@ spec:
         labelSelector:
           matchLabels:
             {{- include "nitro.selectorLabels" $ | nindent 12 }}
+            function: nitro
         {{- end }}
         {{- end }}
       {{- end }}

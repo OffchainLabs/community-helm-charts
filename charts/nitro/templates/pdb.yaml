@@ -15,4 +15,5 @@ spec:
   selector:
     matchLabels:
       {{- include "nitro.selectorLabels" . | nindent 6 }}
+      function: nitro
 {{- end }}
