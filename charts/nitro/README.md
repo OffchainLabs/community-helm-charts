@@ -244,6 +244,7 @@ Option | Description | Default
 `execution.rpc.tx-fee-cap` | float                                                                  cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
 `execution.secondary-forwarding-target` | strings                                                   secondary transaction forwarding target URL | None
 `execution.sequencer.enable` | act and post to l1 as sequencer | None
+`execution.sequencer.enable-prefetch-block` | enable prefetching of blocks | None
 `execution.sequencer.forwarder.connection-timeout` | duration                                       total time to wait before cancelling connection | `30s`
 `execution.sequencer.forwarder.idle-connection-timeout` | duration                                  time until idle connections are closed | `1m0s`
 `execution.sequencer.forwarder.max-idle-connections` | int                                          maximum number of idle connections to keep open | `100`
@@ -296,6 +297,7 @@ Option | Description | Default
 `init.import-file` | string                                                                         path for json data to import | None
 `init.prune` | string                                                                               pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                      the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
+`init.recreate-missing-state-from` | uint                                                           block number to start recreating missing states from (0 = disabled) | None
 `init.reset-to-message` | int                                                                       forces a reset to an old message height. Also set max-reorg-resequence-depth=0 to force re-reading messages | `-1`
 `init.then-quit` | quit after init is done | None
 `init.url` | string                                                                                 url to download initializtion data - will poll if download fails | None
@@ -339,9 +341,11 @@ Option | Description | Default
 `node.batch-poster.enable` | enable posting batches to l1 | None
 `node.batch-poster.error-delay` | duration                                                          how long to delay after error posting batch | `10s`
 `node.batch-poster.extra-batch-gas` | uint                                                          use this much more gas than estimation says is necessary to post batches | `50000`
+`node.batch-poster.force-post-4844-blobs` | if the parent chain supports 4844 blobs and post-4844-blobs is true, post 4844 blobs even if it's not price efficient | None
 `node.batch-poster.gas-refunder-address` | string                                                   The gas refunder contract address (optional) | None
 `node.batch-poster.l1-block-bound` | string                                                         only post messages to batches when they're within the max future block/timestamp as of this L1 block tag ("safe", "finalized", "latest", or "ignore" to ignore this check) | None
 `node.batch-poster.l1-block-bound-bypass` | duration                                                post batches even if not within the layer 1 future bounds if we're within this margin of the max delay | `1h0m0s`
+`node.batch-poster.max-4844-batch-size` | int                                                       maximum 4844 blob enabled batch size | `779288`
 `node.batch-poster.max-delay` | duration                                                            maximum batch posting delay | `1h0m0s`
 `node.batch-poster.max-size` | int                                                                  maximum batch size | `100000`
 `node.batch-poster.parent-chain-wallet.account` | string                                            account to use | `is first account in keystore`
@@ -350,6 +354,7 @@ Option | Description | Default
 `node.batch-poster.parent-chain-wallet.pathname` | string                                           pathname for wallet | `batch-poster-wallet`
 `node.batch-poster.parent-chain-wallet.private-key` | string                                        private key for wallet | None
 `node.batch-poster.poll-interval` | duration                                                        how long to wait after no batches are ready to be posted before checking again | `10s`
+`node.batch-poster.post-4844-blobs` | if the parent chain supports 4844 blobs and they're well priced, post EIP-4844 blobs | None
 `node.batch-poster.redis-lock.background-lock` | should node always try grabing lock in background | None
 `node.batch-poster.redis-lock.enable` | if false, always treat this as locked and don't write the lock to redis | `true`
 `node.batch-poster.redis-lock.key` | string                                                         key for lock | None
@@ -357,12 +362,15 @@ Option | Description | Default
 `node.batch-poster.redis-lock.my-id` | string                                                       this node's id prefix when acquiring the lock (optional) | None
 `node.batch-poster.redis-lock.refresh-duration` | duration                                          how long between consecutive calls to redis | `10s`
 `node.batch-poster.redis-url` | string                                                              if non-empty, the Redis URL to store queued transactions in | None
+`node.batch-poster.use-access-lists` | post batches with access lists to reduce gas usage (disabled for L3s) | `true`
 `node.batch-poster.wait-for-max-delay` | wait for the max batch delay, even if the batch is full | None
+`node.blob-client.beacon-chain-url` | string                                                        Beacon Chain url to use for fetching blobs | None
 `node.block-validator.current-module-root` | string                                                 current wasm module root ('current' read from chain, 'latest' from machines/latest dir, or provide hash) | `current`
 `node.block-validator.dangerous.reset-block-validation` | resets block-by-block validation, starting again at genesis | None
 `node.block-validator.enable` | enable block-by-block validation | None
 `node.block-validator.failure-is-fatal` | failing a validation is treated as a fatal error | `true`
 `node.block-validator.forward-blocks` | uint                                                        prepare entries for up to that many blocks ahead of validation (small footprint) | `1024`
+`node.block-validator.memory-free-limit` | string                                                   minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                         pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
 `node.block-validator.prerecorded-blocks` | uint                                                    record that many blocks ahead of validation (larger footprint) | `20`
 `node.block-validator.validation-poll` | duration                                                   poll time to check validations | `1s`
@@ -577,8 +585,8 @@ Option | Description | Default
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                           pprof server address | `127.0.0.1`
 `pprof-cfg.port` | int                                                                              pprof server port | `6071`
-`rpc.batch-request-limit` | int                                                                     the maximum number of requests in a batch | `1000`
-`rpc.max-batch-response-size` | int                                                                 the maximum response size for a JSON-RPC request measured in bytes (-1 means no limit) | `10000000`
+`rpc.batch-request-limit` | int                                                                     the maximum number of requests in a batch (0 means no limit) | `1000`
+`rpc.max-batch-response-size` | int                                                                 the maximum response size for a JSON-RPC request measured in bytes (0 means no limit) | `10000000`
 `validation.api-auth` | validate is an authenticated API | `true`
 `validation.api-public` | validate is a public API | None
 `validation.arbitrator.execution-run-timeout` | duration                                            timeout before discarding execution run | `15m0s`
@@ -587,6 +595,7 @@ Option | Description | Default
 `validation.arbitrator.output-path` | string                                                        path to write machines to | `./target/output`
 `validation.arbitrator.workers` | int                                                               number of concurrent validation threads | None
 `validation.jit.cranelift` | use Cranelift instead of LLVM when validating blocks using the jit-accelerated block validator | `true`
+`validation.jit.wasm-memory-usage-limit` | int                                                      if memory used by a jit wasm exceeds this limit, a warning is logged | `4294967296`
 `validation.jit.workers` | int                                                                      number of concurrent validation threads | None
 `validation.use-jit` | use jit for validation | `true`
 `validation.wasm.allowed-wasm-module-roots` | strings                                               list of WASM module roots to check if the on-chain WASM module root belongs to on node startup | None
