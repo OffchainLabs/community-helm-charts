@@ -73,6 +73,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 
 | Name                                         | Description                                                  | Value                                                       |
 | -------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------- |
+| `chain.name`                                 | Name of the chain                                            | `CHANGEME`                                                  |
 | `replicaCount`                               | Number of replicas to deploy                                 | `1`                                                         |
 | `image.repository`                           | Docker image repository                                      | `offchainlabs/nitro-node`                                   |
 | `image.pullPolicy`                           | Docker image pull policy                                     | `Always`                                                    |

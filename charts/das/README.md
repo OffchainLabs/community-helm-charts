@@ -156,6 +156,7 @@ extraEnv:
 
 | Name                                            | Description                                                                 | Value                       |
 | ----------------------------------------------- | --------------------------------------------------------------------------- | --------------------------- |
+| `chain.name`                                    | Name of the chain                                                           | `CHANGEME`                  |
 | `replicaCount`                                  | Number of replicas                                                          | `1`                         |
 | `image.repository`                              | Docker image repository                                                     | `offchainlabs/nitro-node`   |
 | `image.pullPolicy`                              | Docker image pull policy                                                    | `Always`                    |
