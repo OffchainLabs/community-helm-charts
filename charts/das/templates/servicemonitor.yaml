@@ -28,8 +28,9 @@ spec:
         {{- toYaml .Values.serviceMonitor.tlsConfig | nindent 8 }}
       {{- end }}
       relabelings:
-        - target_label: chain
+        - targetLabel: chain
           replacement: {{ .Values.chain.name }}
+          action: replace
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}
