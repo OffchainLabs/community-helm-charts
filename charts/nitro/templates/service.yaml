@@ -48,3 +48,4 @@ spec:
     {{- end }}
   selector:
     {{- include "nitro.selectorLabels" . | nindent 4 }}
+    function: nitro

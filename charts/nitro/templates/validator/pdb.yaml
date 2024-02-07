@@ -1,0 +1,19 @@
+{{- if .Values.validator.statefulset.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "nitro.fullname" . }}
+  labels:
+    {{- include "nitro.labels" . | nindent 4 }}
+spec:
+  {{- if and (.Values.validator.statefulset.pdb.minAvailable) (not .Values.validator.statefulset.pdb.maxUnavailable) }}
+  minAvailable: {{ .Values.validator.statefulset.pdb.minAvailable }}
+  {{- end }}
+  {{- if and (.Values.validator.statefulset.pdb.maxUnavailable) (not .Values.validator.statefulset.pdb.minAvailable) }}
+  maxUnavailable: {{ .Values.validator.statefulset.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "nitro.selectorLabels" . | nindent 6 }}
+      function: arb-validator
+{{- end }}
