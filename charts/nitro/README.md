@@ -156,6 +156,9 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.statefulset.livenessProbe.tcpSocket.port`       | Port to probe                                            | `auth`               |
 | `validator.statefulset.livenessProbe.initialDelaySeconds`  | Initial delay for the liveness probe                     | `30`                 |
 | `validator.statefulset.livenessProbe.periodSeconds`        | Period for the liveness probe                            | `10`                 |
+| `validator.statefulset.pdb.enabled`                        | Enable pod disruption budget                             | `false`              |
+| `validator.statefulset.pdb.minAvailable`                   | Minimum number of pods available                         | `75%`                |
+| `validator.statefulset.pdb.maxUnavailable`                 | Maximum number of pods unavailable                       | `""`                 |
 | `validator.statefulset.readinessProbe.enabled`             | Enable the readiness probe for the validator statefulset | `true`               |
 | `validator.statefulset.readinessProbe.tcpSocket.port`      | Port to probe                                            | `auth`               |
 | `validator.statefulset.readinessProbe.initialDelaySeconds` | Initial delay for the readiness probe                    | `3`                  |

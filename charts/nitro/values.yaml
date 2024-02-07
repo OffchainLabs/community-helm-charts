@@ -228,6 +228,14 @@ validator:
       initialDelaySeconds: 30
       periodSeconds: 10
 
+    ## @param validator.statefulset.pdb.enabled Enable pod disruption budget
+    ## @param validator.statefulset.pdb.minAvailable Minimum number of pods available
+    ## @param validator.statefulset.pdb.maxUnavailable Maximum number of pods unavailable
+    pdb:
+      enabled: false
+      minAvailable: "75%"
+      maxUnavailable: ""
+
     ## @param validator.statefulset.readinessProbe.enabled Enable the readiness probe for the validator statefulset
     ## @param validator.statefulset.readinessProbe.tcpSocket.port Port to probe
     ## @param validator.statefulset.readinessProbe.initialDelaySeconds Initial delay for the readiness probe
