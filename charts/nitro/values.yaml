@@ -1,5 +1,9 @@
 ## @section Nitro Deployment Options
 
+## @param chain.name Name of the chain
+chain:
+  name: CHANGEME
+
 ## @param replicaCount Number of replicas to deploy
 ##
 replicaCount: 1

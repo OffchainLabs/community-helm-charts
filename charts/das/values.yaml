@@ -1,5 +1,9 @@
 ## @section DAS Deployment Options
 
+## @param chain.name Name of the chain
+chain:
+  name: CHANGEME
+
 ## @param replicaCount Number of replicas
 replicaCount: 1
 
