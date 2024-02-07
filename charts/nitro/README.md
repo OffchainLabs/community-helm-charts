@@ -466,6 +466,7 @@ Option | Description | Default
 `node.inbox-reader.hard-reorg` | erase future transactions in addition to overwriting existing ones on reorg | None
 `node.inbox-reader.max-blocks-to-read` | uint                                                       if adjust-blocks-to-read is enabled, the maximum number of blocks to read at once | `2000`
 `node.inbox-reader.min-blocks-to-read` | uint                                                       the minimum number of blocks to read at once (when caught up lowers load on L1) | `1`
+`node.inbox-reader.read-mode` | string                                                              mode to only read latest or safe or finalized L1 blocks. Enabling safe or finalized disables feed input and output. Defaults to latest. Takes string input, valid strings- latest, safe, finalized | `latest`
 `node.inbox-reader.target-messages-read` | uint                                                     if adjust-blocks-to-read is enabled, the target number of messages to read at once | `500`
 `node.maintenance.lock.background-lock` | should node always try grabing lock in background | None
 `node.maintenance.lock.enable` | if false, always treat this as locked and don't write the lock to redis | `true`
@@ -559,6 +560,8 @@ Option | Description | Default
 `node.sync-monitor.block-build-lag` | uint                                                          allowed lag between messages read and blocks built | `20`
 `node.sync-monitor.block-build-sequencer-inbox-lag` | uint                                          allowed lag between messages read from sequencer inbox and blocks built | None
 `node.sync-monitor.coordinator-msg-lag` | uint                                                      allowed lag between local and remote messages | `15`
+`node.sync-monitor.finalized-block-wait-for-block-validator` | wait for block validator to complete before returning finalized block number | None
+`node.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
 `node.transaction-streamer.execute-message-loop-delay` | duration                                   delay when polling calls to execute messages | `100ms`
 `node.transaction-streamer.max-broadcaster-queue-size` | int                                        maximum cache of pending broadcaster messages | `50000`
 `node.transaction-streamer.max-reorg-resequence-depth` | int                                        maximum number of messages to attempt to resequence on reorg (0 = never resequence, -1 = always resequence) | `1024`
