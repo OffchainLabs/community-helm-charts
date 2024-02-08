@@ -156,7 +156,6 @@ extraEnv:
 
 | Name                                            | Description                                                                 | Value                       |
 | ----------------------------------------------- | --------------------------------------------------------------------------- | --------------------------- |
-| `chain.name`                                    | Name of the chain                                                           | `CHANGEME`                  |
 | `replicaCount`                                  | Number of replicas                                                          | `1`                         |
 | `image.repository`                              | Docker image repository                                                     | `offchainlabs/nitro-node`   |
 | `image.pullPolicy`                              | Docker image pull policy                                                    | `Always`                    |
@@ -181,6 +180,7 @@ extraEnv:
 | `serviceMonitor.portName`                       | Name of the port to monitor                                                 | `metrics`                   |
 | `serviceMonitor.path`                           | Path to monitor                                                             | `/debug/metrics/prometheus` |
 | `serviceMonitor.interval`                       | Interval to monitor                                                         | `5s`                        |
+| `serviceMonitor.relabelings`                    | Add relabelings for the metrics being scraped                               | `{}`                        |
 | `perReplicaService.enabled`                     | Enable per replica service                                                  | `false`                     |
 | `headlessservice.enabled`                       | Enable headless service                                                     | `false`                     |
 | `pdb.enabled`                                   | Enable pod disruption budget                                                | `false`                     |
