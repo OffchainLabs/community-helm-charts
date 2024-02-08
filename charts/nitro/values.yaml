@@ -56,11 +56,13 @@ persistence:
 ## @param serviceMonitor.portName Name of the port to monitor
 ## @param serviceMonitor.path Path to monitor
 ## @param serviceMonitor.interval Interval to monitor
+## @param serviceMonitor.relabelings Add relabelings for the metrics being scraped
 serviceMonitor:
   enabled: false
   portName: metrics
   path: /debug/metrics/prometheus
   interval: 5s
+  relabelings: {}
 
 ## @param perReplicaService.enabled Enable a service for each sts replica
 perReplicaService:
@@ -261,8 +263,10 @@ validator:
     extraPorts: []
 
     ## @param validator.statefulset.metrics.enabled Enable metrics for the validator statefulset
+    ## @param validator.statefulset.metrics.relabelings Add relabelings for the metrics being scraped
     metrics:
       enabled: false
+      relabelings: {}
 
     ## @param validator.statefulset.podAnnotations Annotations for the stateless validator pod
     podAnnotations: {}

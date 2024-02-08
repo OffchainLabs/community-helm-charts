@@ -79,11 +79,13 @@ startupProbe:
 ## @param serviceMonitor.portName Port name for prometheus service monitor
 ## @param serviceMonitor.path Path for prometheus service monitor
 ## @param serviceMonitor.interval Interval for prometheus service monitor
+## @param serviceMonitor.relabelings Add relabelings for the metrics being scraped
 serviceMonitor:
   enabled: false
   portName: metrics
   path: /debug/metrics/prometheus
   interval: 5s
+  relabelings: {}
 
 ## @param perReplicaService.enabled Enable per replica service
 perReplicaService:

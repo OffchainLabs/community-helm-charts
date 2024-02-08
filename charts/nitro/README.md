@@ -95,6 +95,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `serviceMonitor.portName`                    | Name of the port to monitor                                  | `metrics`                                                   |
 | `serviceMonitor.path`                        | Path to monitor                                              | `/debug/metrics/prometheus`                                 |
 | `serviceMonitor.interval`                    | Interval to monitor                                          | `5s`                                                        |
+| `serviceMonitor.relabelings`                 | Add relabelings for the metrics being scraped                | `{}`                                                        |
 | `perReplicaService.enabled`                  | Enable a service for each sts replica                        | `false`                                                     |
 | `jwtSecret.enabled`                          | Enable a jwt secret for use with the stateless validator     | `false`                                                     |
 | `jwtSecret.value`                            | Value of the jwt secret for use with the stateless validator | `""`                                                        |
@@ -168,6 +169,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.statefulset.extraEnv`                           | Extra environment variables for the validator container  | `{}`                 |
 | `validator.statefulset.extraPorts`                         | Additional ports for the stateless validator pod         | `[]`                 |
 | `validator.statefulset.metrics.enabled`                    | Enable metrics for the validator statefulset             | `false`              |
+| `validator.statefulset.metrics.relabelings`                | Add relabelings for the metrics being scraped            | `{}`                 |
 | `validator.statefulset.podAnnotations`                     | Annotations for the stateless validator pod              | `{}`                 |
 
 ## Configuration Options

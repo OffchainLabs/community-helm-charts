@@ -59,11 +59,13 @@ persistence:
 ## @param serviceMonitor.portName Name of the port to monitor
 ## @param serviceMonitor.path Path to monitor
 ## @param serviceMonitor.interval Interval to monitor
+## @param serviceMonitor.relabelings Add relabelings for the metrics being scraped
 serviceMonitor:
   enabled: false
   portName: metrics
   path: /debug/metrics/prometheus
   interval: 5s
+  relabelings: {}
 
 ## @param perReplicaService.enabled Enable per replica service
 perReplicaService:

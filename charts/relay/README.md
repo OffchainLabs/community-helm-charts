@@ -69,6 +69,7 @@ helm install <my-release> offchainlabs/relay \
 | `serviceMonitor.portName`                         | Port name for prometheus service monitor         | `metrics`                   |
 | `serviceMonitor.path`                             | Path for prometheus service monitor              | `/debug/metrics/prometheus` |
 | `serviceMonitor.interval`                         | Interval for prometheus service monitor          | `5s`                        |
+| `serviceMonitor.relabelings`                      | Add relabelings for the metrics being scraped    | `{}`                        |
 | `perReplicaService.enabled`                       | Enable per replica service                       | `false`                     |
 | `pdb.enabled`                                     | Enable pod disruption budget                     | `false`                     |
 | `pdb.minAvailable`                                | Minimum number of available pods                 | `75%`                       |
