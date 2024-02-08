@@ -1,9 +1,5 @@
 ## @section Nitro Deployment Options
 
-## @param chain.name Name of the chain
-chain:
-  name: CHANGEME
-
 ## @param replicaCount Number of replicas to deploy
 ##
 replicaCount: 1
@@ -60,11 +56,13 @@ persistence:
 ## @param serviceMonitor.portName Name of the port to monitor
 ## @param serviceMonitor.path Path to monitor
 ## @param serviceMonitor.interval Interval to monitor
+## @param serviceMonitor.relabelings Add relabelings for the metrics being scraped
 serviceMonitor:
   enabled: false
   portName: metrics
   path: /debug/metrics/prometheus
   interval: 5s
+  relabelings: {}
 
 ## @param perReplicaService.enabled Enable a service for each sts replica
 perReplicaService:
@@ -154,8 +152,10 @@ configmap:
       connection:
         url: ""
 
+    ## @param configmap.data.chain.name Name of the chain
     ## @param configmap.data.chain.id ID of the chain
     chain:
+      name: ""
       id: 42161
 
     ## @param configmap.data.log-type Type of log
