@@ -152,10 +152,8 @@ configmap:
       connection:
         url: ""
 
-    ## @param configmap.data.chain.name Name of the chain
     ## @param configmap.data.chain.id ID of the chain
     chain:
-      name: ""
       id: 42161
 
     ## @param configmap.data.log-type Type of log
