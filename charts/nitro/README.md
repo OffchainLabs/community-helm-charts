@@ -170,6 +170,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.statefulset.extraEnv`                           | Extra environment variables for the validator container  | `{}`                 |
 | `validator.statefulset.extraPorts`                         | Additional ports for the stateless validator pod         | `[]`                 |
 | `validator.statefulset.metrics.enabled`                    | Enable metrics for the validator statefulset             | `false`              |
+| `validator.statefulset.metrics.relabelings`                | Add relabelings for the metrics being scraped            | `{}`                 |
 | `validator.statefulset.podAnnotations`                     | Annotations for the stateless validator pod              | `{}`                 |
 
 ## Configuration Options
