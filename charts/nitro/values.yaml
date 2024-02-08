@@ -265,8 +265,10 @@ validator:
     extraPorts: []
 
     ## @param validator.statefulset.metrics.enabled Enable metrics for the validator statefulset
+    ## @param validator.statefulset.metrics.relabelings Add relabelings for the metrics being scraped
     metrics:
       enabled: false
+      relabelings: {}
 
     ## @param validator.statefulset.podAnnotations Annotations for the stateless validator pod
     podAnnotations: {}
