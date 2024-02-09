@@ -64,8 +64,7 @@ jobs:
           
           # Format the entire string for --helm-extra-set-args, ensuring it's properly quoted
           helm_extra_set_args="--set ${secrets_for_helm}"
-          # Print the formatted string for debugging
-          echo "helm_extra_set_args=${helm_extra_set_args}"
+          
           # Use the command directly or set the HELM_EXTRA_SET_ARGS environment variable for later use in the workflow
           echo "HELM_EXTRA_SET_ARGS=${helm_extra_set_args}" >> $GITHUB_ENV
         
