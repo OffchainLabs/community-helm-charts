@@ -127,6 +127,9 @@ configmap:
 
   ## @extra configmap.data Data for the configmap. See Configuration Options for the full list of available options
   data:
+    ## @param configmap.data.env-prefix Environment variable prefix
+    env-prefix: "NITRO"
+
     ## @param configmap.data.log-type Log type
     log-type: "json"
 
