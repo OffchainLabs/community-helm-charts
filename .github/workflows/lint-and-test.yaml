@@ -70,24 +70,39 @@ jobs:
           fi
 
       - name: Prepare CI secrets for Helm as a single quoted string
+        env:
+          CI_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.CI_TEST_ACCOUNT_PRIVATE_KEY }}
+          CI_PARENT_CHAIN_URL_SEPOLIA: ${{ secrets.CI_PARENT_CHAIN_URL_SEPOLIA }}
+          CI_BASELINE_RPC_KEY_SEPOLIA: ${{ secrets.CI_BASELINE_RPC_KEY_SEPOLIA }}
+          # Map additional secrets as needed
         run: |
           secrets_for_helm=""
-          for secret in $(env | grep -oP '^CI_\w+'); do
-            # Extract the variable name without the CI_ prefix
-            variable_name=$(echo $secret | sed 's/^CI_//')
+          # Capture all 'CI_' prefixed environment variables into an array
+          IFS=$'\n' read -r -d '' -a secret_names < <(env | grep '^CI_' | sed 's/=.*//' && printf '\0')
+          
+          for secret_name in "${secret_names[@]}"; do
+            # Extract the variable name without the CI_ prefix for Helm values
+            variable_name=$(echo $secret_name | sed 's/^CI_//')
+            # Get the value of the dynamic variable name
+            secret_value=${!secret_name}
             # Append to the secrets string in the required format
             if [ -z "$secrets_for_helm" ]; then
-              secrets_for_helm="ci.secrets.${variable_name}=${!secret}"
+              secrets_for_helm="ci.secrets.${variable_name}=${secret_value}"
             else
-              secrets_for_helm="${secrets_for_helm},ci.secrets.${variable_name}=${!secret}"
+              secrets_for_helm="${secrets_for_helm},ci.secrets.${variable_name}=${secret_value}"
             fi
           done
+          
+          # Remove the initial comma to clean up the format
+          secrets_for_helm=${secrets_for_helm#,}
+          
           # Format the entire string for --helm-extra-set-args, ensuring it's properly quoted
-          helm_extra_set_args="'--set ${secrets_for_helm}'"
+          helm_extra_set_args="--set ${secrets_for_helm}"
           # Print the formatted string for debugging
           echo "helm_extra_set_args=${helm_extra_set_args}"
-          # Set the HELM_EXTRA_SET_ARGS environment variable for later use in the workflow
+          # Use the command directly or set the HELM_EXTRA_SET_ARGS environment variable for later use in the workflow
           echo "HELM_EXTRA_SET_ARGS=${helm_extra_set_args}" >> $GITHUB_ENV
+        
         
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
