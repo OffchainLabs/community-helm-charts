@@ -1,0 +1,95 @@
+name: Lint and Test Charts
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.11.2
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          check-latest: true
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.0
+
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml)
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run chart-testing (lint)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct lint --target-branch ${{ github.event.repository.default_branch }} --lint-conf lintconf.yaml --config ct.yaml
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    if: needs.lint.result == 'success'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.11.2
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.0
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.8.0
+
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml)
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prepare CI secrets for Helm as a single quoted string
+        run: |
+          secrets_for_helm=""
+          for secret in $(env | grep -oP '^CI_\w+'); do
+            # Extract the variable name without the CI_ prefix
+            variable_name=$(echo $secret | sed 's/^CI_//')
+            # Append to the secrets string in the required format
+            if [ -z "$secrets_for_helm" ]; then
+              secrets_for_helm="ci.secrets.${variable_name}=${!secret}"
+            else
+              secrets_for_helm="${secrets_for_helm},ci.secrets.${variable_name}=${!secret}"
+            fi
+          done
+          # Format the entire string for --helm-extra-set-args, ensuring it's properly quoted
+          helm_extra_set_args="'--set ${secrets_for_helm}'"
+          # Print the formatted string for debugging
+          echo "helm_extra_set_args=${helm_extra_set_args}"
+          # Set the HELM_EXTRA_SET_ARGS environment variable for later use in the workflow
+          echo "HELM_EXTRA_SET_ARGS=${helm_extra_set_args}" >> $GITHUB_ENV
+        
+      - name: Run chart-testing (install)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --upgrade --helm-extra-set-args $HELM_EXTRA_SET_ARGS
+

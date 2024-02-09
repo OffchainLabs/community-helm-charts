@@ -270,3 +270,7 @@ validator:
 
     ## @param validator.statefulset.podAnnotations Annotations for the stateless validator pod
     podAnnotations: {}
+
+ci:
+  debug:
+    enabled: false
