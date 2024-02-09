@@ -1,0 +1,81 @@
+name: Test Charts (Install)
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-install:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.11.2
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.0
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.8.0
+
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml)
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prepare CI secrets for Helm as a single quoted string
+        if: steps.list-changed.outputs.changed == 'true'
+        env:
+          CI_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.CI_TEST_ACCOUNT_PRIVATE_KEY }}
+          CI_PARENT_CHAIN_URL_SEPOLIA: ${{ secrets.CI_PARENT_CHAIN_URL_SEPOLIA }}
+          CI_BASELINE_RPC_KEY_SEPOLIA: ${{ secrets.CI_BASELINE_RPC_KEY_SEPOLIA }}
+          # Map additional secrets as needed
+        run: |
+          secrets_for_helm=""
+          # Capture all 'CI_' prefixed environment variables into an array
+          IFS=$'\n' read -r -d '' -a secret_names < <(env | grep '^CI_' | sed 's/=.*//' && printf '\0')
+          
+          for secret_name in "${secret_names[@]}"; do
+            # Extract the variable name without the CI_ prefix for Helm values
+            variable_name=$(echo $secret_name | sed 's/^CI_//')
+            # Get the value of the dynamic variable name
+            secret_value=${!secret_name}
+            # Append to the secrets string in the required format
+            if [ -z "$secrets_for_helm" ]; then
+              secrets_for_helm="ci.secrets.${variable_name}=${secret_value}"
+            else
+              secrets_for_helm="${secrets_for_helm},ci.secrets.${variable_name}=${secret_value}"
+            fi
+          done
+          
+          # Remove the initial comma to clean up the format
+          secrets_for_helm=${secrets_for_helm#,}
+          
+          # Format the entire string for --helm-extra-set-args, ensuring it's properly quoted
+          helm_extra_set_args="--set ${secrets_for_helm}"
+          # Print the formatted string for debugging
+          echo "helm_extra_set_args=${helm_extra_set_args}"
+          # Use the command directly or set the HELM_EXTRA_SET_ARGS environment variable for later use in the workflow
+          echo "HELM_EXTRA_SET_ARGS=${helm_extra_set_args}" >> $GITHUB_ENV
+        
+        
+      - name: Run chart-testing (install)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          #print the HELM_EXTRA_SET_ARGS for debugging
+          echo "HELM_EXTRA_SET_ARGS=${HELM_EXTRA_SET_ARGS}"
+          #print environment variables for debugging
+          env
+          ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
+

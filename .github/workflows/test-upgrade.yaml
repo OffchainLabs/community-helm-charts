@@ -1,4 +1,4 @@
-name: Lint and Test Charts
+name: Test Charts (Upgrade)
 
 on:
   pull_request:
@@ -6,43 +6,8 @@ on:
       - main
 
 jobs:
-  lint:
+  test-upgrade:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: v3.11.2
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-          check-latest: true
-
-      - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.6.0
-
-      - name: Run chart-testing (list-changed)
-        id: list-changed
-        run: |
-          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml)
-          if [[ -n "$changed" ]]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Run chart-testing (lint)
-        if: steps.list-changed.outputs.changed == 'true'
-        run: ct lint --target-branch ${{ github.event.repository.default_branch }} --lint-conf lintconf.yaml --config ct.yaml
-
-  test:
-    runs-on: ubuntu-latest
-    needs: lint
-    if: needs.lint.result == 'success'
 
     steps:
       - name: Checkout
@@ -70,6 +35,7 @@ jobs:
           fi
 
       - name: Prepare CI secrets for Helm as a single quoted string
+        if: steps.list-changed.outputs.changed == 'true'
         env:
           CI_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.CI_TEST_ACCOUNT_PRIVATE_KEY }}
           CI_PARENT_CHAIN_URL_SEPOLIA: ${{ secrets.CI_PARENT_CHAIN_URL_SEPOLIA }}
@@ -111,5 +77,5 @@ jobs:
           echo "HELM_EXTRA_SET_ARGS=${HELM_EXTRA_SET_ARGS}"
           #print environment variables for debugging
           env
-          ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
+          ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --upgrade --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
 
