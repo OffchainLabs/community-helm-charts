@@ -272,5 +272,8 @@ validator:
     podAnnotations: {}
 
 ci:
+  secretManifest:
+    enabled: false
+
   debug:
     enabled: false
