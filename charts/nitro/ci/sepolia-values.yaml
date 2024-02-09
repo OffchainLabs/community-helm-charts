@@ -1,6 +1,8 @@
 startupProbe:
   enabled: false
 
+diagnosticMode: false
+
 readinessProbe:
   enabled: true
   tcpSocket:
@@ -19,10 +21,12 @@ extraEnv:
   - name: NITRO_PARENT__CHAIN_CONNECTION_URL
     valueFrom:
       secretKeyRef:
-        name: ci-secret
+        name: ci-secret-nitro
         key: PARENT_CHAIN_URL_SEPOLIA
 
 ci:
+  nitro-secret:
+    enabled: true
   logLevel: INFO
 
   rpc:
@@ -31,3 +35,5 @@ ci:
 
   testAccount:
     privateKey: $TEST_ACCOUNT_PRIVATE_KEY
+  secretManifest:
+    enabled: true
