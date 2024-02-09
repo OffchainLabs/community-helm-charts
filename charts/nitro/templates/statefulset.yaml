@@ -106,17 +106,17 @@ spec:
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             {{- if and .Values.livenessProbe.exec (kindIs "string" .Values.livenessProbe.exec.command) }}
-            {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
+            {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 12 }}
             exec:
               command:
                 {{- tpl .Values.livenessProbe.exec.command . | nindent 14 }}
             {{- else }}
-            {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 10 }}
+            {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 12 }}
             {{- end }}
           {{- end }}
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-            {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 10 }}
+            {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- if and .Values.startupProbe.enabled .Values.configmap.data.http .Values.configmap.data.http.port }}
           startupProbe:
@@ -131,7 +131,7 @@ spec:
           {{- end }}
           env:
           {{- with .Values.extraEnv }}
-          {{- toYaml . | nindent 10 }}
+          {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- end }}
           {{- if .Values.persistence.enabled }}
