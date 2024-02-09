@@ -106,5 +106,10 @@ jobs:
         
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
-        run: ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --upgrade --helm-extra-set-args $HELM_EXTRA_SET_ARGS
+        run: |
+          #print the HELM_EXTRA_SET_ARGS for debugging
+          echo "HELM_EXTRA_SET_ARGS=${HELM_EXTRA_SET_ARGS}"
+          #print environment variables for debugging
+          env
+          ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --upgrade --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
 
