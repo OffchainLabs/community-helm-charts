@@ -13,7 +13,7 @@ readinessProbe:
 configmap:
   data:
     conf:
-      env-prefix: "NITROCIFAIL"
+      env-prefix: "NITROCI"
     chain:
       id: 421614
     parent-chain:
