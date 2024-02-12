@@ -203,6 +203,14 @@ validator:
         origins: "*"
         jwtsecret: "/secrets/jwtsecret"
 
+      ## @param validator.configmap.data.metrics Enable metrics
+      ## @param validator.configmap.data.metrics-server.addr Address to bind metrics server to
+      ## @param validator.configmap.data.metrics-server.port Port to bind metrics server to
+      metrics: false
+      metrics-server:
+        addr: "0.0.0.0"
+        port: 6070
+
   ## @param validator.extraArgs Extra arguments for the validator container
   extraArgs: []
 
