@@ -10,7 +10,7 @@ data:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "nitro.fullname" . }}-test-connection"
+  name: "{{ include "nitro.fullname" . }}-nitro-test"
   labels:
     {{- include "nitro.labels" . | nindent 4 }}
   annotations:
