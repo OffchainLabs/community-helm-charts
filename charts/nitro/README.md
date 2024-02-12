@@ -148,6 +148,9 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.configmap.data.auth.port`                       | Port to bind auth service to                             | `8549`                      |
 | `validator.configmap.data.auth.origins`                    | Origins to allow to access auth service                  | `*`                         |
 | `validator.configmap.data.auth.jwtsecret`                  | Path to jwt secret for auth service                      | `/secrets/jwtsecret`        |
+| `validator.configmap.data.metrics`                         | Enable metrics                                           | `false`                     |
+| `validator.configmap.data.metrics-server.addr`             | Address to bind metrics server to                        | `0.0.0.0`                   |
+| `validator.configmap.data.metrics-server.port`             | Port to bind metrics server to                           | `6070`                      |
 | `validator.extraArgs`                                      | Extra arguments for the validator container              | `[]`                        |
 | `validator.serviceMonitor.enabled`                         | Enable service monitor CRD for prometheus operator       | `false`                     |
 | `validator.serviceMonitor.portName`                        | Name of the port to monitor                              | `metrics`                   |
