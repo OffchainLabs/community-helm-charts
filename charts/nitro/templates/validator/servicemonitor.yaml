@@ -1,4 +1,4 @@
-{{- if and $.Values.validator.enabled $.Values.validator.statefulset.metrics.enabled }}
+{{- if and $.Values.validator.enabled $.Values.validator.serviceMonitor.enabled }}
 {{- $fullName := include "nitro.fullname" . }}
 {{- $labels := include "nitro.labels" . }}
 {{- $selectorLabels := include "nitro.selectorLabels" .}}
@@ -15,13 +15,26 @@ spec:
       {{- $selectorLabels | nindent 6 }}
       function: arb-validator
   endpoints:
-  - port: metrics
-    interval: 5s
-    path: /debug/metrics
-    scheme: http
-    {{- with .Values.validator.statefulset.metrics.relabelings }}
-    relabelings: {{- toYaml . | nindent 4 }}
-    {{- end }}
+    - port: {{ .Values.validator.serviceMonitor.portName | default "http" }}
+      {{- if .Values.validator.serviceMonitor.interval }}
+      interval: {{ .Values.validator.serviceMonitor.interval }}
+      {{- end }}
+      {{- if .Values.validator.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.validator.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+      {{- if .Values.validator.serviceMonitor.path }}
+      path: {{ .Values.validator.serviceMonitor.path }}
+      {{- end }}
+      {{- if .Values.validator.serviceMonitor.scheme }}
+      scheme: {{ .Values.validator.serviceMonitor.scheme }}
+      {{- end }}
+      {{- if .Values.validator.serviceMonitor.tlsConfig }}
+      tlsConfig: 
+        {{- toYaml .Values.validator.serviceMonitor.tlsConfig | nindent 8 }}
+      {{- end }}
+      {{- with .Values.validator.serviceMonitor.relabelings }}
+      relabelings: {{- toYaml . | nindent 8 }}
+      {{- end }}
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}

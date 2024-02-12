@@ -18,9 +18,9 @@ spec:
       protocol: TCP
       name: auth
   {{- end }}
-  {{- if $.Values.validator.statefulset.metrics.enabled }}
-    - port: {{ $.Values.validator.statefulset.metrics.port }}
-      targetPort: {{ $.Values.validator.statefulset.metrics.port }}
+  {{- if .Values.validator.configmap.data.metrics }}
+    - port: {{ index .Values "validator" "configmap" "data" "metrics-server" "port" }}
+      targetPort: metrics
       protocol: TCP
       name: metrics
   {{- end }}
