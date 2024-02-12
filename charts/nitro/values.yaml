@@ -262,10 +262,16 @@ validator:
     ## @param validator.statefulset.extraPorts Additional ports for the stateless validator pod
     extraPorts: []
 
-    ## @param validator.statefulset.metrics.enabled Enable metrics for the validator statefulset
-    ## @param validator.statefulset.metrics.relabelings Add relabelings for the metrics being scraped
-    metrics:
+    ## @param validator.serviceMonitor.enabled Enable service monitor CRD for prometheus operator
+    ## @param validator.serviceMonitor.portName Name of the port to monitor
+    ## @param validator.serviceMonitor.path Path to monitor
+    ## @param validator.serviceMonitor.interval Interval to monitor
+    ## @param validator.serviceMonitor.relabelings Add relabelings for the metrics being scraped
+    serviceMonitor:
       enabled: false
+      portName: metrics
+      path: /debug/metrics/prometheus
+      interval: 5s
       relabelings: {}
 
     ## @param validator.statefulset.podAnnotations Annotations for the stateless validator pod

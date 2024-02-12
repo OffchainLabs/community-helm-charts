@@ -71,7 +71,9 @@ spec:
         image: "{{ .Values.validator.image.repository | default .Values.image.repository }}:{{ .Values.validator.image.tag | default .Values.image.tag | default .Chart.AppVersion }}"
         command: ["/usr/local/bin/nitro-val"]
         args:
-          - --conf.env-prefix=NITRO
+          {{- if .Values.validator.configmap.data.metrics}}
+          - --metrics
+          {{- end }}
           {{- if .Values.validator.statefulset.useConfigmap }}
           - --conf.file=/config/config.json
           {{- end }}
@@ -84,6 +86,16 @@ spec:
         {{- if .Values.validator.statefulset.auth.enabled }}
         - name: auth
           containerPort: {{ .Values.validator.statefulset.auth.port }}
+        {{- end }}
+        {{- if .Values.validator.configmap.data.metrics }}
+        - name: metrics
+          containerPort: {{ index .Values "validator" "configmap" "data" "metrics-server" "port" }}
+          protocol: TCP
+        {{- end }}
+        {{- if .Values.validator.configmap.data.pprof }}
+        - name: pprof
+          containerPort: {{ index .Values "validator" "configmap" "data" "pprof-cfg" "port" }}
+          protocol: TCP
         {{- end }}
         {{- range .Values.validator.statefulset.extraPorts }}
         - name: {{ .name }}
