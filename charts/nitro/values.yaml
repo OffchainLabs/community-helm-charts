@@ -203,8 +203,28 @@ validator:
         origins: "*"
         jwtsecret: "/secrets/jwtsecret"
 
+      ## @param validator.configmap.data.metrics Enable metrics
+      ## @param validator.configmap.data.metrics-server.addr Address to bind metrics server to
+      ## @param validator.configmap.data.metrics-server.port Port to bind metrics server to
+      metrics: false
+      metrics-server:
+        addr: "0.0.0.0"
+        port: 6070
+
   ## @param validator.extraArgs Extra arguments for the validator container
   extraArgs: []
+
+  ## @param validator.serviceMonitor.enabled Enable service monitor CRD for prometheus operator
+  ## @param validator.serviceMonitor.portName Name of the port to monitor
+  ## @param validator.serviceMonitor.path Path to monitor
+  ## @param validator.serviceMonitor.interval Interval to monitor
+  ## @param validator.serviceMonitor.relabelings Add relabelings for the metrics being scraped
+  serviceMonitor:
+    enabled: false
+    portName: metrics
+    path: /debug/metrics/prometheus
+    interval: 5s
+    relabelings: {}
 
   statefulset:
     ## @param validator.statefulset.useConfigmap Use the configmap for the validator container
@@ -261,12 +281,6 @@ validator:
 
     ## @param validator.statefulset.extraPorts Additional ports for the stateless validator pod
     extraPorts: []
-
-    ## @param validator.statefulset.metrics.enabled Enable metrics for the validator statefulset
-    ## @param validator.statefulset.metrics.relabelings Add relabelings for the metrics being scraped
-    metrics:
-      enabled: false
-      relabelings: {}
 
     ## @param validator.statefulset.podAnnotations Annotations for the stateless validator pod
     podAnnotations: {}
