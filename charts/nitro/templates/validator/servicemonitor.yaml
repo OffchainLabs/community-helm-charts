@@ -1,4 +1,4 @@
-{{- if and $.Values.validator.enabled $.Values.validator.statefulset.serviceMonitor.enabled }}
+{{- if and $.Values.validator.enabled $.Values.validator.serviceMonitor.enabled }}
 {{- $fullName := include "nitro.fullname" . }}
 {{- $labels := include "nitro.labels" . }}
 {{- $selectorLabels := include "nitro.selectorLabels" .}}
