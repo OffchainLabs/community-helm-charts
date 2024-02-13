@@ -67,7 +67,7 @@ spec:
       {{- toYaml . | nindent 6 }}
       {{- end }}
       containers:
-      - name: validator
+      - name: {{ .Chart.Name }}-stateless
         image: "{{ .Values.validator.image.repository | default .Values.image.repository }}:{{ .Values.validator.image.tag | default .Values.image.tag | default .Chart.AppVersion }}"
         command: ["/usr/local/bin/nitro-val"]
         args:
