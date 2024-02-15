@@ -129,10 +129,10 @@ spec:
             failureThreshold: {{ .Values.startupProbe.failureThreshold }}
             periodSeconds: {{ .Values.startupProbe.periodSeconds }}
           {{- end }}
+          {{- end }}
           env:
           {{- with .Values.extraEnv }}
           {{- toYaml . | nindent 12 }}
-          {{- end }}
           {{- end }}
           {{- if .Values.persistence.enabled }}
           volumeMounts:

@@ -127,6 +127,10 @@ configmap:
 
   ## @extra configmap.data Data for the configmap. See Configuration Options for the full list of available options
   data:
+    ## @param configmap.data.conf.env-prefix Environment variable prefix
+    conf:
+      env-prefix: "NITRO"
+
     ## @param configmap.data.log-type Log type
     log-type: "json"
 
@@ -211,3 +215,11 @@ configmap:
       addr: "0.0.0.0"
       port: 6070
       update-interval: "5s"
+
+## @skip ci
+ci:
+  secretManifest:
+    enabled: false
+
+  debug:
+    enabled: false

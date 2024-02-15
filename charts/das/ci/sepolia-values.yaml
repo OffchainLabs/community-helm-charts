@@ -1,0 +1,20 @@
+configmap:
+  data:
+    conf:
+      env-prefix: "NITROCI"
+    data-availability:
+      sequencer-inbox-address: "0x6c97864CE4bEf387dE0b3310A44230f7E3F1be0D"
+      local-file-storage:
+        enable: true
+        data-dir: "/data"
+
+extraEnv:
+  - name: NITROCI_DATA__AVAILABILITY_PARENT__CHAIN__NODE__URL
+    valueFrom:
+      secretKeyRef:
+        name: ci-secret-nitro
+        key: PARENT_CHAIN_URL_SEPOLIA
+
+ci:
+  secretManifest:
+    enabled: true

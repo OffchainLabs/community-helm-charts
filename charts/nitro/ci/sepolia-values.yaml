@@ -1,0 +1,41 @@
+startupProbe:
+  enabled: false
+
+diagnosticMode: false
+
+readinessProbe:
+  enabled: true
+  tcpSocket:
+    port: http-rpc
+  initialDelaySeconds: 10
+  periodSeconds: 3
+
+configmap:
+  data:
+    conf:
+      env-prefix: "NITROCI"
+    chain:
+      id: 421614
+    parent-chain:
+      id: 11155111
+
+extraEnv:
+  - name: NITROCI_PARENT__CHAIN_CONNECTION_URL
+    valueFrom:
+      secretKeyRef:
+        name: ci-secret-nitro
+        key: PARENT_CHAIN_URL_SEPOLIA
+
+ci:
+  nitro-secret:
+    enabled: true
+  logLevel: INFO
+
+  rpc:
+    baselineUrl: https://sepolia-rollup.arbitrum.io/rpc/$BASELINE_RPC_KEY_SEPOLIA
+    url: $RPC_URL
+
+  testAccount:
+    privateKey: $TEST_ACCOUNT_PRIVATE_KEY
+  secretManifest:
+    enabled: true

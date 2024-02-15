@@ -1,0 +1,6 @@
+configmap:
+  data:
+    node:
+      feed:
+        input:
+          url: wss://sepolia-rollup.arbitrum.io/feed

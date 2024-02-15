@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "nitro.fullname" . }}-ci-configmap"
+data:
+  config.yaml: |
+    {{- $ciValues := omit .Values.ci "secrets" }}
+    {{- toYaml $ciValues | nindent 4 }}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "nitro.fullname" . }}-nitro-test"
+  labels:
+    {{- include "nitro.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+  - name: sre-nitro-test-suite
+    image: public.ecr.aws/f6s7v9z5/offchain-labs/sre-nitro-test:v0.0.6
+    {{- if .Values.ci.debug.enabled }}
+    command: ["/bin/sh", "-c", "--"]
+    args: ["while true; do sleep 30; done;"]
+    {{- end }}
+    volumeMounts:
+    - name: config-volume
+      mountPath: "/config"
+      readOnly: true
+    envFrom:
+    - secretRef:
+        name: "ci-secret-nitro"
+    env:
+    - name: RPC_URL
+      value: http://{{ include "nitro.fullname" . }}:{{ .Values.configmap.data.http.port }}{{ .Values.configmap.data.http.rpcprefix }}
+  volumes:
+  - name: config-volume
+    configMap:
+      name: "{{ include "nitro.fullname" . }}-ci-configmap"
+
+  restartPolicy: Never

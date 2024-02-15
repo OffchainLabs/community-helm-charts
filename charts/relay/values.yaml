@@ -146,6 +146,10 @@ configmap:
     chain:
       id: 42161
 
+    ## @param configmap.data.conf.env-prefix Environment variable prefix
+    conf:
+      env-prefix: "NITRO"
+
     ## @param configmap.data.log-type Log type
     log-type: "json"
 
