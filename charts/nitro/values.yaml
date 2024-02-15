@@ -131,6 +131,10 @@ configmap:
   enabled: true
   ## @extra configmap.data See Configuration Options for the full list of options
   data:
+    ## @param configmap.data.conf.env-prefix Environment variable prefix
+    conf:
+      env-prefix: "NITRO"
+
     ## @param configmap.data.http.addr Address to bind http service to
     ## @param configmap.data.http.api List of apis to enable
     ## @param configmap.data.http.corsdomain CORS domain
@@ -284,3 +288,11 @@ validator:
 
     ## @param validator.statefulset.podAnnotations Annotations for the stateless validator pod
     podAnnotations: {}
+
+## @skip ci
+ci:
+  secretManifest:
+    enabled: false
+
+  debug:
+    enabled: false
