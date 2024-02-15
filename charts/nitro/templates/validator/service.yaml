@@ -9,6 +9,7 @@ metadata:
   name: {{ $fullName }}-validator
   labels:
     {{- $labels | nindent 4 }}
+    function: arb-validator
 spec:
   type: ClusterIP
   ports:
