@@ -8,6 +8,6 @@ metadata:
 data:
   config.json: |
     {{- if .Values.configmap.enabled }}
-    {{- .Values.configmap.data | toPrettyJson | replace "\\u0026" "&" | nindent 4 }}
+    {{- .Values.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" | nindent 4 }}
     {{- end }}
 {{- end }}
