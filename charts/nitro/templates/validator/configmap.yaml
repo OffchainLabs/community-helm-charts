@@ -8,7 +8,7 @@ metadata:
 data:
   config.json: |
   {{- if  and .Values.validator.configmap  .Values.validator.configmap.data }}
-    {{- .Values.validator.configmap.data | toPrettyJson | nindent 4 }}
+    {{- .Values.validator.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" | nindent 4 }}
   {{- end }} 
   
 {{- end }}

@@ -7,5 +7,5 @@ metadata:
     {{- include "nitro.labels" . | nindent 4 }}
 data:
   config.json: |
-    {{- .Values.configmap.data | toPrettyJson | nindent 4 }}
+    {{- .Values.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" | nindent 4 }}
 {{- end }}
