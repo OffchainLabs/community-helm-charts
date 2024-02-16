@@ -28,7 +28,7 @@ helm install <my-release> offchainlabs/das \
 ```
 
 #### DAS
-Running a DAS requires a bls key. The key can be provided as a secret or as a file. See the [Configuration Options](#configuration-options) section for more details.
+Running a DAS as a part of a Data Availability Committee (DAC) requires a BLS key. The key can be provided as a secret or as a file. See the [Configuration Options](#configuration-options) section for more details.
 
 ```yaml
 apiVersion: v1
@@ -46,6 +46,7 @@ helm install <my-release> offchainlabs/das \
 --set configmap.data.data-availability.sequencer-inbox-address=<SEQUENCER_INBOX_ADDRESS> \
 --set configmap.data.data-availability.local-file-storage.enable=true \
 --set configmap.data.data-availability.local-file-storage.data-dir="/data/das-file-storage" \
+--set configmap.data.data-availability.key.key-dir="/data/das-key" \
 --set dasecretName=das-bls
 ```
 
