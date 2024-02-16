@@ -27,7 +27,7 @@ diagnosticMode: false
 ## @param commandOverride Command override for the das container
 commandOverride: {}
 
-## @param livenessProbe livenessProbe
+## @extra livenessProbe livenessProbe
 ## @param livenessProbe.enabled Enable liveness probe
 ## @param livenessProbe.exec.command Command for the liveness probe
 ## @param livenessProbe.initialDelaySeconds Initial delay for the liveness probe
@@ -48,7 +48,7 @@ livenessProbe:
       -H 'Content-Type: application/json' \
       -d '{"jsonrpc":"2.0","id":0,"method":"das_healthCheck","params":[]}'
 
-## @param readinessProbe readinessProbe
+## @extra readinessProbe readinessProbe
 ## @param readinessProbe.enabled Enable readiness probe
 ## @param readinessProbe.exec.command Command for the readiness probe
 ## @param readinessProbe.initialDelaySeconds Initial delay for the readiness probe
@@ -69,7 +69,7 @@ readinessProbe:
       -H 'Content-Type: application/json' \
       -d '{"jsonrpc":"2.0","id":0,"method":"das_healthCheck","params":[]}'
 
-## @param startupProbe startupProbe
+## @extra startupProbe startupProbe
 ## @param startupProbe.enabled Enable startup probe
 startupProbe:
   enabled: false
