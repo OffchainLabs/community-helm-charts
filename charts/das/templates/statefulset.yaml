@@ -99,6 +99,28 @@ spec:
               containerPort: {{ index .Values.configmap.data "rpc-port"}}
               protocol: TCP
             {{- end }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            {{- with .Values.livenessProbe }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            failureThreshold: {{ .failureThreshold }}
+            successThreshold: {{ .successThreshold }}
+            {{- end }}
+            {{- if and (not (index .Values.configmap.data "enable-rpc")) (index .Values.configmap.data "enable-rest") }}
+            httpGet:
+              path: /health
+              port: {{ index .Values.configmap.data "rest-port" }}
+            {{- else }}
+            exec:
+              command:
+                - "bash"
+                - "-c"
+                - |
+                  {{- include "livenessProbe" . | nindent 18 }}
+            {{- end }}
+          {{- end }}
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
             {{- with .Values.readinessProbe }}
@@ -107,16 +129,40 @@ spec:
             timeoutSeconds: {{ .timeoutSeconds }}
             failureThreshold: {{ .failureThreshold }}
             successThreshold: {{ .successThreshold }}
-            {{- if .exec.command }}
+            {{- end }}
+            {{- if and (not (index .Values.configmap.data "enable-rpc")) (index .Values.configmap.data "enable-rest") }}
+            httpGet:
+              path: /health
+              port: {{ index .Values.configmap.data "rest-port" }}
+            {{- else }}
             exec:
               command:
-              - sh
-              - -c
-              - 
-                {{- $port := int (index $.Values.configmap.data "rpc-port") -}}
-                {{- $cmd := .exec.command | replace "PORT" (toString $port) -}}
-                {{- tpl $cmd $ }}
+                - "bash"
+                - "-c"
+                - |
+                  {{- include "readinessProbe" . | nindent 18 }}
             {{- end }}
+          {{- end }}
+          {{- if .Values.startupProbe.enabled }}
+          startupProbe:
+            {{- with .Values.startupProbe }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            failureThreshold: {{ .failureThreshold }}
+            successThreshold: {{ .successThreshold }}
+            {{- end }}
+            {{- if and (not (index .Values.configmap.data "enable-rpc")) (index .Values.configmap.data "enable-rest") }}
+            httpGet:
+              path: /health
+              port: {{ index .Values.configmap.data "rest-port" }}
+            {{- else }}
+            exec:
+              command:
+                - "bash"
+                - "-c"
+                - |
+                  {{- include "startupProbe" . | nindent 18 }}
             {{- end }}
           {{- end }}
           env:

@@ -42,11 +42,6 @@ livenessProbe:
   timeoutSeconds: 5
   failureThreshold: 3
   successThreshold: 1
-  exec:
-    command: >
-      curl "http://localhost:{{ index .Values.configmap.data 'rpc-port' }}" -X POST \
-      -H 'Content-Type: application/json' \
-      -d '{"jsonrpc":"2.0","id":0,"method":"das_healthCheck","params":[]}'
 
 ## @extra readinessProbe readinessProbe
 ## @param readinessProbe.enabled Enable readiness probe
@@ -63,8 +58,6 @@ readinessProbe:
   timeoutSeconds: 5
   failureThreshold: 3
   successThreshold: 1
-  exec:
-    command: ' curl http://localhost:PORT -X POST -H ''Content-Type: application/json'' -d ''{"jsonrpc":"2.0","id":0,"method":"das_healthCheck","params":[]}'''
 
 ## @extra startupProbe startupProbe
 ## @param startupProbe.enabled Enable startup probe

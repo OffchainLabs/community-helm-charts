@@ -60,3 +60,24 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "startupProbe" -}}
+curl "http://localhost:{{ index .Values.configmap.data "rpc-port" }}" -X POST \
+      -H 'Content-Type: application/json' \
+      -d '{"jsonrpc":"2.0","id":0,"method":"das_healthCheck","params":[]}'
+{{- end -}}
+
+{{- define "livenessProbe" -}}
+curl "http://localhost:{{ index .Values.configmap.data "rpc-port" }}" -X POST \
+      -H 'Content-Type: application/json' \
+      -d '{"jsonrpc":"2.0","id":0,"method":"das_healthCheck","params":[]}'   
+{{- end -}}
+
+{{- define "readinessProbe" -}}
+curl "http://localhost:{{ index .Values.configmap.data "rpc-port" }}" -X POST \
+      -H 'Content-Type: application/json' \
+      -d '{"jsonrpc":"2.0","id":0,"method":"das_healthCheck","params":[]}'   
+{{- end -}}
+
+
+
