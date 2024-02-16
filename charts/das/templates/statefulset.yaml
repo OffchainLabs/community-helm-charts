@@ -101,55 +101,55 @@ spec:
             {{- end }}
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
-            {{- if and (not .Values.configmap.data.enable-rpc) .Values.configmap.data.enable-rest }}
+            {{- if and (not (index .Values.configmap.data "enable-rpc")) (index .Values.configmap.data "enable-rest") }}
             {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
             httpGet:
               path: /health
-              port: {{ .Values.configmap.data.rest-port }}
+              port: {{ index .Values.configmap.data "rest-port" }}
             {{- else }}
-              {{- if and .Values.livenessProbe.exec (kindIs "string" .Values.livenessProbe.exec.command) }}
+              {{- if and .Values.livenessProbe.exec (kindIs "string" (index .Values.livenessProbe.exec "command")) }}
               {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
               exec:
                 command:
-                  {{- tpl .Values.livenessProbe.exec.command . | nindent 14 }}
+                  {{- tpl (index .Values.livenessProbe.exec "command") . | nindent 14 }}
               {{- else }}
-              {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
+              {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 10 }}
               {{- end }}
             {{- end }}
           {{- end }}
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-            {{- if and (not .Values.configmap.data.enable-rpc) .Values.configmap.data.enable-rest }}
+            {{- if and (not (index .Values.configmap.data "enable-rpc")) (index .Values.configmap.data "enable-rest") }}
             {{- omit .Values.readinessProbe "enabled" "exec" | toYaml | nindent 10 }}
             httpGet:
               path: /health
-              port: {{ .Values.configmap.data.rest-port }}
+              port: {{ index .Values.configmap.data "rest-port" }}
             {{- else }}
-              {{- if and .Values.readinessProbe.exec (kindIs "string" .Values.readinessProbe.exec.command) }}
+              {{- if and .Values.readinessProbe.exec (kindIs "string" (index .Values.readinessProbe.exec "command")) }}
               {{- omit .Values.readinessProbe "enabled" "exec" | toYaml | nindent 10 }}
               exec:
                 command:
-                  {{- tpl .Values.readinessProbe.exec.command . | nindent 14 }}
+                  {{- tpl (index .Values.readinessProbe.exec "command") . | nindent 14 }}
               {{- else }}
-              {{- omit .Values.readinessProbe "enabled" "exec" | toYaml | nindent 10 }}
+              {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 10 }}
               {{- end }}
             {{- end }}
           {{- end }}
           {{- if .Values.startupProbe.enabled }}
           startupProbe:
-            {{- if and (not .Values.configmap.data.enable-rpc) .Values.configmap.data.enable-rest }}
+            {{- if and (not (index .Values.configmap.data "enable-rpc")) (index .Values.configmap.data "enable-rest") }}
             {{- omit .Values.startupProbe "enabled" "exec" | toYaml | nindent 10 }}
             httpGet:
               path: /health
-              port: {{ .Values.configmap.data.rest-port }}
+              port: {{ index .Values.configmap.data "rest-port" }}
             {{- else }}
-              {{- if and .Values.startupProbe.exec (kindIs "string" .Values.startupProbe.exec.command) }}
+              {{- if and .Values.startupProbe.exec (kindIs "string" (index .Values.startupProbe.exec "command")) }}
               {{- omit .Values.startupProbessProbe "enabled" "exec" | toYaml | nindent 10 }}
               exec:
                 command:
-                  {{- tpl .Values.startupProbe.exec.command . | nindent 14 }}
+                  {{- tpl (index .Values.startupProbe.exec "command") . | nindent 14 }}
               {{- else }}
-              {{- omit .Values.startupProbe "enabled" "exec" | toYaml | nindent 10 }}
+              {{- omit .Values.startupProbe "enabled" | toYaml | nindent 10 }}
               {{- end }}
             {{- end }}
           {{- end }}
