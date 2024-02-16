@@ -166,11 +166,22 @@ extraEnv:
 | `fullnameOverride`                              | String to fully override das fullname                                       | `""`                        |
 | `diagnosticMode`                                | Enable diagnostics mode (sleep infinity)                                    | `false`                     |
 | `commandOverride`                               | Command override for the das container                                      | `{}`                        |
-| `livenessProbe`                                 | Liveness probe configuration                                                | `{}`                        |
-| `readinessProbe`                                | Readiness probe configuration                                               | `{}`                        |
-| `startupProbe.enabled`                          | Enable built in startup probe                                               | `true`                      |
-| `startupProbe.failureThreshold`                 | Number of failures before pod is considered unhealthy                       | `2419200`                   |
-| `startupProbe.periodSeconds`                    | Number of seconds between startup probes                                    | `1`                         |
+| `livenessProbe`                                 | livenessProbe                                                               |                             |
+| `livenessProbe.enabled`                         | Enable liveness probe                                                       | `true`                      |
+| `livenessProbe.initialDelaySeconds`             | Initial delay for the liveness probe                                        | `60`                        |
+| `livenessProbe.periodSeconds`                   | Period for the liveness probe                                               | `60`                        |
+| `livenessProbe.timeoutSeconds`                  | Timeout for the liveness probe                                              | `5`                         |
+| `livenessProbe.failureThreshold`                | Failure threshold for the liveness probe                                    | `3`                         |
+| `livenessProbe.successThreshold`                | Success threshold for the liveness probe                                    | `1`                         |
+| `readinessProbe`                                | readinessProbe                                                              |                             |
+| `readinessProbe.enabled`                        | Enable readiness probe                                                      | `true`                      |
+| `readinessProbe.initialDelaySeconds`            | Initial delay for the readiness probe                                       | `0`                         |
+| `readinessProbe.periodSeconds`                  | Period for the readiness probe                                              | `5`                         |
+| `readinessProbe.timeoutSeconds`                 | Timeout for the readiness probe                                             | `5`                         |
+| `readinessProbe.failureThreshold`               | Failure threshold for the readiness probe                                   | `3`                         |
+| `readinessProbe.successThreshold`               | Success threshold for the readiness probe                                   | `1`                         |
+| `startupProbe`                                  | startupProbe                                                                |                             |
+| `startupProbe.enabled`                          | Enable startup probe                                                        | `false`                     |
 | `persistence.localdbstorage`                    | This will only be created if local db storage is enabled in the configmap   |                             |
 | `persistence.localdbstorage.size`               | Size of the persistent volume claim                                         | `100Gi`                     |
 | `persistence.localdbstorage.storageClassName`   | Storage class of the persistent volume claim                                | `nil`                       |

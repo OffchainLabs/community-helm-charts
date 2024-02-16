@@ -101,29 +101,69 @@ spec:
             {{- end }}
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
-            {{- if and .Values.livenessProbe.exec (kindIs "string" .Values.livenessProbe.exec.command) }}
-            {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
+            {{- with .Values.livenessProbe }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            failureThreshold: {{ .failureThreshold }}
+            successThreshold: {{ .successThreshold }}
+            {{- end }}
+            {{- if and (not (index .Values.configmap.data "enable-rpc")) (index .Values.configmap.data "enable-rest") }}
+            httpGet:
+              path: /health
+              port: {{ index .Values.configmap.data "rest-port" }}
+            {{- else }}
             exec:
               command:
-                {{- tpl .Values.livenessProbe.exec.command . | nindent 14 }}
-            {{- else }}
-            {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 10 }}
+                - "bash"
+                - "-c"
+                - |
+                  {{- include "livenessProbe" . | nindent 18 }}
             {{- end }}
           {{- end }}
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-            {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 10 }}
+            {{- with .Values.readinessProbe }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            failureThreshold: {{ .failureThreshold }}
+            successThreshold: {{ .successThreshold }}
+            {{- end }}
+            {{- if and (not (index .Values.configmap.data "enable-rpc")) (index .Values.configmap.data "enable-rest") }}
+            httpGet:
+              path: /health
+              port: {{ index .Values.configmap.data "rest-port" }}
+            {{- else }}
+            exec:
+              command:
+                - "bash"
+                - "-c"
+                - |
+                  {{- include "readinessProbe" . | nindent 18 }}
+            {{- end }}
           {{- end }}
-          {{- if and .Values.startupProbe.enabled .Values.configmap.data.http .Values.configmap.data.http.port }}
+          {{- if .Values.startupProbe.enabled }}
           startupProbe:
+            {{- with .Values.startupProbe }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            failureThreshold: {{ .failureThreshold }}
+            successThreshold: {{ .successThreshold }}
+            {{- end }}
+            {{- if and (not (index .Values.configmap.data "enable-rpc")) (index .Values.configmap.data "enable-rest") }}
+            httpGet:
+              path: /health
+              port: {{ index .Values.configmap.data "rest-port" }}
+            {{- else }}
             exec:
               command:
                 - "bash"
                 - "-c"
                 - |
                   {{- include "startupProbe" . | nindent 18 }}
-            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
-            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+            {{- end }}
           {{- end }}
           env:
           {{- with .Values.extraEnv }}
