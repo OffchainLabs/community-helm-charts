@@ -167,14 +167,14 @@ extraEnv:
 | `commandOverride`                               | Command override for the das container                                      | `{}`                        |
 | `livenessProbe`                                 | livenessProbe                                                               |                             |
 | `livenessProbe.enabled`                         | Enable liveness probe                                                       | `true`                      |
-| `livenessProbe.initialDelaySeconds`             | Initial delay for the liveness probe                                        | `10`                        |
+| `livenessProbe.initialDelaySeconds`             | Initial delay for the liveness probe                                        | `60`                        |
 | `livenessProbe.periodSeconds`                   | Period for the liveness probe                                               | `60`                        |
 | `livenessProbe.timeoutSeconds`                  | Timeout for the liveness probe                                              | `5`                         |
 | `livenessProbe.failureThreshold`                | Failure threshold for the liveness probe                                    | `3`                         |
 | `livenessProbe.successThreshold`                | Success threshold for the liveness probe                                    | `1`                         |
 | `readinessProbe`                                | readinessProbe                                                              |                             |
 | `readinessProbe.enabled`                        | Enable readiness probe                                                      | `true`                      |
-| `readinessProbe.initialDelaySeconds`            | Initial delay for the readiness probe                                       | `10`                        |
+| `readinessProbe.initialDelaySeconds`            | Initial delay for the readiness probe                                       | `0`                         |
 | `readinessProbe.periodSeconds`                  | Period for the readiness probe                                              | `5`                         |
 | `readinessProbe.timeoutSeconds`                 | Timeout for the readiness probe                                             | `5`                         |
 | `readinessProbe.failureThreshold`               | Failure threshold for the readiness probe                                   | `3`                         |
