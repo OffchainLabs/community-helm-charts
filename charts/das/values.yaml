@@ -27,19 +27,52 @@ diagnosticMode: false
 ## @param commandOverride Command override for the das container
 commandOverride: {}
 
-## @param livenessProbe Liveness probe configuration
-livenessProbe: {}
-
-## @param readinessProbe Readiness probe configuration
-readinessProbe: {}
-
-## @param startupProbe.enabled Enable built in startup probe
-## @param startupProbe.failureThreshold Number of failures before pod is considered unhealthy
-## @param startupProbe.periodSeconds Number of seconds between startup probes
-startupProbe:
+## @param livenessProbe livenessProbe
+## @param livenessProbe.enabled Enable liveness probe
+## @param livenessProbe.exec.command Command for the liveness probe
+## @param livenessProbe.initialDelaySeconds Initial delay for the liveness probe
+## @param livenessProbe.periodSeconds Period for the liveness probe
+## @param livenessProbe.timeoutSeconds Timeout for the liveness probe
+## @param livenessProbe.failureThreshold Failure threshold for the liveness probe
+## @param livenessProbe.successThreshold Success threshold for the liveness probe
+livenessProbe:
   enabled: true
-  failureThreshold: 2419200
-  periodSeconds: 1
+  initialDelaySeconds: 10
+  periodSeconds: 60
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+  exec:
+    command: >
+      curl "http://localhost:{{ .Values.configmap.data.rpc-port }}" -X POST \
+      -H 'Content-Type: application/json' \
+      -d '{"jsonrpc":"2.0","id":0,"method":"das_healthCheck","params":[]}'
+
+## @param readinessProbe readinessProbe
+## @param readinessProbe.enabled Enable readiness probe
+## @param readinessProbe.exec.command Command for the readiness probe
+## @param readinessProbe.initialDelaySeconds Initial delay for the readiness probe
+## @param readinessProbe.periodSeconds Period for the readiness probe
+## @param readinessProbe.timeoutSeconds Timeout for the readiness probe
+## @param readinessProbe.failureThreshold Failure threshold for the readiness probe
+## @param readinessProbe.successThreshold Success threshold for the readiness probe
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+  exec:
+    command: >
+      curl "http://localhost:{{ .Values.configmap.data.rpc-port }}" -X POST \
+      -H 'Content-Type: application/json' \
+      -d '{"jsonrpc":"2.0","id":0,"method":"das_healthCheck","params":[]}'
+
+## @param startupProbe startupProbe
+## @param startupProbe.enabled Enable startup probe
+startupProbe:
+  enabled: false
 
 persistence:
   ## @extra persistence.localdbstorage This will only be created if local db storage is enabled in the configmap

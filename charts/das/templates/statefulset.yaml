@@ -101,29 +101,57 @@ spec:
             {{- end }}
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
-            {{- if and .Values.livenessProbe.exec (kindIs "string" .Values.livenessProbe.exec.command) }}
+            {{- if and (not .Values.configmap.data.enable-rpc) .Values.configmap.data.enable-rest }}
             {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
-            exec:
-              command:
-                {{- tpl .Values.livenessProbe.exec.command . | nindent 14 }}
+            httpGet:
+              path: /health
+              port: {{ .Values.configmap.data.rest-port }}
             {{- else }}
-            {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 10 }}
+              {{- if and .Values.livenessProbe.exec (kindIs "string" .Values.livenessProbe.exec.command) }}
+              {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
+              exec:
+                command:
+                  {{- tpl .Values.livenessProbe.exec.command . | nindent 14 }}
+              {{- else }}
+              {{- omit .Values.livenessProbe "enabled" "exec" | toYaml | nindent 10 }}
+              {{- end }}
             {{- end }}
           {{- end }}
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-            {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 10 }}
+            {{- if and (not .Values.configmap.data.enable-rpc) .Values.configmap.data.enable-rest }}
+            {{- omit .Values.readinessProbe "enabled" "exec" | toYaml | nindent 10 }}
+            httpGet:
+              path: /health
+              port: {{ .Values.configmap.data.rest-port }}
+            {{- else }}
+              {{- if and .Values.readinessProbe.exec (kindIs "string" .Values.readinessProbe.exec.command) }}
+              {{- omit .Values.readinessProbe "enabled" "exec" | toYaml | nindent 10 }}
+              exec:
+                command:
+                  {{- tpl .Values.readinessProbe.exec.command . | nindent 14 }}
+              {{- else }}
+              {{- omit .Values.readinessProbe "enabled" "exec" | toYaml | nindent 10 }}
+              {{- end }}
+            {{- end }}
           {{- end }}
-          {{- if and .Values.startupProbe.enabled .Values.configmap.data.http .Values.configmap.data.http.port }}
+          {{- if .Values.startupProbe.enabled }}
           startupProbe:
-            exec:
-              command:
-                - "bash"
-                - "-c"
-                - |
-                  {{- include "startupProbe" . | nindent 18 }}
-            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
-            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+            {{- if and (not .Values.configmap.data.enable-rpc) .Values.configmap.data.enable-rest }}
+            {{- omit .Values.startupProbe "enabled" "exec" | toYaml | nindent 10 }}
+            httpGet:
+              path: /health
+              port: {{ .Values.configmap.data.rest-port }}
+            {{- else }}
+              {{- if and .Values.startupProbe.exec (kindIs "string" .Values.startupProbe.exec.command) }}
+              {{- omit .Values.startupProbessProbe "enabled" "exec" | toYaml | nindent 10 }}
+              exec:
+                command:
+                  {{- tpl .Values.startupProbe.exec.command . | nindent 14 }}
+              {{- else }}
+              {{- omit .Values.startupProbe "enabled" "exec" | toYaml | nindent 10 }}
+              {{- end }}
+            {{- end }}
           {{- end }}
           env:
           {{- with .Values.extraEnv }}
