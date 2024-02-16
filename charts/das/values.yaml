@@ -29,7 +29,6 @@ commandOverride: {}
 
 ## @extra livenessProbe livenessProbe
 ## @param livenessProbe.enabled Enable liveness probe
-## @param livenessProbe.exec.command Command for the liveness probe
 ## @param livenessProbe.initialDelaySeconds Initial delay for the liveness probe
 ## @param livenessProbe.periodSeconds Period for the liveness probe
 ## @param livenessProbe.timeoutSeconds Timeout for the liveness probe
@@ -45,7 +44,6 @@ livenessProbe:
 
 ## @extra readinessProbe readinessProbe
 ## @param readinessProbe.enabled Enable readiness probe
-## @param readinessProbe.exec.command Command for the readiness probe
 ## @param readinessProbe.initialDelaySeconds Initial delay for the readiness probe
 ## @param readinessProbe.periodSeconds Period for the readiness probe
 ## @param readinessProbe.timeoutSeconds Timeout for the readiness probe
