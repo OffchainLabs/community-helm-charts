@@ -36,7 +36,7 @@ commandOverride: {}
 ## @param livenessProbe.successThreshold Success threshold for the liveness probe
 livenessProbe:
   enabled: true
-  initialDelaySeconds: 10
+  initialDelaySeconds: 60
   periodSeconds: 60
   timeoutSeconds: 5
   failureThreshold: 3
@@ -51,7 +51,7 @@ livenessProbe:
 ## @param readinessProbe.successThreshold Success threshold for the readiness probe
 readinessProbe:
   enabled: true
-  initialDelaySeconds: 10
+  initialDelaySeconds: 0
   periodSeconds: 5
   timeoutSeconds: 5
   failureThreshold: 3
