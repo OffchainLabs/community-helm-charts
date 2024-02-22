@@ -382,8 +382,6 @@ Option | Description | Default
 `node.batch-poster.redis-url` | string                                                              if non-empty, the Redis URL to store queued transactions in | None
 `node.batch-poster.use-access-lists` | post batches with access lists to reduce gas usage (disabled for L3s) | `true`
 `node.batch-poster.wait-for-max-delay` | wait for the max batch delay, even if the batch is full | None
-`node.blob-client.beacon-chain-url` | string                                                        Beacon Chain url to use for fetching blobs | None
-`node.blob-client.blob-directory` | string                                                          Full path of the directory to save fetched blobs | None
 `node.block-validator.current-module-root` | string                                                 current wasm module root ('current' read from chain, 'latest' from machines/latest dir, or provide hash) | `current`
 `node.block-validator.dangerous.reset-block-validation` | resets block-by-block validation, starting again at genesis | None
 `node.block-validator.enable` | enable block-by-block validation | None
@@ -402,6 +400,7 @@ Option | Description | Default
 `node.block-validator.validation-server.retry-errors` | string                                      Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
 `node.block-validator.validation-server.timeout` | duration                                         per-response timeout (0-disabled) | None
 `node.block-validator.validation-server.url` | string                                               url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
+`node.dangerous.disable-blob-reader` | DANGEROUS! disables the EIP-4844 blob reader, which is necessary to read batches | None
 `node.dangerous.no-l1-listener` | DANGEROUS! disables listening to L1. To be used in test nodes only | None
 `node.dangerous.no-sequencer-coordinator` | DANGEROUS! allows sequencing without sequencer-coordinator | None
 `node.data-availability.enable` | enable Anytrust Data Availability mode | None
@@ -593,6 +592,8 @@ Option | Description | Default
 `p2p.max-peers` | int                                                                               P2P max peers | `50`
 `p2p.no-dial` | P2P no dial | `true`
 `p2p.no-discovery` | P2P no discovery | `true`
+`parent-chain.blob-client.beacon-url` | string                                                      Beacon Chain RPC URL to use for fetching blobs (normally on port 3500) | None
+`parent-chain.blob-client.blob-directory` | string                                                  Full path of the directory to save fetched blobs | None
 `parent-chain.connection.arg-log-limit` | uint                                                      limit size of arguments in log entries | `2048`
 `parent-chain.connection.connection-wait` | duration                                                how long to wait for initial connection | `1m0s`
 `parent-chain.connection.jwtsecret` | string                                                        path to file with jwtsecret for validation - ignored if url is self or self-auth | None
