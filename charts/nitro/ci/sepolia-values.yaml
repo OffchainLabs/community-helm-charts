@@ -10,6 +10,9 @@ readinessProbe:
   initialDelaySeconds: 10
   periodSeconds: 3
 
+blobPersistence:
+  enabled: true
+
 configmap:
   data:
     conf:
@@ -18,6 +21,8 @@ configmap:
       id: 421614
     parent-chain:
       id: 11155111
+      blob-client:
+        blob-directory: /home/user/blobdata/
 
 extraEnv:
   - name: NITROCI_PARENT__CHAIN_CONNECTION_URL
