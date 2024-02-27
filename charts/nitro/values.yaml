@@ -52,6 +52,14 @@ persistence:
   size: 500Gi
   storageClassName: null
 
+## @param blobPersistence.enabled Enable blob persistence
+## @param blobPersistence.size Size of the blob persistent volume claim
+## @param blobPersistence.storageClassName [string, nullable] Storage class of the blob persistent volume claim
+blobPersistence:
+  enabled: false
+  size: 100Gi
+  storageClassName: null
+
 ## @param serviceMonitor.enabled Enable service monitor CRD for prometheus operator
 ## @param serviceMonitor.portName Name of the port to monitor
 ## @param serviceMonitor.path Path to monitor
