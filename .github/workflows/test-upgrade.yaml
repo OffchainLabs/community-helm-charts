@@ -40,6 +40,7 @@ jobs:
           CI_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.CI_TEST_ACCOUNT_PRIVATE_KEY }}
           CI_PARENT_CHAIN_URL_SEPOLIA: ${{ secrets.CI_PARENT_CHAIN_URL_SEPOLIA }}
           CI_BASELINE_RPC_KEY_SEPOLIA: ${{ secrets.CI_BASELINE_RPC_KEY_SEPOLIA }}
+          CI_PARENT_CHAIN_BLOB_CLIENT_URL: ${{ secrets.CI_PARENT_CHAIN_BLOB_CLIENT_URL }}
           # Map additional secrets as needed
         run: |
           secrets_for_helm=""

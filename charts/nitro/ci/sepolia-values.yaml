@@ -10,6 +10,9 @@ readinessProbe:
   initialDelaySeconds: 10
   periodSeconds: 3
 
+blobPersistence:
+  enabled: true
+
 configmap:
   data:
     conf:
@@ -18,6 +21,8 @@ configmap:
       id: 421614
     parent-chain:
       id: 11155111
+      blob-client:
+        blob-directory: /home/user/blobdata/
 
 extraEnv:
   - name: NITROCI_PARENT__CHAIN_CONNECTION_URL
@@ -25,6 +30,11 @@ extraEnv:
       secretKeyRef:
         name: ci-secret-nitro
         key: PARENT_CHAIN_URL_SEPOLIA
+  - name: NITROCI_PARENT__CHAIN_BLOB__CLIENT_BEACON__URL
+    valueFrom:
+      secretKeyRef:
+        name: ci-secret-nitro
+        key: PARENT_CHAIN_BLOB_CLIENT_URL
 
 ci:
   nitro-secret:
