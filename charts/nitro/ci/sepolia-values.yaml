@@ -25,6 +25,11 @@ extraEnv:
       secretKeyRef:
         name: ci-secret-nitro
         key: PARENT_CHAIN_URL_SEPOLIA
+  - name: NITROCI_PARENT__CHAIN_BLOB__CLIENT_BEACON__URL
+    valueFrom:
+      secretKeyRef:
+        name: ci-secret-nitro
+        key: PARENT_CHAIN_BLOB_CLIENT_URL
 
 ci:
   nitro-secret:
