@@ -332,6 +332,7 @@ Option | Description | Default
 `node.batch-poster.compression-level` | int                                                         batch compression level | `11`
 `node.batch-poster.das-retention-period` | duration                                                 In AnyTrust mode, the period which DASes are requested to retain the stored batches. | `360h0m0s`
 `node.batch-poster.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
+`node.batch-poster.data-poster.blob-tx-replacement-times` | string                                  comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `5m,10m,30m,1h,4h,8h,16h,22h`
 `node.batch-poster.data-poster.dangerous.clear-dbstorage` | clear database storage | None
 `node.batch-poster.data-poster.elapsed-time-base` | duration                                        unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
 `node.batch-poster.data-poster.elapsed-time-importance` | float                                     weight given to the units of time elapsed used for maximum fee cap calculation | `10`
@@ -342,11 +343,13 @@ Option | Description | Default
 `node.batch-poster.data-poster.external-signer.root-ca` | string                                    external signer root CA | None
 `node.batch-poster.data-poster.external-signer.url` | string                                        external signer url | None
 `node.batch-poster.data-poster.legacy-storage-encoding` | encodes items in a legacy way (as it was before dropping generics) | None
+`node.batch-poster.data-poster.max-blob-tx-tip-cap-gwei` | float                                    the maximum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.batch-poster.data-poster.max-fee-cap-formula` | string                                        mathematical formula to calculate maximum fee cap gwei the result of which would be float64. This expression is expected to be evaluated please refer https://github.com/Knetic/govaluate/blob/master/MANUAL.md to find all available mathematical operators. Currently available variables to construct the formula are BacklogOfBatches, UrgencyGWei, ElapsedTime, ElapsedTimeBase, ElapsedTimeImportance, and TargetPriceGWei (default "((BacklogOfBatches * UrgencyGWei) ** 2) + ((ElapsedTime/ElapsedTimeBase) ** 2) * ElapsedTimeImportance + TargetPriceGWei") | None
-`node.batch-poster.data-poster.max-mempool-transactions` | uint                                     the maximum number of transactions to have queued in the mempool at once (0 = unlimited) | `20`
+`node.batch-poster.data-poster.max-mempool-transactions` | uint                                     the maximum number of transactions to have queued in the mempool at once (0 = unlimited) | `18`
+`node.batch-poster.data-poster.max-mempool-weight` | uint                                           the maximum number of weight (weight = min(1, tx.blobs)) to have queued in the mempool at once (0 = unlimited) | `18`
 `node.batch-poster.data-poster.max-queued-transactions` | int                                       the maximum number of unconfirmed transactions to track at once (0 = unlimited) | None
 `node.batch-poster.data-poster.max-tip-cap-gwei` | float                                            the maximum tip cap to post transactions at | `5`
-`node.batch-poster.data-poster.min-fee-cap-gwei` | float                                            the minimum fee cap to post transactions at | None
+`node.batch-poster.data-poster.min-blob-tx-tip-cap-gwei` | float                                    the minimum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.batch-poster.data-poster.min-tip-cap-gwei` | float                                            the minimum tip cap to post transactions at | `0.05`
 `node.batch-poster.data-poster.nonce-rbf-soft-confs` | uint                                         the maximum probable reorg depth, used to determine when a transaction will no longer likely need replaced-by-fee | `1`
 `node.batch-poster.data-poster.redis-signer.dangerous.disable-signature-verification` | disable message signature verification | None
@@ -535,6 +538,7 @@ Option | Description | Default
 `node.staker.dangerous.ignore-rollup-wasm-module-root` | DANGEROUS! make assertions even when the wasm module root is wrong | None
 `node.staker.dangerous.without-block-validator` | DANGEROUS! allows running an L1 validator without a block validator | None
 `node.staker.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
+`node.staker.data-poster.blob-tx-replacement-times` | string                                        comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `5m,10m,30m,1h,4h,8h,16h,22h`
 `node.staker.data-poster.dangerous.clear-dbstorage` | clear database storage | None
 `node.staker.data-poster.elapsed-time-base` | duration                                              unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
 `node.staker.data-poster.elapsed-time-importance` | float                                           weight given to the units of time elapsed used for maximum fee cap calculation | `10`
@@ -545,11 +549,13 @@ Option | Description | Default
 `node.staker.data-poster.external-signer.root-ca` | string                                          external signer root CA | None
 `node.staker.data-poster.external-signer.url` | string                                              external signer url | None
 `node.staker.data-poster.legacy-storage-encoding` | encodes items in a legacy way (as it was before dropping generics) | None
+`node.staker.data-poster.max-blob-tx-tip-cap-gwei` | float                                          the maximum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.staker.data-poster.max-fee-cap-formula` | string                                              mathematical formula to calculate maximum fee cap gwei the result of which would be float64. This expression is expected to be evaluated please refer https://github.com/Knetic/govaluate/blob/master/MANUAL.md to find all available mathematical operators. Currently available variables to construct the formula are BacklogOfBatches, UrgencyGWei, ElapsedTime, ElapsedTimeBase, ElapsedTimeImportance, and TargetPriceGWei (default "((BacklogOfBatches * UrgencyGWei) ** 2) + ((ElapsedTime/ElapsedTimeBase) ** 2) * ElapsedTimeImportance + TargetPriceGWei") | None
 `node.staker.data-poster.max-mempool-transactions` | uint                                           the maximum number of transactions to have queued in the mempool at once (0 = unlimited) | `1`
+`node.staker.data-poster.max-mempool-weight` | uint                                                 the maximum number of weight (weight = min(1, tx.blobs)) to have queued in the mempool at once (0 = unlimited) | `1`
 `node.staker.data-poster.max-queued-transactions` | int                                             the maximum number of unconfirmed transactions to track at once (0 = unlimited) | None
 `node.staker.data-poster.max-tip-cap-gwei` | float                                                  the maximum tip cap to post transactions at | `5`
-`node.staker.data-poster.min-fee-cap-gwei` | float                                                  the minimum fee cap to post transactions at | None
+`node.staker.data-poster.min-blob-tx-tip-cap-gwei` | float                                          the minimum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.staker.data-poster.min-tip-cap-gwei` | float                                                  the minimum tip cap to post transactions at | `0.05`
 `node.staker.data-poster.nonce-rbf-soft-confs` | uint                                               the maximum probable reorg depth, used to determine when a transaction will no longer likely need replaced-by-fee | `1`
 `node.staker.data-poster.redis-signer.dangerous.disable-signature-verification` | disable message signature verification | None
@@ -595,6 +601,7 @@ Option | Description | Default
 `p2p.max-peers` | int                                                                               P2P max peers | `50`
 `p2p.no-dial` | P2P no dial | `true`
 `p2p.no-discovery` | P2P no discovery | `true`
+`parent-chain.blob-client.authorization` | string                                                   Value to send with the HTTP Authorization: header for Beacon REST requests, must include both scheme and scheme parameters | None
 `parent-chain.blob-client.beacon-url` | string                                                      Beacon Chain RPC URL to use for fetching blobs (normally on port 3500) | None
 `parent-chain.blob-client.blob-directory` | string                                                  Full path of the directory to save fetched blobs | None
 `parent-chain.connection.arg-log-limit` | uint                                                      limit size of arguments in log entries | `2048`
