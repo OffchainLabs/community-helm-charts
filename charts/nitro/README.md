@@ -13,11 +13,12 @@ helm install <my-release> offchainlabs/nitro
 ```
 
 ### Required Parameters
-Chart defaults are for launching an arbitrum one node. At a minimum, you must provide a parent chain url and an init method(downloading from snapshot is in the example).
+Chart defaults are for launching an arbitrum one node. At a minimum you must provide a parent chain url, consensus client api url, and an init method(downloading from snapshot is in the example).
 
 ```console
 helm install <my-release> offchainlabs/nitro \
 --set configmap.data.parent-chain.connection.url=<ETH_RPC_URL> \
+--set configmap.data.parent-chain.blob-client.beacon-url=<CONSENSUS_API_URL> \
 --set configmap.data.init.url=https://snapshot.arbitrum.foundation/arb1/nitro-genesis.tar
 ```
 Remove init.url after the snapshot has downloaded and the node has launched. The above snapshot will sync from nitro's gensis block. There are other snapshot options on the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) that may be more suitable for your use case. The snapshots and chain state can be quite large, so it is recommended to review the storage defaults and adjust as needed. Particular attention should be paid to the `persistence`, `configmap.data.persistent.chain`, and `init.download-path` parameters.
@@ -31,6 +32,7 @@ Launching a node on another network requires additional configuration. See the [
 helm install <my-release> offchainlabs/nitro \
 --set configmap.data.parent-chain.id=11155111 \
 --set configmap.data.parent-chain.connection.url=<SEPOLIA_RPC_URL> \
+--set configmap.data.parent-chain.blob-client.beacon-url=<CONSENSUS_API_URL> \
 --set configmap.data.chain.id=421614
 ```
 There are snapshots available to speed up the sync process for Arbitrum Sepolia. See the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) for more details.
