@@ -244,7 +244,7 @@ extraEnv:
 | `configmap.data.data-availability.ipfs-storage.profiles`                  | ipfs profiles                                                                            | `""`      |
 | `configmap.data.data-availability.ipfs-storage.read-timeout`              | ipfs read timeout                                                                        | `1m0s`    |
 | `configmap.data.data-availability.local-cache.enable`                     | Enable local cache                                                                       | `false`   |
-| `configmap.data.data-availability.local-cache.max-size-mb`                | local cache max size in mb                                                               | `128`     |
+| `configmap.data.data-availability.local-cache.capacity`                   | Maximum number of entries (up to 64KB each) to store in the cache.                       | `20000`   |
 | `configmap.data.metrics`                                                  | Enable metrics                                                                           | `false`   |
 | `configmap.data.metrics-server.addr`                                      | Metrics server address                                                                   | `0.0.0.0` |
 | `configmap.data.metrics-server.port`                                      | Metrics server port                                                                      | `6070`    |
