@@ -221,7 +221,7 @@ configmap:
         read-timeout: 1m0s
 
       ## @param configmap.data.data-availability.local-cache.enable Enable local cache
-      ## @param configmap.data.data-availability.local-cache.max-size-mb Maximum number of entries (up to 64KB each) to store in the cache.
+      ## @param configmap.data.data-availability.local-cache.capacity Maximum number of entries (up to 64KB each) to store in the cache.
       local-cache:
         enable: false
         capacity: 20000
