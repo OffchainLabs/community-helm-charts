@@ -277,8 +277,8 @@ Option | Description | Default
 `data-availability.ipfs-storage.repo-dir` | string                                             directory to use to store the local IPFS repo | None
 `data-availability.key.key-dir` | string                                                       the directory to read the bls keypair ('das_bls.pub' and 'das_bls') from; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
 `data-availability.key.priv-key` | string                                                      the base64 BLS private key to use for signing DAS certificates; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
+`data-availability.local-cache.capacity` | int                                                 Maximum number of entries (up to 64KB each) to store in the cache. | `20000`
 `data-availability.local-cache.enable` | Enable local in-memory caching of sequencer batch data | None
-`data-availability.local-cache.expiration` | duration                                          Expiration time for in-memory cached sequencer batches | `1h0m0s`
 `data-availability.local-db-storage.data-dir` | string                                         directory in which to store the database | None
 `data-availability.local-db-storage.discard-after-timeout` | discard data after its expiry timeout | None
 `data-availability.local-db-storage.enable` | enable storage/retrieval of sequencer batch data from a database on the local filesystem | None
