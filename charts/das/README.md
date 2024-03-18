@@ -202,7 +202,11 @@ extraEnv:
 | `serviceAccount.annotations`                    | Annotations for the service account                                         | `{}`                        |
 | `serviceAccount.name`                           | Name of the service account                                                 | `""`                        |
 | `podAnnotations`                                | Annotations for the das pod                                                 | `{}`                        |
-| `podSecurityContext`                            | Security context for the das pod                                            | `{}`                        |
+| `podSecurityContext.fsGroup`                    | Group id for the pod                                                        | `1000`                      |
+| `podSecurityContext.runAsGroup`                 | Group id for the user                                                       | `1000`                      |
+| `podSecurityContext.runAsNonRoot`               | Run as non root                                                             | `true`                      |
+| `podSecurityContext.runAsUser`                  | User id for the user                                                        | `1000`                      |
+| `podSecurityContext.fsGroupChangePolicy`        | Policy for the fs group                                                     | `OnRootMismatch`            |
 | `securityContext`                               | Security context for the das container                                      | `{}`                        |
 | `service.type`                                  | Service type                                                                | `ClusterIP`                 |
 | `resources`                                     | Resource requests and limits for the das container                          | `{}`                        |

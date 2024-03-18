@@ -115,8 +115,17 @@ serviceAccount:
 ## @param podAnnotations Annotations for the das pod
 podAnnotations: {}
 
-## @param podSecurityContext Security context for the das pod
-podSecurityContext: {}
+## @param podSecurityContext.fsGroup Group id for the pod
+## @param podSecurityContext.runAsGroup Group id for the user
+## @param podSecurityContext.runAsNonRoot Run as non root
+## @param podSecurityContext.runAsUser User id for the user
+## @param podSecurityContext.fsGroupChangePolicy Policy for the fs group
+podSecurityContext:
+  fsGroup: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroupChangePolicy: "OnRootMismatch"
 
 ## @param securityContext Security context for the das container
 securityContext: {}

@@ -113,6 +113,10 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `serviceAccount.name`                        | Name of the service account                                  | `""`                                                        |
 | `podAnnotations`                             | Annotations for the pod                                      | `{}`                                                        |
 | `podSecurityContext.fsGroup`                 | Group id for the pod                                         | `1000`                                                      |
+| `podSecurityContext.runAsGroup`              | Group id for the user                                        | `1000`                                                      |
+| `podSecurityContext.runAsNonRoot`            | Run as non root                                              | `true`                                                      |
+| `podSecurityContext.runAsUser`               | User id for the user                                         | `1000`                                                      |
+| `podSecurityContext.fsGroupChangePolicy`     | Policy for the fs group                                      | `OnRootMismatch`                                            |
 | `securityContext`                            | Security context for the container                           | `{}`                                                        |
 | `service.type`                               | Service type                                                 | `ClusterIP`                                                 |
 | `resources`                                  | Resources for the container                                  | `{}`                                                        |

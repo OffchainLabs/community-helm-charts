@@ -30,7 +30,6 @@ spec:
         {{- with .Values.podSecurityContext }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
-        fsGroup: 1000
       initContainers:
       {{- if .Values.initContainers }}
         {{- toYaml .Values.initContainers | nindent 8 }}
