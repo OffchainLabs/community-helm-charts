@@ -30,7 +30,6 @@ spec:
         {{- with .Values.podSecurityContext }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
-        fsGroup: 1000
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
