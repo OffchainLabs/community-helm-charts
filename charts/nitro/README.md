@@ -613,6 +613,7 @@ Option | Description | Default
 `parent-chain.blob-client.authorization` | string                                                   Value to send with the HTTP Authorization: header for Beacon REST requests, must include both scheme and scheme parameters | None
 `parent-chain.blob-client.beacon-url` | string                                                      Beacon Chain RPC URL to use for fetching blobs (normally on port 3500) | None
 `parent-chain.blob-client.blob-directory` | string                                                  Full path of the directory to save fetched blobs | None
+`parent-chain.blob-client.secondary-beacon-url` | string                                            Backup beacon Chain RPC URL to use for fetching blobs (normally on port 3500) when unable to fetch from primary | None
 `parent-chain.connection.arg-log-limit` | uint                                                      limit size of arguments in log entries | `2048`
 `parent-chain.connection.connection-wait` | duration                                                how long to wait for initial connection | `1m0s`
 `parent-chain.connection.jwtsecret` | string                                                        path to file with jwtsecret for validation - ignored if url is self or self-auth | None
