@@ -32,10 +32,12 @@ readinessProbe: {}
 ## @param startupProbe.enabled Enable built in startup probe
 ## @param startupProbe.failureThreshold Number of failures before pod is considered unhealthy
 ## @param startupProbe.periodSeconds Number of seconds between startup probes
+## @param startupProbe.command Command to run for the startup probe. If empty, the built in probe will be used
 startupProbe:
   enabled: true
   failureThreshold: 2419200
   periodSeconds: 1
+  command: ""
 
 ## @param updateStrategy.type Update strategy type
 ## @param updateStrategy.rollingUpdate.partition Partition to update
