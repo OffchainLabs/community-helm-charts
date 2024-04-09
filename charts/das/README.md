@@ -208,6 +208,7 @@ extraEnv:
 | `podSecurityContext.runAsUser`                  | User id for the user                                                        | `1000`                      |
 | `podSecurityContext.fsGroupChangePolicy`        | Policy for the fs group                                                     | `OnRootMismatch`            |
 | `securityContext`                               | Security context for the das container                                      | `{}`                        |
+| `priorityClassName`                             | Priority class name for the das pod                                         | `""`                        |
 | `service.type`                                  | Service type                                                                | `ClusterIP`                 |
 | `resources`                                     | Resource requests and limits for the das container                          | `{}`                        |
 | `nodeSelector`                                  | Node selector for the das pod                                               | `{}`                        |
