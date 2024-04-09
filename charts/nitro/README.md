@@ -119,6 +119,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `podSecurityContext.runAsUser`               | User id for the user                                                            | `1000`                                                      |
 | `podSecurityContext.fsGroupChangePolicy`     | Policy for the fs group                                                         | `OnRootMismatch`                                            |
 | `securityContext`                            | Security context for the container                                              | `{}`                                                        |
+| `priorityClassName`                          | Priority class name                                                             | `""`                                                        |
 | `service.type`                               | Service type                                                                    | `ClusterIP`                                                 |
 | `resources`                                  | Resources for the container                                                     | `{}`                                                        |
 | `nodeSelector`                               | Node selector for the pod                                                       | `{}`                                                        |
@@ -188,6 +189,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.statefulset.extraEnv`                           | Extra environment variables for the validator container  | `{}`                        |
 | `validator.statefulset.extraPorts`                         | Additional ports for the stateless validator pod         | `[]`                        |
 | `validator.statefulset.podAnnotations`                     | Annotations for the stateless validator pod              | `{}`                        |
+| `validator.statefulset.priorityClassName`                  | Priority class name for the stateless validator pod      | `""`                        |
 
 ## Configuration Options
 The following table lists the exhaustive configurable parameters that can be applied as part of the configmap (nested under `configmap.data`) or as standalone cli flags.

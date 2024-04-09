@@ -84,6 +84,7 @@ helm install <my-release> offchainlabs/relay \
 | `podSecurityContext.runAsUser`                    | User id for the user                             | `1000`                      |
 | `podSecurityContext.fsGroupChangePolicy`          | Policy for the fs group                          | `OnRootMismatch`            |
 | `securityContext`                                 | Security context for the container               | `{}`                        |
+| `priorityClassName`                               | Priority class name for the pod                  | `""`                        |
 | `service.type`                                    | Service type                                     | `ClusterIP`                 |
 | `resources`                                       | Resources for the container                      | `{}`                        |
 | `nodeSelector`                                    | Node selector for the pod                        | `{}`                        |
