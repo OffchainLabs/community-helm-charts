@@ -130,6 +130,9 @@ podSecurityContext:
 ## @param securityContext Security context for the das container
 securityContext: {}
 
+## @param priorityClassName Priority class name for the das pod
+priorityClassName: ""
+
 ## @param service.type Service type
 service:
   type: ClusterIP

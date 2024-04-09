@@ -39,6 +39,9 @@ spec:
         {{- with .Values.podSecurityContext }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
       initContainers:
         {{- if .Values.initContainers }}
         {{- toYaml .Values.initContainers | nindent 8 }}

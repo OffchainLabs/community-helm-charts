@@ -62,6 +62,9 @@ spec:
         {{- end }}
       {{- end }}
       securityContext: {{- toYaml .Values.validator.statefulset.podSecurityContext | nindent 8 }}
+      {{- if .Values.validator.statefulset.priorityClassName }}
+      priorityClassName: {{ .Values.validator.statefulset.priorityClassName }}
+      {{- end }}
       initContainers:
       {{- with .Values.validator.statefulset.extraInitContainers }}
       {{- toYaml . | nindent 6 }}
