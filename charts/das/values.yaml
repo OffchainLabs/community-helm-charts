@@ -136,8 +136,10 @@ securityContext: {}
 priorityClassName: ""
 
 ## @param service.type Service type
+## @param service.publishNotReadyAddresses Publish not ready addresses
 service:
   type: ClusterIP
+  publishNotReadyAddresses: false
 
 ## @param resources Resource requests and limits for the das container
 resources: {}

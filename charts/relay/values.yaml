@@ -88,8 +88,10 @@ serviceMonitor:
   relabelings: {}
 
 ## @param perReplicaService.enabled Enable per replica service
+## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
 perReplicaService:
   enabled: false
+  publishNotReadyAddresses: false
 
 ## @param headlessservice.enabled Enable headless service
 ## @param headlessservice.publishNotReadyAddresses Publish not ready addresses

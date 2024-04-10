@@ -132,8 +132,10 @@ securityContext: {}
 priorityClassName: ""
 
 ## @param service.type Service type
+## @param service.publishNotReadyAddresses Publish not ready addresses
 service:
   type: ClusterIP
+  publishNotReadyAddresses: false
 
 ## @param resources Resources for the container
 resources: {}
