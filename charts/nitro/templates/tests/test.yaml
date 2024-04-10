@@ -21,6 +21,7 @@ spec:
   containers:
   - name: sre-nitro-test-suite
     image: public.ecr.aws/f6s7v9z5/offchain-labs/sre-nitro-test:v0.0.7
+    imagePullPolicy: Always
     {{- if .Values.ci.debug.enabled }}
     command: ["/bin/sh", "-c", "--"]
     args: ["while true; do sleep 30; done;"]
