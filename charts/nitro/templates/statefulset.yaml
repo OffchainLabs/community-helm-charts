@@ -157,7 +157,7 @@ spec:
             mountPath: /config/
           {{- end }}
           {{- if .Values.extraVolumeMounts }}
-          {{- toYaml .Values.extraVolumeMounts | nindent 8}}
+          {{- toYaml .Values.extraVolumeMounts | nindent 10}}
           {{- end }}
           {{- range .Values.additionalVolumeClaims }}
           {{- if .enabled }}
@@ -177,6 +177,9 @@ spec:
       - name: config
         configMap:
           name: {{ include "nitro.fullname" . }}
+      {{- end }}
+      {{- if .Values.extraVolumes }}
+      {{- toYaml .Values.extraVolumes | nindent 6 }}
       {{- end }}
       {{- range .Values.additionalVolumeClaims }}
       {{- if .enabled }}
