@@ -103,6 +103,8 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `serviceMonitor.interval`                    | Interval to monitor                                                             | `5s`                                                        |
 | `serviceMonitor.relabelings`                 | Add relabelings for the metrics being scraped                                   | `{}`                                                        |
 | `perReplicaService.enabled`                  | Enable a service for each sts replica                                           | `false`                                                     |
+| `headlessservice.enabled`                    | Enable headless service                                                         | `true`                                                      |
+| `headlessservice.publishNotReadyAddresses`   | Publish not ready addresses                                                     | `true`                                                      |
 | `jwtSecret.enabled`                          | Enable a jwt secret for use with the stateless validator                        | `false`                                                     |
 | `jwtSecret.value`                            | Value of the jwt secret for use with the stateless validator                    | `""`                                                        |
 | `auth.enabled`                               | Enable auth for the stateless validator                                         | `false`                                                     |

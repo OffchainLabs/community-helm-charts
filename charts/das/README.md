@@ -195,6 +195,7 @@ extraEnv:
 | `serviceMonitor.relabelings`                    | Add relabelings for the metrics being scraped                               | `{}`                        |
 | `perReplicaService.enabled`                     | Enable per replica service                                                  | `false`                     |
 | `headlessservice.enabled`                       | Enable headless service                                                     | `false`                     |
+| `headlessservice.publishNotReadyAddresses`      | Publish not ready addresses                                                 | `true`                      |
 | `pdb.enabled`                                   | Enable pod disruption budget                                                | `false`                     |
 | `pdb.minAvailable`                              | Minimum number of available pods                                            | `""`                        |
 | `pdb.maxUnavailable`                            | Maximum number of unavailable pods                                          | `1`                         |
