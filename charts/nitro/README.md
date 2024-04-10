@@ -123,6 +123,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `securityContext`                            | Security context for the container                                              | `{}`                                                        |
 | `priorityClassName`                          | Priority class name                                                             | `""`                                                        |
 | `service.type`                               | Service type                                                                    | `ClusterIP`                                                 |
+| `service.publishNotReadyAddresses`           | Publish not ready addresses                                                     | `false`                                                     |
 | `resources`                                  | Resources for the container                                                     | `{}`                                                        |
 | `nodeSelector`                               | Node selector for the pod                                                       | `{}`                                                        |
 | `tolerations`                                | Tolerations for the pod                                                         | `[]`                                                        |

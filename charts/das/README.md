@@ -211,6 +211,7 @@ extraEnv:
 | `securityContext`                               | Security context for the das container                                      | `{}`                        |
 | `priorityClassName`                             | Priority class name for the das pod                                         | `""`                        |
 | `service.type`                                  | Service type                                                                | `ClusterIP`                 |
+| `service.publishNotReadyAddresses`              | Publish not ready addresses                                                 | `false`                     |
 | `resources`                                     | Resource requests and limits for the das container                          | `{}`                        |
 | `nodeSelector`                                  | Node selector for the das pod                                               | `{}`                        |
 | `tolerations`                                   | Tolerations for the das pod                                                 | `[]`                        |
