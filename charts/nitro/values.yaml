@@ -152,6 +152,12 @@ affinity: {}
 ## @param additionalVolumeClaims Additional volume claims for the pod
 additionalVolumeClaims: []
 
+## @param extraVolumes Additional volumes for the pod
+extraVolumes: []
+
+## @param extraVolumeMounts Additional volume mounts for the pod
+extraVolumeMounts: []
+
 ## @param extraPorts Additional ports for the pod
 extraPorts: []
 
