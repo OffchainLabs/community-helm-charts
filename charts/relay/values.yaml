@@ -91,6 +91,12 @@ serviceMonitor:
 perReplicaService:
   enabled: false
 
+## @param headlessservice.enabled Enable headless service
+## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
+headlessservice:
+  enabled: true
+  publishNotReadyAddresses: true
+
 ## @param pdb.enabled Enable pod disruption budget
 ## @param pdb.minAvailable Minimum number of available pods
 ## @param pdb.maxUnavailable Maximum number of unavailable pods
