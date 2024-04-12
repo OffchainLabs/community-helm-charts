@@ -88,8 +88,16 @@ serviceMonitor:
   relabelings: {}
 
 ## @param perReplicaService.enabled Enable per replica service
+## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
 perReplicaService:
   enabled: false
+  publishNotReadyAddresses: false
+
+## @param headlessservice.enabled Enable headless service
+## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
+headlessservice:
+  enabled: true
+  publishNotReadyAddresses: true
 
 ## @param pdb.enabled Enable pod disruption budget
 ## @param pdb.minAvailable Minimum number of available pods

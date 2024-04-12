@@ -71,6 +71,9 @@ helm install <my-release> offchainlabs/relay \
 | `serviceMonitor.interval`                         | Interval for prometheus service monitor          | `5s`                        |
 | `serviceMonitor.relabelings`                      | Add relabelings for the metrics being scraped    | `{}`                        |
 | `perReplicaService.enabled`                       | Enable per replica service                       | `false`                     |
+| `perReplicaService.publishNotReadyAddresses`      | Publish not ready addresses                      | `false`                     |
+| `headlessservice.enabled`                         | Enable headless service                          | `true`                      |
+| `headlessservice.publishNotReadyAddresses`        | Publish not ready addresses                      | `true`                      |
 | `pdb.enabled`                                     | Enable pod disruption budget                     | `false`                     |
 | `pdb.minAvailable`                                | Minimum number of available pods                 | `75%`                       |
 | `pdb.maxUnavailable`                              | Maximum number of unavailable pods               | `""`                        |

@@ -18,7 +18,7 @@ spec:
       targetPort: metrics
       protocol: TCP
       name: metrics
-    {{- end }}
-    
+    {{- end }}  
   selector:
     {{- include "relay.selectorLabels" . | nindent 4 }}
+  publishNotReadyAddresses: {{ .Values.service.publishNotReadyAddresses }}

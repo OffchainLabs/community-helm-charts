@@ -78,6 +78,12 @@ serviceMonitor:
 perReplicaService:
   enabled: false
 
+## @param headlessservice.enabled Enable headless service
+## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
+headlessservice:
+  enabled: true
+  publishNotReadyAddresses: true
+
 ## @param jwtSecret.enabled Enable a jwt secret for use with the stateless validator
 ## @param jwtSecret.value Value of the jwt secret for use with the stateless validator
 jwtSecret:
@@ -126,8 +132,10 @@ securityContext: {}
 priorityClassName: ""
 
 ## @param service.type Service type
+## @param service.publishNotReadyAddresses Publish not ready addresses
 service:
   type: ClusterIP
+  publishNotReadyAddresses: false
 
 ## @param resources Resources for the container
 resources: {}

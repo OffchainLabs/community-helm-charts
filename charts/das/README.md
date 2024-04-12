@@ -195,6 +195,7 @@ extraEnv:
 | `serviceMonitor.relabelings`                    | Add relabelings for the metrics being scraped                               | `{}`                        |
 | `perReplicaService.enabled`                     | Enable per replica service                                                  | `false`                     |
 | `headlessservice.enabled`                       | Enable headless service                                                     | `false`                     |
+| `headlessservice.publishNotReadyAddresses`      | Publish not ready addresses                                                 | `true`                      |
 | `pdb.enabled`                                   | Enable pod disruption budget                                                | `false`                     |
 | `pdb.minAvailable`                              | Minimum number of available pods                                            | `""`                        |
 | `pdb.maxUnavailable`                            | Maximum number of unavailable pods                                          | `1`                         |
@@ -210,6 +211,7 @@ extraEnv:
 | `securityContext`                               | Security context for the das container                                      | `{}`                        |
 | `priorityClassName`                             | Priority class name for the das pod                                         | `""`                        |
 | `service.type`                                  | Service type                                                                | `ClusterIP`                 |
+| `service.publishNotReadyAddresses`              | Publish not ready addresses                                                 | `false`                     |
 | `resources`                                     | Resource requests and limits for the das container                          | `{}`                        |
 | `nodeSelector`                                  | Node selector for the das pod                                               | `{}`                        |
 | `tolerations`                                   | Tolerations for the das pod                                                 | `[]`                        |

@@ -93,8 +93,10 @@ perReplicaService:
   enabled: false
 
 ## @param headlessservice.enabled Enable headless service
+## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
 headlessservice:
   enabled: false
+  publishNotReadyAddresses: true
 
 ## @param pdb.enabled Enable pod disruption budget
 ## @param pdb.minAvailable Minimum number of available pods
@@ -134,8 +136,10 @@ securityContext: {}
 priorityClassName: ""
 
 ## @param service.type Service type
+## @param service.publishNotReadyAddresses Publish not ready addresses
 service:
   type: ClusterIP
+  publishNotReadyAddresses: false
 
 ## @param resources Resource requests and limits for the das container
 resources: {}
