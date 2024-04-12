@@ -75,8 +75,10 @@ serviceMonitor:
   relabelings: {}
 
 ## @param perReplicaService.enabled Enable a service for each sts replica
+## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
 perReplicaService:
   enabled: false
+  publishNotReadyAddresses: true
 
 ## @param headlessservice.enabled Enable headless service
 ## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
