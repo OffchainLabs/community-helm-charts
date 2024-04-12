@@ -37,5 +37,6 @@ spec:
   selector:
     statefulset.kubernetes.io/pod-name: {{ include "nitro.fullname" $ }}-{{ . }}
   type: {{ $.Values.service.type }}
+  publishNotReadyAddresses: {{ $.Values.perReplicaService.publishNotReadyAddresses }}
 {{- end }}
 {{- end }}
