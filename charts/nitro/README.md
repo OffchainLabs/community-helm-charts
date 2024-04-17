@@ -94,9 +94,11 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `persistence.enabled`                        | Enable persistence                                                              | `true`                                                      |
 | `persistence.size`                           | Size of the persistent volume claim                                             | `500Gi`                                                     |
 | `persistence.storageClassName`               | Storage class of the persistent volume claim                                    | `nil`                                                       |
+| `persistence.accessModes`                    | Access modes of the persistent volume claim                                     | `["ReadWriteOncePod"]`                                      |
 | `blobPersistence.enabled`                    | Enable blob persistence                                                         | `false`                                                     |
 | `blobPersistence.size`                       | Size of the blob persistent volume claim                                        | `100Gi`                                                     |
 | `blobPersistence.storageClassName`           | Storage class of the blob persistent volume claim                               | `nil`                                                       |
+| `blobPersistence.accessModes`                | Access modes of the blob persistent volume claim                                | `["ReadWriteOncePod"]`                                      |
 | `serviceMonitor.enabled`                     | Enable service monitor CRD for prometheus operator                              | `false`                                                     |
 | `serviceMonitor.portName`                    | Name of the port to monitor                                                     | `metrics`                                                   |
 | `serviceMonitor.path`                        | Path to monitor                                                                 | `/debug/metrics/prometheus`                                 |
