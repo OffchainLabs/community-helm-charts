@@ -185,9 +185,11 @@ extraEnv:
 | `persistence.localdbstorage`                    | This will only be created if local db storage is enabled in the configmap   |                             |
 | `persistence.localdbstorage.size`               | Size of the persistent volume claim                                         | `100Gi`                     |
 | `persistence.localdbstorage.storageClassName`   | Storage class of the persistent volume claim                                | `nil`                       |
+| `persistence.localdbstorage.accessModes`        | Access modes of the persistent volume claim                                 | `["ReadWriteOncePod"]`      |
 | `persistence.localfilestorage`                  | This will only be created if local file storage is enabled in the configmap |                             |
 | `persistence.localfilestorage.size`             | Size of the persistent volume claim                                         | `100Gi`                     |
 | `persistence.localfilestorage.storageClassName` | Storage class of the persistent volume claim                                | `nil`                       |
+| `persistence.localfilestorage.accessModes`      | Access modes of the persistent volume claim                                 | `["ReadWriteOncePod"]`      |
 | `serviceMonitor.enabled`                        | Enable service monitor CRD for prometheus operator                          | `false`                     |
 | `serviceMonitor.portName`                       | Name of the port to monitor                                                 | `metrics`                   |
 | `serviceMonitor.path`                           | Path to monitor                                                             | `/debug/metrics/prometheus` |
