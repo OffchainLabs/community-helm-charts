@@ -230,7 +230,7 @@ spec:
           {{- end }}
       spec:
         accessModes:
-        - "ReadWriteOnce"
+        {{- toYaml .Values.persistence.accessModes | nindent 8 }}
         {{- if .Values.persistence.storageClassName }}
         storageClassName: {{ .Values.persistence.storageClassName | quote }}
         {{- end }}
@@ -251,7 +251,7 @@ spec:
           heritage: {{ .Release.Service }}
       spec: 
         accessModes:
-        - "ReadWriteOnce"
+        {{- toYaml .Values.blobPersistence.accessModes | nindent 8 }}
         {{- if .Values.blobPersistence.storageClassName }}
         storageClassName: {{ .Values.blobPersistence.storageClassName | quote }}
         {{- end }}

@@ -66,15 +66,21 @@ persistence:
   ## @extra persistence.localdbstorage This will only be created if local db storage is enabled in the configmap
   ## @param persistence.localdbstorage.size Size of the persistent volume claim
   ## @param persistence.localdbstorage.storageClassName [string, nullable] Storage class of the persistent volume claim
+  ## @param persistence.localdbstorage.accessModes Access modes of the persistent volume claim
   localdbstorage:
     size: 100Gi
     storageClassName: null
+    accessModes:
+      - ReadWriteOncePod
   ## @extra persistence.localfilestorage This will only be created if local file storage is enabled in the configmap
   ## @param persistence.localfilestorage.size Size of the persistent volume claim
   ## @param persistence.localfilestorage.storageClassName [string, nullable] Storage class of the persistent volume claim
+  ## @param persistence.localfilestorage.accessModes Access modes of the persistent volume claim
   localfilestorage:
     size: 100Gi
     storageClassName: null
+    accessModes:
+      - ReadWriteOncePod
 
 ## @param serviceMonitor.enabled Enable service monitor CRD for prometheus operator
 ## @param serviceMonitor.portName Name of the port to monitor
