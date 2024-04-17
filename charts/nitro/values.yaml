@@ -55,7 +55,7 @@ persistence:
   size: 500Gi
   storageClassName: null
   accessModes:
-    - ReadWriteOncePod
+    - ReadWriteOnce
 
 ## @param blobPersistence.enabled Enable blob persistence
 ## @param blobPersistence.size Size of the blob persistent volume claim
@@ -66,7 +66,7 @@ blobPersistence:
   size: 100Gi
   storageClassName: null
   accessModes:
-    - ReadWriteOncePod
+    - ReadWriteOnce
 
 ## @param serviceMonitor.enabled Enable service monitor CRD for prometheus operator
 ## @param serviceMonitor.portName Name of the port to monitor
