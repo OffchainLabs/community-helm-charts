@@ -74,7 +74,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 ### Nitro Deployment Options
 
 | Name                                         | Description                                                                     | Value                                                       |
-|----------------------------------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------|
+| -------------------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | `replicaCount`                               | Number of replicas to deploy                                                    | `1`                                                         |
 | `image.repository`                           | Docker image repository                                                         | `offchainlabs/nitro-node`                                   |
 | `image.pullPolicy`                           | Docker image pull policy                                                        | `Always`                                                    |
@@ -160,7 +160,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 ### Stateless Validator
 
 | Name                                                       | Description                                              | Value                       |
-|------------------------------------------------------------|----------------------------------------------------------|-----------------------------|
+| ---------------------------------------------------------- | -------------------------------------------------------- | --------------------------- |
 | `validator.image.repository`                               | Docker image repository                                  | `""`                        |
 | `validator.image.tag`                                      | Docker image tag                                         | `""`                        |
 | `validator.enabled`                                        | Enable the stateless validator                           | `false`                     |
