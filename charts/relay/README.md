@@ -22,7 +22,7 @@ helm install <my-release> offchainlabs/relay \
 
 ### Examples
 
-Runninng a relay for a network other than Arbitrum One requires setting the chain id. For instance, to run a relay for Arbitrum Sepolia.
+Running a relay for a network other than Arbitrum One requires setting the chain id. For instance, to run a relay for Arbitrum Sepolia.
 
 ```console
 helm install <my-release> offchainlabs/relay \
