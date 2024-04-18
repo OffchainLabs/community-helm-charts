@@ -233,7 +233,7 @@ spec:
           heritage: {{ .Release.Service }}
       spec:
         accessModes:
-        - "ReadWriteOnce"
+        {{- toYaml .Values.persistence.localdbstorage.accessModes | nindent 8 }}
         {{- if .Values.persistence.localdbstorage.storageClassName }}
         storageClassName: {{ .Values.persistence.localdbstorage.storageClassName | quote }}
         {{- end }}
@@ -254,7 +254,7 @@ spec:
           heritage: {{ .Release.Service }}
       spec:
         accessModes:
-        - "ReadWriteOnce"
+        {{- toYaml .Values.persistence.localfilestorage.accessModes | nindent 8 }}
         {{- if .Values.persistence.localfilestorage.storageClassName }}
         storageClassName: {{ .Values.persistence.localfilestorage.storageClassName | quote }}
         {{- end }}
