@@ -121,6 +121,9 @@ serviceAccount:
 ## @param podAnnotations Annotations for the pod
 podAnnotations: {}
 
+## @param podLabels Labels for the pod
+podLabels: {}
+
 ## @param podSecurityContext.fsGroup Group id for the pod
 ## @param podSecurityContext.runAsGroup Group id for the user
 ## @param podSecurityContext.runAsNonRoot Run as non root
