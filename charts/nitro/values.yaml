@@ -49,18 +49,24 @@ updateStrategy:
 ## @param persistence.enabled Enable persistence
 ## @param persistence.size Size of the persistent volume claim
 ## @param persistence.storageClassName [string, nullable] Storage class of the persistent volume claim
+## @param persistence.accessModes Access modes of the persistent volume claim
 persistence:
   enabled: true
   size: 500Gi
   storageClassName: null
+  accessModes:
+    - ReadWriteOnce
 
 ## @param blobPersistence.enabled Enable blob persistence
 ## @param blobPersistence.size Size of the blob persistent volume claim
 ## @param blobPersistence.storageClassName [string, nullable] Storage class of the blob persistent volume claim
+## @param blobPersistence.accessModes Access modes of the blob persistent volume claim
 blobPersistence:
   enabled: false
   size: 100Gi
   storageClassName: null
+  accessModes:
+    - ReadWriteOnce
 
 ## @param serviceMonitor.enabled Enable service monitor CRD for prometheus operator
 ## @param serviceMonitor.portName Name of the port to monitor
@@ -75,8 +81,16 @@ serviceMonitor:
   relabelings: {}
 
 ## @param perReplicaService.enabled Enable a service for each sts replica
+## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
 perReplicaService:
   enabled: false
+  publishNotReadyAddresses: true
+
+## @param headlessservice.enabled Enable headless service
+## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
+headlessservice:
+  enabled: true
+  publishNotReadyAddresses: true
 
 ## @param jwtSecret.enabled Enable a jwt secret for use with the stateless validator
 ## @param jwtSecret.value Value of the jwt secret for use with the stateless validator
@@ -107,6 +121,9 @@ serviceAccount:
 ## @param podAnnotations Annotations for the pod
 podAnnotations: {}
 
+## @param podLabels Labels for the pod
+podLabels: {}
+
 ## @param podSecurityContext.fsGroup Group id for the pod
 ## @param podSecurityContext.runAsGroup Group id for the user
 ## @param podSecurityContext.runAsNonRoot Run as non root
@@ -122,9 +139,14 @@ podSecurityContext:
 ## @param securityContext Security context for the container
 securityContext: {}
 
+## @param priorityClassName Priority class name
+priorityClassName: ""
+
 ## @param service.type Service type
+## @param service.publishNotReadyAddresses Publish not ready addresses
 service:
   type: ClusterIP
+  publishNotReadyAddresses: false
 
 ## @param resources Resources for the container
 resources: {}
@@ -140,6 +162,12 @@ affinity: {}
 
 ## @param additionalVolumeClaims Additional volume claims for the pod
 additionalVolumeClaims: []
+
+## @param extraVolumes Additional volumes for the pod
+extraVolumes: []
+
+## @param extraVolumeMounts Additional volume mounts for the pod
+extraVolumeMounts: []
 
 ## @param extraPorts Additional ports for the pod
 extraPorts: []
@@ -306,6 +334,9 @@ validator:
 
     ## @param validator.statefulset.podAnnotations Annotations for the stateless validator pod
     podAnnotations: {}
+
+    ## @param validator.statefulset.priorityClassName Priority class name for the stateless validator pod
+    priorityClassName: ""
 
 ## @skip ci
 ci:

@@ -70,15 +70,21 @@ persistence:
   ## @extra persistence.localdbstorage This will only be created if local db storage is enabled in the configmap
   ## @param persistence.localdbstorage.size Size of the persistent volume claim
   ## @param persistence.localdbstorage.storageClassName [string, nullable] Storage class of the persistent volume claim
+  ## @param persistence.localdbstorage.accessModes Access modes of the persistent volume claim
   localdbstorage:
     size: 100Gi
     storageClassName: null
+    accessModes:
+      - ReadWriteOnce
   ## @extra persistence.localfilestorage This will only be created if local file storage is enabled in the configmap
   ## @param persistence.localfilestorage.size Size of the persistent volume claim
   ## @param persistence.localfilestorage.storageClassName [string, nullable] Storage class of the persistent volume claim
+  ## @param persistence.localfilestorage.accessModes Access modes of the persistent volume claim
   localfilestorage:
     size: 100Gi
     storageClassName: null
+    accessModes:
+      - ReadWriteOnce
 
   ## @extra persistence.syncstorage This will only be created if local sync storage is enabled in the configmap
   ## @param persistence.syncstorage.size Size of the persistent volume claim
@@ -104,8 +110,10 @@ perReplicaService:
   enabled: false
 
 ## @param headlessservice.enabled Enable headless service
+## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
 headlessservice:
   enabled: false
+  publishNotReadyAddresses: true
 
 ## @param pdb.enabled Enable pod disruption budget
 ## @param pdb.minAvailable Minimum number of available pods
@@ -141,9 +149,14 @@ podSecurityContext:
 ## @param securityContext Security context for the das container
 securityContext: {}
 
+## @param priorityClassName Priority class name for the das pod
+priorityClassName: ""
+
 ## @param service.type Service type
+## @param service.publishNotReadyAddresses Publish not ready addresses
 service:
   type: ClusterIP
+  publishNotReadyAddresses: false
 
 ## @param resources Resource requests and limits for the das container
 resources: {}

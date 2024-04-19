@@ -88,8 +88,16 @@ serviceMonitor:
   relabelings: {}
 
 ## @param perReplicaService.enabled Enable per replica service
+## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
 perReplicaService:
   enabled: false
+  publishNotReadyAddresses: false
+
+## @param headlessservice.enabled Enable headless service
+## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
+headlessservice:
+  enabled: true
+  publishNotReadyAddresses: true
 
 ## @param pdb.enabled Enable pod disruption budget
 ## @param pdb.minAvailable Minimum number of available pods
@@ -124,6 +132,9 @@ podSecurityContext:
 
 ## @param securityContext Security context for the container
 securityContext: {}
+
+## @param priorityClassName Priority class name for the pod
+priorityClassName: ""
 
 ## @param service.type Service type
 service:

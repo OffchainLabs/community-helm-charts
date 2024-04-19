@@ -12,4 +12,5 @@ spec:
   - None
   selector:
     {{- include "das.selectorLabels" . | nindent 4 }}
+  publishNotReadyAddresses: {{ .Values.headlessservice.publishNotReadyAddresses }}
 {{- end }}

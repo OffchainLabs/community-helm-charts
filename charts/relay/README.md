@@ -22,7 +22,7 @@ helm install <my-release> offchainlabs/relay \
 
 ### Examples
 
-Runninng a relay for a network other than Arbitrum One requires setting the chain id. For instance, to run a relay for Arbitrum Sepolia.
+Running a relay for a network other than Arbitrum One requires setting the chain id. For instance, to run a relay for Arbitrum Sepolia.
 
 ```console
 helm install <my-release> offchainlabs/relay \
@@ -71,6 +71,9 @@ helm install <my-release> offchainlabs/relay \
 | `serviceMonitor.interval`                         | Interval for prometheus service monitor          | `5s`                        |
 | `serviceMonitor.relabelings`                      | Add relabelings for the metrics being scraped    | `{}`                        |
 | `perReplicaService.enabled`                       | Enable per replica service                       | `false`                     |
+| `perReplicaService.publishNotReadyAddresses`      | Publish not ready addresses                      | `false`                     |
+| `headlessservice.enabled`                         | Enable headless service                          | `true`                      |
+| `headlessservice.publishNotReadyAddresses`        | Publish not ready addresses                      | `true`                      |
 | `pdb.enabled`                                     | Enable pod disruption budget                     | `false`                     |
 | `pdb.minAvailable`                                | Minimum number of available pods                 | `75%`                       |
 | `pdb.maxUnavailable`                              | Maximum number of unavailable pods               | `""`                        |
@@ -84,6 +87,7 @@ helm install <my-release> offchainlabs/relay \
 | `podSecurityContext.runAsUser`                    | User id for the user                             | `1000`                      |
 | `podSecurityContext.fsGroupChangePolicy`          | Policy for the fs group                          | `OnRootMismatch`            |
 | `securityContext`                                 | Security context for the container               | `{}`                        |
+| `priorityClassName`                               | Priority class name for the pod                  | `""`                        |
 | `service.type`                                    | Service type                                     | `ClusterIP`                 |
 | `resources`                                       | Resources for the container                      | `{}`                        |
 | `nodeSelector`                                    | Node selector for the pod                        | `{}`                        |
