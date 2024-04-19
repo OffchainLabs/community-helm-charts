@@ -259,12 +259,6 @@ configmap:
         enable: false
         capacity: 20000
 
-      ## @param configmap.data.data-availability.syncstate.enable Enable local cache
-      ## @param configmap.data.data-availability.syncstate.data-dir
-      syncstate-storage:
-        enable: false
-        data-dir: ""
-
     ## @param configmap.data.metrics Enable metrics
     metrics: false
 

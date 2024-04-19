@@ -7,9 +7,11 @@ configmap:
       local-file-storage:
         enable: true
         data-dir: "/data"
-      syncstate-storage:
-        enable: true
-        data-dir: "/data/das-syncstate"
+      rest-aggregator:
+        sync-to-storage:
+          eager: true
+          eager-lower-bound-block: 15025611
+          state-dir: /data/syncState
     enable-rpc: false
 
 extraEnv:

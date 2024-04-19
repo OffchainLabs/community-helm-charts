@@ -62,11 +62,6 @@ spec:
             {{- if .Values.configmap.enabled }}
             - --conf.file=/config/config.json
             {{- end }}
-            {{- if index .Values "configmap" "data" "data-availability" "syncstate-storage" "enable" }}
-            - --data-availability.rest-aggregator.sync-to-storage.eager: true
-            - --data-availability.rest-aggregator.sync-to-storage.state-dir: {{ index .Values "configmap" "data" "data-availability" "syncstate-storage" "data-dir" }}
-            - --data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block: 15025611
-            {{- end }}
             {{- range $key, $value := .Values.customArgs }}
             - --{{ $key }}={{ $value | quote }}
             {{- end }}
@@ -186,9 +181,9 @@ spec:
           - name: localfilestorage
             mountPath: {{ index .Values "configmap" "data" "data-availability" "local-file-storage" "data-dir" }}
           {{- end }}
-          {{- if index .Values "configmap" "data" "data-availability" "syncstate-storage" "enable" }}
-          - name: syncstatestorage
-            mountPath: {{ index .Values "configmap" "data" "data-availability" "syncstate-storage" "data-dir" }}
+          {{- if index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
+          - name: sync-to-statestorage
+            mountPath: {{ index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
           {{- end }}
           {{- if and (index .Values "configmap" "data" "data-availability" "key") (index .Values "configmap" "data" "data-availability" "key" "key-dir") }}
           - name: keydir
@@ -271,9 +266,9 @@ spec:
           requests:
             storage: {{ .Values.persistence.localfilestorage.size | quote }}
       {{- end }}
-    {{- if index .Values "configmap" "data" "data-availability" "syncstate-storage" "enable" }}
+    {{- if index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
     - metadata:
-        name: syncstatestorage
+        name: sync-to-statestorage
         {{- with .Values.storageAnnotations }}
         annotations:
         {{- toYaml . | nindent 8 }}
