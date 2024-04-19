@@ -166,6 +166,7 @@ extraEnv:
 | `fullnameOverride`                              | String to fully override das fullname                                       | `""`                        |
 | `diagnosticMode`                                | Enable diagnostics mode (sleep infinity)                                    | `false`                     |
 | `commandOverride`                               | Command override for the das container                                      | `{}`                        |
+| `customArgs`                                    | Extra args to pass to the das container command                             | `[]`                        |
 | `livenessProbe`                                 | livenessProbe                                                               |                             |
 | `livenessProbe.enabled`                         | Enable liveness probe                                                       | `true`                      |
 | `livenessProbe.initialDelaySeconds`             | Initial delay for the liveness probe                                        | `60`                        |
@@ -190,6 +191,9 @@ extraEnv:
 | `persistence.localfilestorage.size`             | Size of the persistent volume claim                                         | `100Gi`                     |
 | `persistence.localfilestorage.storageClassName` | Storage class of the persistent volume claim                                | `nil`                       |
 | `persistence.localfilestorage.accessModes`      | Access modes of the persistent volume claim                                 | `["ReadWriteOnce"]`         |
+| `persistence.syncstorage`                       | This will only be created if local sync storage is enabled in the configmap |                             |
+| `persistence.syncstorage.size`                  | Size of the persistent volume claim                                         | `100Gi`                     |
+| `persistence.syncstorage.storageClassName`      | Storage class of the persistent volume claim                                | `nil`                       |
 | `serviceMonitor.enabled`                        | Enable service monitor CRD for prometheus operator                          | `false`                     |
 | `serviceMonitor.portName`                       | Name of the port to monitor                                                 | `metrics`                   |
 | `serviceMonitor.path`                           | Path to monitor                                                             | `/debug/metrics/prometheus` |
