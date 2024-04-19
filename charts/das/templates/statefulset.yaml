@@ -181,7 +181,7 @@ spec:
           - name: localfilestorage
             mountPath: {{ index .Values "configmap" "data" "data-availability" "local-file-storage" "data-dir" }}
           {{- end }}
-          {{- if index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" }}
+          {{- if index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
           - name: sync-to-statestorage
             mountPath: {{ index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
           {{- end }}
