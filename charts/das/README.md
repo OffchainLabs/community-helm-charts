@@ -260,7 +260,7 @@ extraEnv:
 | `configmap.data.data-availability.local-cache.capacity`                                   | Maximum number of entries (up to 64KB each) to store in the cache.                       | `20000`   |
 | `configmap.data.data-availability.rest-aggregator.sync-to-storage.eager`                  | Enable eagerly syncing batch data to this DAS's storage                                  | `false`   |
 | `configmap.data.data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block`| When eagerly syncing, start indexing forward from this L1 block                          | `0`       |
-| `configmap.data.data-availability.rest-aggregator.sync-to-storage.data-dir`               | Sync to storage directory                                                                | `""`      |
+| `configmap.data.data-availability.rest-aggregator.sync-to-storage.state-dir`               | Sync to storage directory                                                                | `""`      |
 | `configmap.data.metrics`                                                                  | Enable metrics                                                                           | `false`   |
 | `configmap.data.metrics-server.addr`                                                      | Metrics server address                                                                   | `0.0.0.0` |
 | `configmap.data.metrics-server.port`                                                      | Metrics server port                                                                      | `6070`    |
