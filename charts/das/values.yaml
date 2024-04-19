@@ -27,6 +27,10 @@ diagnosticMode: false
 ## @param commandOverride Command override for the das container
 commandOverride: {}
 
+
+## @param customArgs Extra args to pass to the das container command
+customArgs: []
+
 ## @extra livenessProbe livenessProbe
 ## @param livenessProbe.enabled Enable liveness probe
 ## @param livenessProbe.initialDelaySeconds Initial delay for the liveness probe
@@ -73,6 +77,13 @@ persistence:
   ## @param persistence.localfilestorage.size Size of the persistent volume claim
   ## @param persistence.localfilestorage.storageClassName [string, nullable] Storage class of the persistent volume claim
   localfilestorage:
+    size: 100Gi
+    storageClassName: null
+
+  ## @extra persistence.syncstorage This will only be created if local sync storage is enabled in the configmap
+  ## @param persistence.syncstorage.size Size of the persistent volume claim
+  ## @param persistence.syncstorage.storageClassName [string, nullable] Storage class of the persistent volume claim
+  syncstorage:
     size: 100Gi
     storageClassName: null
 
@@ -234,6 +245,12 @@ configmap:
       local-cache:
         enable: false
         capacity: 20000
+
+      ## @param configmap.data.data-availability.syncstate.enable Enable local cache
+      ## @param configmap.data.data-availability.syncstate.data-dir
+      syncstate-storage:
+        enable: false
+        data-dir: ""
 
     ## @param configmap.data.metrics Enable metrics
     metrics: false

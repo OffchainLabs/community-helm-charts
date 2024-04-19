@@ -7,6 +7,9 @@ configmap:
       local-file-storage:
         enable: true
         data-dir: "/data"
+      syncstate-storage:
+        enable: true
+        data-dir: "/data/das-syncstate"
     enable-rpc: false
 
 extraEnv:
