@@ -181,10 +181,6 @@ spec:
           - name: localfilestorage
             mountPath: {{ index .Values "configmap" "data" "data-availability" "local-file-storage" "data-dir" }}
           {{- end }}
-          {{- if index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
-          - name: sync-to-statestorage
-            mountPath: {{ index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
-          {{- end }}
           {{- if and (index .Values "configmap" "data" "data-availability" "key") (index .Values "configmap" "data" "data-availability" "key" "key-dir") }}
           - name: keydir
             mountPath: {{ index .Values "configmap" "data" "data-availability" "key" "key-dir" }}
@@ -265,25 +261,4 @@ spec:
         resources:
           requests:
             storage: {{ .Values.persistence.localfilestorage.size | quote }}
-      {{- end }}
-    {{- if index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
-    - metadata:
-        name: sync-to-statestorage
-        {{- with .Values.storageAnnotations }}
-        annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-        labels:
-          app: {{ template "das.name" . }}
-          release: {{ .Release.Name }}
-          heritage: {{ .Release.Service }}
-      spec:
-        accessModes:
-        - "ReadWriteOnce"
-        {{- if .Values.persistence.syncstorage.storageClassName }}
-        storageClassName: {{ .Values.persistence.syncstorage.storageClassName | quote }}
-        {{- end }}
-        resources:
-          requests:
-            storage: {{ .Values.persistence.syncstorage.size | quote }}
       {{- end }}

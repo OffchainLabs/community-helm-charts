@@ -86,13 +86,6 @@ persistence:
     accessModes:
       - ReadWriteOnce
 
-  ## @extra persistence.syncstorage This will only be created if local sync storage is enabled in the configmap
-  ## @param persistence.syncstorage.size Size of the persistent volume claim
-  ## @param persistence.syncstorage.storageClassName [string, nullable] Storage class of the persistent volume claim
-  syncstorage:
-    size: 100Gi
-    storageClassName: null
-
 ## @param serviceMonitor.enabled Enable service monitor CRD for prometheus operator
 ## @param serviceMonitor.portName Name of the port to monitor
 ## @param serviceMonitor.path Path to monitor
