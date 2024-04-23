@@ -12,7 +12,7 @@ configmap:
           eager: true
           eager-lower-bound-block: 15025611
           state-dir: /data/das-storage/syncState
-    enablle-rpc: false
+    enable-rpc: false
 
 extraEnv:
   - name: NITROCI_DATA__AVAILABILITY_PARENT__CHAIN__NODE__URL
