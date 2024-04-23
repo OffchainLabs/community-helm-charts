@@ -34,6 +34,24 @@ spec:
       priorityClassName: {{ .Values.priorityClassName }}
       {{- end }}
       initContainers:
+      {{- if index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir"}}
+      - name: create syncState directory
+        command:
+          - sh
+          - -c
+          - |
+            mkdir -p {{ index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
+            chown -R 1000:1000 {{ index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+          - mountPath: /data/das-storage
+            name: localfilestorage
+      {{- end }}
+
       {{- if .Values.initContainers }}
         {{- toYaml .Values.initContainers | nindent 8 }}
       {{- end }}

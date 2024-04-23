@@ -84,7 +84,7 @@ configmap:
         sync-to-storage:
           eager: true
           eager-lower-bound-block: <PARENT_CHAIN_BLOCK_CHAIN_WAS_DEPLOYED>
-          state-dir: /data/das-syncState
+          state-dir: /data/das-storage/syncState
 
 extraEnv:
   - name: POD_NAME
@@ -132,7 +132,7 @@ configmap:
         sync-to-storage:
           eager: true
           eager-lower-bound-block: <PARENT_CHAIN_BLOCK_CHAIN_WAS_DEPLOYED>
-          state-dir: /data/syncState
+          state-dir: /data/das-storage/syncState
 
 dasecretName: <BLS_KEY_SECRET_NAME>
 
