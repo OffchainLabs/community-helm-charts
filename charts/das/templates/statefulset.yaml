@@ -35,7 +35,7 @@ spec:
       {{- end }}
       initContainers:
       {{- if index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir"}}
-      - name: create syncState directory
+      - name: create-syncState-directory
         command:
           - sh
           - -c
