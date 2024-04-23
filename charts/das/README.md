@@ -166,6 +166,7 @@ extraEnv:
 | `fullnameOverride`                              | String to fully override das fullname                                       | `""`                        |
 | `diagnosticMode`                                | Enable diagnostics mode (sleep infinity)                                    | `false`                     |
 | `commandOverride`                               | Command override for the das container                                      | `{}`                        |
+| `customArgs`                                    | Extra args to pass to the das container command                             | `[]`                        |
 | `livenessProbe`                                 | livenessProbe                                                               |                             |
 | `livenessProbe.enabled`                         | Enable liveness probe                                                       | `true`                      |
 | `livenessProbe.initialDelaySeconds`             | Initial delay for the liveness probe                                        | `60`                        |
@@ -222,42 +223,45 @@ extraEnv:
 
 ### DAS Config options
 
-| Name                                                                      | Description                                                                              | Value     |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------- |
-| `configmap.enabled`                                                       | Enable configmap                                                                         | `true`    |
-| `configmap.data`                                                          | Data for the configmap. See Configuration Options for the full list of available options |           |
-| `configmap.data.conf.env-prefix`                                          | Environment variable prefix                                                              | `NITRO`   |
-| `configmap.data.log-type`                                                 | Log type                                                                                 | `json`    |
-| `configmap.data.log-level`                                                | Log level                                                                                | `3`       |
-| `configmap.data.enable-rest`                                              | Enable rest api                                                                          | `true`    |
-| `configmap.data.rest-addr`                                                | Rest api address                                                                         | `0.0.0.0` |
-| `configmap.data.rest-port`                                                | Rest api port                                                                            | `9877`    |
-| `configmap.data.enable-rpc`                                               | Enable rpc api                                                                           | `true`    |
-| `configmap.data.rpc-addr`                                                 | rpc api address                                                                          | `0.0.0.0` |
-| `configmap.data.rpc-port`                                                 | rpc api port                                                                             | `9876`    |
-| `configmap.data.data-availability.parent-chain-node-url`                  | Parent chain node url                                                                    | `""`      |
-| `configmap.data.data-availability.sequencer-inbox-address`                | Sequencer inbox address                                                                  | `""`      |
-| `configmap.data.data-availability.local-db-storage.enable`                | Enable local db storage                                                                  | `false`   |
-| `configmap.data.data-availability.local-db-storage.data-dir`              | Data directory                                                                           | `""`      |
-| `configmap.data.data-availability.local-db-storage.discard-after-timeout` | Discard after timeout                                                                    | `""`      |
-| `configmap.data.data-availability.local-file-storage.enable`              | Enable local file storage                                                                | `false`   |
-| `configmap.data.data-availability.local-file-storage.data-dir`            |                                                                                          | `""`      |
-| `configmap.data.data-availability.s3-storage.enable`                      | Enable s3 storage                                                                        | `false`   |
-| `configmap.data.data-availability.s3-storage.access-key`                  | s3 access key                                                                            | `""`      |
-| `configmap.data.data-availability.s3-storage.bucket`                      | s3 bucket                                                                                | `""`      |
-| `configmap.data.data-availability.s3-storage.discard-after-timeout`       | discard after timeout                                                                    | `""`      |
-| `configmap.data.data-availability.s3-storage.object-prefix`               | object prefix                                                                            | `""`      |
-| `configmap.data.data-availability.s3-storage.region`                      | region                                                                                   | `""`      |
-| `configmap.data.data-availability.s3-storage.secret-key`                  | s3 secret key                                                                            | `""`      |
-| `configmap.data.data-availability.ipfs-storage.enable`                    | Enable ipfs storage                                                                      | `false`   |
-| `configmap.data.data-availability.ipfs-storage.profiles`                  | ipfs profiles                                                                            | `""`      |
-| `configmap.data.data-availability.ipfs-storage.read-timeout`              | ipfs read timeout                                                                        | `1m0s`    |
-| `configmap.data.data-availability.local-cache.enable`                     | Enable local cache                                                                       | `false`   |
-| `configmap.data.data-availability.local-cache.capacity`                   | Maximum number of entries (up to 64KB each) to store in the cache.                       | `20000`   |
-| `configmap.data.metrics`                                                  | Enable metrics                                                                           | `false`   |
-| `configmap.data.metrics-server.addr`                                      | Metrics server address                                                                   | `0.0.0.0` |
-| `configmap.data.metrics-server.port`                                      | Metrics server port                                                                      | `6070`    |
-| `configmap.data.metrics-server.update-interval`                           | Metrics server update interval                                                           | `5s`      |
+| Name                                                                                       | Description                                                                              | Value     |
+| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | --------- |
+| `configmap.enabled`                                                                        | Enable configmap                                                                         | `true`    |
+| `configmap.data`                                                                           | Data for the configmap. See Configuration Options for the full list of available options |           |
+| `configmap.data.conf.env-prefix`                                                           | Environment variable prefix                                                              | `NITRO`   |
+| `configmap.data.log-type`                                                                  | Log type                                                                                 | `json`    |
+| `configmap.data.log-level`                                                                 | Log level                                                                                | `3`       |
+| `configmap.data.enable-rest`                                                               | Enable rest api                                                                          | `true`    |
+| `configmap.data.rest-addr`                                                                 | Rest api address                                                                         | `0.0.0.0` |
+| `configmap.data.rest-port`                                                                 | Rest api port                                                                            | `9877`    |
+| `configmap.data.enable-rpc`                                                                | Enable rpc api                                                                           | `true`    |
+| `configmap.data.rpc-addr`                                                                  | rpc api address                                                                          | `0.0.0.0` |
+| `configmap.data.rpc-port`                                                                  | rpc api port                                                                             | `9876`    |
+| `configmap.data.data-availability.parent-chain-node-url`                                   | Parent chain node url                                                                    | `""`      |
+| `configmap.data.data-availability.sequencer-inbox-address`                                 | Sequencer inbox address                                                                  | `""`      |
+| `configmap.data.data-availability.local-db-storage.enable`                                 | Enable local db storage                                                                  | `false`   |
+| `configmap.data.data-availability.local-db-storage.data-dir`                               | Data directory                                                                           | `""`      |
+| `configmap.data.data-availability.local-db-storage.discard-after-timeout`                  | Discard after timeout                                                                    | `""`      |
+| `configmap.data.data-availability.local-file-storage.enable`                               | Enable local file storage                                                                | `false`   |
+| `configmap.data.data-availability.local-file-storage.data-dir`                             |                                                                                          | `""`      |
+| `configmap.data.data-availability.s3-storage.enable`                                       | Enable s3 storage                                                                        | `false`   |
+| `configmap.data.data-availability.s3-storage.access-key`                                   | s3 access key                                                                            | `""`      |
+| `configmap.data.data-availability.s3-storage.bucket`                                       | s3 bucket                                                                                | `""`      |
+| `configmap.data.data-availability.s3-storage.discard-after-timeout`                        | discard after timeout                                                                    | `""`      |
+| `configmap.data.data-availability.s3-storage.object-prefix`                                | object prefix                                                                            | `""`      |
+| `configmap.data.data-availability.s3-storage.region`                                       | region                                                                                   | `""`      |
+| `configmap.data.data-availability.s3-storage.secret-key`                                   | s3 secret key                                                                            | `""`      |
+| `configmap.data.data-availability.ipfs-storage.enable`                                     | Enable ipfs storage                                                                      | `false`   |
+| `configmap.data.data-availability.ipfs-storage.profiles`                                   | ipfs profiles                                                                            | `""`      |
+| `configmap.data.data-availability.ipfs-storage.read-timeout`                               | ipfs read timeout                                                                        | `1m0s`    |
+| `configmap.data.data-availability.local-cache.enable`                                      | Enable local cache                                                                       | `false`   |
+| `configmap.data.data-availability.local-cache.capacity`                                    | Maximum number of entries (up to 64KB each) to store in the cache.                       | `20000`   |
+| `configmap.data.data-availability.rest-aggregator.sync-to-storage.eager`                   | Enable eagerly syncing batch data to this DAS's storage                                  | `false`   |
+| `configmap.data.data-availability.rest-aggregator.sync-to-storage.state-dir`               | Sync to storage directory                                                                | `""`      |
+| `configmap.data.data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block` | Start indexing forward from this L1 block                                                | `""`      |
+| `configmap.data.metrics`                                                                   | Enable metrics                                                                           | `false`   |
+| `configmap.data.metrics-server.addr`                                                       | Metrics server address                                                                   | `0.0.0.0` |
+| `configmap.data.metrics-server.port`                                                       | Metrics server port                                                                      | `6070`    |
+| `configmap.data.metrics-server.update-interval`                                            | Metrics server update interval                                                           | `5s`      |
 
 ## Configuration Options
 The following table lists the exhaustive configurable parameters that can be applied as part of the configmap (nested under `configmap.data`) or as standalone cli flags.
