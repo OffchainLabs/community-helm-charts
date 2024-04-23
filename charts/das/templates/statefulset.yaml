@@ -34,14 +34,13 @@ spec:
       priorityClassName: {{ .Values.priorityClassName }}
       {{- end }}
       initContainers:
-      {{- if index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir"}}
+      {{- if and (index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir") (index .Values "configmap" "data" "data-availability" "local-file-storage" "data-dir") }}
       - name: create-syncstate-directory
         command:
           - sh
           - -c
           - |
             mkdir -p {{ index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
-            chown -R 1000:1000 {{ index .Values "configmap" "data" "data-availability" "rest-aggregator" "sync-to-storage" "state-dir" }}
         image: busybox
         imagePullPolicy: IfNotPresent
         resources: {}
