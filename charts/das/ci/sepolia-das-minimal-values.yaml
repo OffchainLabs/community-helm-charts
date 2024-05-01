@@ -7,11 +7,6 @@ configmap:
       local-file-storage:
         enable: true
         data-dir: "/data"
-      rest-aggregator:
-        sync-to-storage:
-          eager: true
-          eager-lower-bound-block: 15025611
-          state-dir: /data/das-storage/syncState
 
 extraEnv:
   - name: NITROCI_DATA__AVAILABILITY_PARENT__CHAIN__NODE__URL

@@ -47,6 +47,7 @@ helm install <my-release> offchainlabs/das \
 --set configmap.data.data-availability.local-file-storage.enable=true \
 --set configmap.data.data-availability.local-file-storage.data-dir="/data/das-file-storage" \
 --set configmap.data.data-availability.key.key-dir="/data/das-key" \
+--set configmap.data.enable-rpc=true \
 --set dasecretName=das-bls
 ```
 
@@ -54,7 +55,7 @@ helm install <my-release> offchainlabs/das \
 
 Examples are included below of values files that may be useful as a starting point for production use cases.
 
-#### DAS Mirror
+#### DAS (Mirror)
 
 ```yaml
 configmap:
@@ -100,7 +101,7 @@ extraEnv:
         key: secretKey
 ```
 
-#### DAS
+#### DAS (DAC Member)
 
 ```yaml
 configmap:
@@ -133,6 +134,7 @@ configmap:
           eager: true
           eager-lower-bound-block: <PARENT_CHAIN_BLOCK_CHAIN_WAS_DEPLOYED>
           state-dir: /data/das-storage/syncState
+      enable-rpc: true
 
 dasecretName: <BLS_KEY_SECRET_NAME>
 
@@ -220,6 +222,7 @@ extraEnv:
 | `tolerations`                                   | Tolerations for the das pod                                                 | `[]`                        |
 | `affinity`                                      | Affinity for the das pod                                                    | `{}`                        |
 | `dasecretName`                                  | Name of the das bls secret that contains the bls key                        | `""`                        |
+| `overrideKeydirMountPath`                       | Override the keydir mount path                                              | `""`                        |
 
 ### DAS Config options
 
@@ -233,7 +236,7 @@ extraEnv:
 | `configmap.data.enable-rest`                                                               | Enable rest api                                                                          | `true`    |
 | `configmap.data.rest-addr`                                                                 | Rest api address                                                                         | `0.0.0.0` |
 | `configmap.data.rest-port`                                                                 | Rest api port                                                                            | `9877`    |
-| `configmap.data.enable-rpc`                                                                | Enable rpc api                                                                           | `true`    |
+| `configmap.data.enable-rpc`                                                                | Enable rpc api                                                                           | `false`   |
 | `configmap.data.rpc-addr`                                                                  | rpc api address                                                                          | `0.0.0.0` |
 | `configmap.data.rpc-port`                                                                  | rpc api port                                                                             | `9876`    |
 | `configmap.data.data-availability.parent-chain-node-url`                                   | Parent chain node url                                                                    | `""`      |

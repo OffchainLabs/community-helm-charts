@@ -50,7 +50,6 @@ spec:
           - mountPath: /data/das-storage
             name: localfilestorage
       {{- end }}
-
       {{- if .Values.initContainers }}
         {{- toYaml .Values.initContainers | nindent 8 }}
       {{- end }}
@@ -199,16 +198,22 @@ spec:
             mountPath: {{ index .Values "configmap" "data" "data-availability" "local-file-storage" "data-dir" }}
           {{- end }}
           {{- if and (index .Values "configmap" "data" "data-availability" "key") (index .Values "configmap" "data" "data-availability" "key" "key-dir") }}
+          {{- if .Values.overrideKeydirMountPath }}
+          - name: keydir
+            mountPath: {{ .Values.overrideKeydirMountPath }}
+            readOnly: true
+          {{- else }}
           - name: keydir
             mountPath: {{ index .Values "configmap" "data" "data-availability" "key" "key-dir" }}
             readOnly: true
+          {{- end }}
           {{- end }}
           {{- if .Values.configmap.enabled }}
           - name: config
             mountPath: /config/
           {{- end }}
           {{- if .Values.extraVolumeMounts }}
-          {{- toYaml .Values.extraVolumeMounts | nindent 8}}
+          {{- toYaml .Values.extraVolumeMounts | nindent 10}}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -222,6 +227,9 @@ spec:
       - name: keydir
         secret:
           secretName: {{ .Values.dasecretName }}
+      {{- end }}
+      {{ if .Values.extraVolumes }}
+      {{- toYaml .Values.extraVolumes | nindent 6 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
