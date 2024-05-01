@@ -12,6 +12,8 @@ configmap:
         
     enable-rpc: true
 
+daSecretName: "ci-secret-nitro"
+
 extraEnv:
   - name: NITROCI_DATA__AVAILABILITY_PARENT__CHAIN__NODE__URL
     valueFrom:
