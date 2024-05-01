@@ -194,7 +194,7 @@ configmap:
     rest-port: 9877
 
     ## @param configmap.data.enable-rpc Enable rpc api
-    enable-rpc: true
+    enable-rpc: false
 
     ## @param configmap.data.rpc-addr rpc api address
     rpc-port: 9876

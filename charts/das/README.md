@@ -133,6 +133,7 @@ configmap:
           eager: true
           eager-lower-bound-block: <PARENT_CHAIN_BLOCK_CHAIN_WAS_DEPLOYED>
           state-dir: /data/das-storage/syncState
+      enable-rpc: true
 
 dasecretName: <BLS_KEY_SECRET_NAME>
 
@@ -156,7 +157,7 @@ extraEnv:
 ### DAS Deployment Options
 
 | Name                                            | Description                                                                 | Value                       |
-| ----------------------------------------------- | --------------------------------------------------------------------------- | --------------------------- |
+|-------------------------------------------------|-----------------------------------------------------------------------------|-----------------------------|
 | `replicaCount`                                  | Number of replicas                                                          | `1`                         |
 | `image.repository`                              | Docker image repository                                                     | `offchainlabs/nitro-node`   |
 | `image.pullPolicy`                              | Docker image pull policy                                                    | `Always`                    |
@@ -224,7 +225,7 @@ extraEnv:
 ### DAS Config options
 
 | Name                                                                                       | Description                                                                              | Value     |
-| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | --------- |
+|--------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|-----------|
 | `configmap.enabled`                                                                        | Enable configmap                                                                         | `true`    |
 | `configmap.data`                                                                           | Data for the configmap. See Configuration Options for the full list of available options |           |
 | `configmap.data.conf.env-prefix`                                                           | Environment variable prefix                                                              | `NITRO`   |
