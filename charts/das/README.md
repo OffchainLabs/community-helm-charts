@@ -157,7 +157,7 @@ extraEnv:
 ### DAS Deployment Options
 
 | Name                                            | Description                                                                 | Value                       |
-|-------------------------------------------------|-----------------------------------------------------------------------------|-----------------------------|
+| ----------------------------------------------- | --------------------------------------------------------------------------- | --------------------------- |
 | `replicaCount`                                  | Number of replicas                                                          | `1`                         |
 | `image.repository`                              | Docker image repository                                                     | `offchainlabs/nitro-node`   |
 | `image.pullPolicy`                              | Docker image pull policy                                                    | `Always`                    |
@@ -225,7 +225,7 @@ extraEnv:
 ### DAS Config options
 
 | Name                                                                                       | Description                                                                              | Value     |
-|--------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|-----------|
+| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | --------- |
 | `configmap.enabled`                                                                        | Enable configmap                                                                         | `true`    |
 | `configmap.data`                                                                           | Data for the configmap. See Configuration Options for the full list of available options |           |
 | `configmap.data.conf.env-prefix`                                                           | Environment variable prefix                                                              | `NITRO`   |
@@ -234,7 +234,7 @@ extraEnv:
 | `configmap.data.enable-rest`                                                               | Enable rest api                                                                          | `true`    |
 | `configmap.data.rest-addr`                                                                 | Rest api address                                                                         | `0.0.0.0` |
 | `configmap.data.rest-port`                                                                 | Rest api port                                                                            | `9877`    |
-| `configmap.data.enable-rpc`                                                                | Enable rpc api                                                                           | `true`    |
+| `configmap.data.enable-rpc`                                                                | Enable rpc api                                                                           | `false`   |
 | `configmap.data.rpc-addr`                                                                  | rpc api address                                                                          | `0.0.0.0` |
 | `configmap.data.rpc-port`                                                                  | rpc api port                                                                             | `9876`    |
 | `configmap.data.data-availability.parent-chain-node-url`                                   | Parent chain node url                                                                    | `""`      |
