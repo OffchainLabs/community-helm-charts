@@ -47,6 +47,7 @@ helm install <my-release> offchainlabs/das \
 --set configmap.data.data-availability.local-file-storage.enable=true \
 --set configmap.data.data-availability.local-file-storage.data-dir="/data/das-file-storage" \
 --set configmap.data.data-availability.key.key-dir="/data/das-key" \
+--set configmap.data.enable-rpc=true \
 --set dasecretName=das-bls
 ```
 
@@ -54,7 +55,7 @@ helm install <my-release> offchainlabs/das \
 
 Examples are included below of values files that may be useful as a starting point for production use cases.
 
-#### DAS Mirror
+#### DAS (Mirror)
 
 ```yaml
 configmap:
@@ -157,7 +158,7 @@ extraEnv:
 ### DAS Deployment Options
 
 | Name                                            | Description                                                                 | Value                       |
-| ----------------------------------------------- | --------------------------------------------------------------------------- | --------------------------- |
+|-------------------------------------------------|-----------------------------------------------------------------------------|-----------------------------|
 | `replicaCount`                                  | Number of replicas                                                          | `1`                         |
 | `image.repository`                              | Docker image repository                                                     | `offchainlabs/nitro-node`   |
 | `image.pullPolicy`                              | Docker image pull policy                                                    | `Always`                    |
@@ -225,7 +226,7 @@ extraEnv:
 ### DAS Config options
 
 | Name                                                                                       | Description                                                                              | Value     |
-| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | --------- |
+|--------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|-----------|
 | `configmap.enabled`                                                                        | Enable configmap                                                                         | `true`    |
 | `configmap.data`                                                                           | Data for the configmap. See Configuration Options for the full list of available options |           |
 | `configmap.data.conf.env-prefix`                                                           | Environment variable prefix                                                              | `NITRO`   |
