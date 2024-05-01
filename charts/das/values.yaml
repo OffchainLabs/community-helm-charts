@@ -166,6 +166,9 @@ affinity: {}
 ## @param dasecretName Name of the das bls secret that contains the bls key
 dasecretName: ""
 
+## @param overrideKeydirMountPath Override the keydir mount path
+overrideKeydirMountPath: ""
+
 ## @section DAS Config options
 
 configmap:
