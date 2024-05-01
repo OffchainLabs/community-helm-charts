@@ -223,6 +223,9 @@ spec:
         secret:
           secretName: {{ .Values.dasecretName }}
       {{- end }}
+      {{ if .Values.extraVolumes }}
+      {{- toYaml .Values.extraVolumes | nindent 6 }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
