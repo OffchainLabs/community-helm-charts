@@ -222,6 +222,7 @@ extraEnv:
 | `tolerations`                                   | Tolerations for the das pod                                                 | `[]`                        |
 | `affinity`                                      | Affinity for the das pod                                                    | `{}`                        |
 | `dasecretName`                                  | Name of the das bls secret that contains the bls key                        | `""`                        |
+| `overrideKeydirMountPath`                       | Override the keydir mount path                                              | `""`                        |
 
 ### DAS Config options
 
