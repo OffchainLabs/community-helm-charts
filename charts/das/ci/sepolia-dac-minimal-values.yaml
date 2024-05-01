@@ -9,7 +9,6 @@ configmap:
         data-dir: "/data"
       key:
         key-dir: "/secret/key"
-        
     enable-rpc: true
 
 dasecretName: "ci-secret-nitro"
