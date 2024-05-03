@@ -8,6 +8,7 @@ configmap:
         enable: true
         data-dir: "/data"
       rest-aggregator:
+        enable: true
         sync-to-storage:
           eager: true
           eager-lower-bound-block: 15025611
