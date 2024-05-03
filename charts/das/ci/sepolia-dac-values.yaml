@@ -9,6 +9,7 @@ configmap:
         data-dir: "/data"
       rest-aggregator:
         enable: true
+        online-url-list: https://nova.arbitrum.io/das-servers
         sync-to-storage:
           eager: true
           eager-lower-bound-block: 15025611
