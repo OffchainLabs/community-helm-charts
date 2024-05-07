@@ -161,7 +161,7 @@ spec:
           {{- end }}
           {{- $mountPath := .Values.wallet.mountPath }}
           {{- range $filename := keys .Values.wallet.files }}
-          - name: wallet-{{ $filename }}
+          - name: wallet-{{ $filename | replace "." "-" }}
             mountPath: {{ printf "%s%s" $mountPath $filename }}
             readOnly: true
           {{- end }}
@@ -188,7 +188,7 @@ spec:
           name: {{ include "nitro.fullname" . }}
       {{- end }}
       {{- range $filename, $json := .Values.wallet.files }}
-      - name: wallet-{{ $filename }}
+      - name: wallet-{{ $filename | replace "." "-" }}
         secret:
           secretName: {{ include "nitro.fullname" $ }}-wallets
           items:
