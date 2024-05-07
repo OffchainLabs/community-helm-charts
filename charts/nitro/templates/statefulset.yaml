@@ -165,7 +165,7 @@ spec:
           {{- if .Values.wallet.files }}
           {{ range $filename, $json := .Values.wallet.files }}
           - name: wallet-files
-            mountPath: {{ $.Values.wallet.mountPath }}
+            mountPath: {{ $.Values.wallet.mountPath }}{{ $filename }}
             subPath: {{ $filename }}
           {{- end }}
           {{- end }}
