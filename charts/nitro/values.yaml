@@ -201,10 +201,12 @@ configmap:
       rpcprefix: "/rpc"
       vhosts: "*"
 
+    ## @param configmap.data.enable-rpc Enable rpc
     enable-rpc: false
 
     ## @param configmap.data.parent-chain.id ID of the parent chain
     ## @param configmap.data.parent-chain.connection.url URL of the parent chain
+    ## @param configmap.data.parent-chain.wallet.pathname Path to the parent chain wallet
     parent-chain:
       id: 1
       connection:
