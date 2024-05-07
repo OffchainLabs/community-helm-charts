@@ -164,8 +164,8 @@ spec:
           {{- end }}
           {{- if .Values.wallet.files }}
           - name: wallet-files
-            mountPath: {{ .Values.wallet.mountPath }}
-            readOnly: true
+            secret:
+              secretName: {{ include "nitro.fullname" . }}-wallets
           {{- end }}
           {{- if .Values.extraVolumeMounts }}
           {{- toYaml .Values.extraVolumeMounts | nindent 10}}
