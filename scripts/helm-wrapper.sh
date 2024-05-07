@@ -1,5 +1,7 @@
 #!/bin/bash
-# This script acts as a wrapper for the helm command to substitute --reuse-values with --reset-then-reuse-values.
+# This script is used as a stub for helm to substitute --reset-then-reuse-values
+# for instances of --reuse-values until https://github.com/helm/chart-testing/pull/531
+# or a similar PR is merged and released
 
 # Get the directory of the original helm binary
 helm_dir=$(dirname "$(which helm)")
