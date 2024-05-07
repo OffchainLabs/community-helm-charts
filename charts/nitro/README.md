@@ -149,7 +149,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `configmap.data.http.vhosts`                  | Vhosts to allow                                                                 | `*`                                                         |
 | `configmap.data.parent-chain.id`              | ID of the parent chain                                                          | `1`                                                         |
 | `configmap.data.parent-chain.connection.url`  | URL of the parent chain                                                         | `""`                                                        |
-| `configmap.data.parent-chain.wallet.pathname` | Path to the parent chain wallet                                                 | `/home/user/seqkeystore`                                    |
+| `configmap.data.parent-chain.wallet.pathname` | Path to the parent chain wallet                                                 | `/wallet/`                                                  |
 | `configmap.data.chain.id`                     | ID of the chain                                                                 | `42161`                                                     |
 | `configmap.data.log-type`                     | Type of log                                                                     | `json`                                                      |
 | `configmap.data.metrics`                      | Enable metrics                                                                  | `false`                                                     |
