@@ -175,7 +175,7 @@ extraPorts: []
 ## @param wallet.mountPath Path to mount the wallets
 ## @param wallet.files Key value pair of wallet name and contents (ethers json format)
 wallet:
-  mountPath: "/wallet/"
+  mountPath: "/home/user/wallet/"
   files: {} # sequencer-wallet1.json: '{"address": "0x...", "encryptedData": "..." }'
 
 configmap:
@@ -203,13 +203,10 @@ configmap:
 
     ## @param configmap.data.parent-chain.id ID of the parent chain
     ## @param configmap.data.parent-chain.connection.url URL of the parent chain
-    ## @param configmap.data.parent-chain.wallet.pathname Path to the parent chain wallet
     parent-chain:
       id: 1
       connection:
         url: ""
-      wallet:
-        pathname: "/wallet/"
 
     ## @param configmap.data.chain.id ID of the chain
     chain:
