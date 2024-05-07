@@ -1,0 +1,13 @@
+{{- if .Values.wallet.files }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "nitro.fullname" . }}-wallets
+  labels:
+    {{- include "nitro.labels" . | nindent 4 }}
+type: Opaque
+data:
+{{- range $filename, $json := .Values.wallet.files }}
+  {{ $filename }}: {{ $json | b64enc }}
+{{- end }}
+{{- end }}
