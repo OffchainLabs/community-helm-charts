@@ -23,6 +23,9 @@ spec:
     metadata:
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- if .Values.wallet.files }}
+        checksum/wallets: {{ include (print $.Template.BasePath "/wallets.yaml") . | sha256sum }}
+        {{- end }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -187,14 +190,11 @@ spec:
           name: {{ include "nitro.fullname" . }}
       {{- end }}
       {{- if .Values.wallet.files }}
+      {{- range $filename, $json := .Values.wallet.files }}
       - name: wallet-files
-        secret:
-          secretName: {{ include "nitro.fullname" $ }}-wallets
-          items:
-          {{- range $filename, $json := .Values.wallet.files }}
-          - key: {{ $filename }}
-            path: {{ $filename }}
-          {{- end }}
+        mountPath: {{ $.Values.wallet.mountPath }}{{ $filename }}
+        subPath: {{ $filename }}
+      {{- end }}
       {{- end }}
       {{- if .Values.extraVolumes }}
       {{- toYaml .Values.extraVolumes | nindent 6 }}
