@@ -163,9 +163,11 @@ spec:
             mountPath: /config/
           {{- end }}
           {{- if .Values.wallet.files }}
+          {{ range $filename, $json := .Values.wallet.files }}
           - name: wallet-files
-            secret:
-              secretName: {{ include "nitro.fullname" . }}-wallets
+            mountPath: {{ $.Values.wallet.mountPath }}
+            subPath: {{ $filename }}
+          {{- end }}
           {{- end }}
           {{- if .Values.extraVolumeMounts }}
           {{- toYaml .Values.extraVolumeMounts | nindent 10}}
