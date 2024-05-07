@@ -209,7 +209,7 @@ configmap:
       connection:
         url: ""
       wallet:
-        pathname: "/home/user/seqkeystore"
+        pathname: "/wallet/"
 
     ## @param configmap.data.chain.id ID of the chain
     chain:
