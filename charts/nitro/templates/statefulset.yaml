@@ -193,7 +193,7 @@ spec:
           items:
           {{- range $filename, $json := .Values.wallet.files }}
           - key: {{ $filename }}
-            path: /wallet/{{ $filename }}
+            path: {{ $filename }}
           {{- end }}
       {{- end }}
       {{- if .Values.extraVolumes }}
