@@ -172,6 +172,13 @@ extraVolumeMounts: []
 ## @param extraPorts Additional ports for the pod
 extraPorts: []
 
+## @param wallet.mountPath Path to mount the wallets
+## @param wallet.files Key value pair of wallet name and contents (ethers json format)
+wallet:
+  mountPath: "/wallet/"
+  files: {} # sequencer-wallet1.json: '{"address": "0x...", "encryptedData": "..." }'
+
+
 configmap:
   ## @param configmap.enabled Enable a configmap for the nitro container
   enabled: true
@@ -195,12 +202,16 @@ configmap:
       rpcprefix: "/rpc"
       vhosts: "*"
 
+    enable-rpc: false
+
     ## @param configmap.data.parent-chain.id ID of the parent chain
     ## @param configmap.data.parent-chain.connection.url URL of the parent chain
     parent-chain:
       id: 1
       connection:
         url: ""
+      wallet: 
+        pathname: "/wallet/"
 
     ## @param configmap.data.chain.id ID of the chain
     chain:

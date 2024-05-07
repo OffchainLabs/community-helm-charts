@@ -159,6 +159,12 @@ spec:
           - name: config
             mountPath: /config/
           {{- end }}
+          {{- $mountPath := .Values.wallet.mountPath }}
+          {{- range $filename := keys .Values.wallet.files }}
+          - name: {{ $filename }}
+            mountPath: {{ printf "%s%s" $mountPath $filename }}
+            readOnly: true
+          {{- end }}
           {{- if .Values.extraVolumeMounts }}
           {{- toYaml .Values.extraVolumeMounts | nindent 10}}
           {{- end }}
@@ -180,6 +186,14 @@ spec:
       - name: config
         configMap:
           name: {{ include "nitro.fullname" . }}
+      {{- end }}
+      {{- range $filename, $json := .Values.wallet.files }}
+      - name: {{ $filename }}
+        secret:
+          secretName: {{ include "nitro.fullname" $ }}-wallets
+          items:
+          - key: {{ $filename }}
+            path: {{ $filename }}
       {{- end }}
       {{- if .Values.extraVolumes }}
       {{- toYaml .Values.extraVolumes | nindent 6 }}
