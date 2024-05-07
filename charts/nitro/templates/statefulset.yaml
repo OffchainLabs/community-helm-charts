@@ -192,11 +192,9 @@ spec:
           name: {{ include "nitro.fullname" . }}
       {{- end }}
       {{- if .Values.wallet.files }}
-      {{- range $filename, $json := .Values.wallet.files }}
       - name: wallet-files
-        mountPath: {{ $.Values.wallet.mountPath }}{{ $filename }}
-        subPath: {{ $filename }}
-      {{- end }}
+        secret:
+          secretName: {{ include "nitro.fullname" . }}-wallets
       {{- end }}
       {{- if .Values.extraVolumes }}
       {{- toYaml .Values.extraVolumes | nindent 6 }}
