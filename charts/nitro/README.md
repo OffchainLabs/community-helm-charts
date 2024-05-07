@@ -73,90 +73,94 @@ helm install xai offchainlabs/nitro -f values.yaml
 
 ### Nitro Deployment Options
 
-| Name                                         | Description                                                                     | Value                                                       |
-| -------------------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `replicaCount`                               | Number of replicas to deploy                                                    | `1`                                                         |
-| `image.repository`                           | Docker image repository                                                         | `offchainlabs/nitro-node`                                   |
-| `image.pullPolicy`                           | Docker image pull policy                                                        | `Always`                                                    |
-| `image.tag`                                  | Docker image tag. Overrides the chart appVersion.                               | `""`                                                        |
-| `imagePullSecrets`                           | Docker registry pull secret names as an array                                   | `[]`                                                        |
-| `nameOverride`                               | String to partially override nitro.fullname                                     | `""`                                                        |
-| `fullnameOverride`                           | String to fully override nitro.fullname                                         | `""`                                                        |
-| `commandOverride`                            | Command override for the nitro container                                        | `{}`                                                        |
-| `livenessProbe`                              | Liveness probe configuration                                                    | `{}`                                                        |
-| `readinessProbe`                             | Readiness probe configuration                                                   | `{}`                                                        |
-| `startupProbe.enabled`                       | Enable built in startup probe                                                   | `true`                                                      |
-| `startupProbe.failureThreshold`              | Number of failures before pod is considered unhealthy                           | `2419200`                                                   |
-| `startupProbe.periodSeconds`                 | Number of seconds between startup probes                                        | `1`                                                         |
-| `startupProbe.command`                       | Command to run for the startup probe. If empty, the built in probe will be used | `""`                                                        |
-| `updateStrategy.type`                        | Update strategy type                                                            | `RollingUpdate`                                             |
-| `updateStrategy.rollingUpdate.partition`     | Partition to update                                                             | `0`                                                         |
-| `persistence.enabled`                        | Enable persistence                                                              | `true`                                                      |
-| `persistence.size`                           | Size of the persistent volume claim                                             | `500Gi`                                                     |
-| `persistence.storageClassName`               | Storage class of the persistent volume claim                                    | `nil`                                                       |
-| `persistence.accessModes`                    | Access modes of the persistent volume claim                                     | `["ReadWriteOnce"]`                                         |
-| `blobPersistence.enabled`                    | Enable blob persistence                                                         | `false`                                                     |
-| `blobPersistence.size`                       | Size of the blob persistent volume claim                                        | `100Gi`                                                     |
-| `blobPersistence.storageClassName`           | Storage class of the blob persistent volume claim                               | `nil`                                                       |
-| `blobPersistence.accessModes`                | Access modes of the blob persistent volume claim                                | `["ReadWriteOnce"]`                                         |
-| `serviceMonitor.enabled`                     | Enable service monitor CRD for prometheus operator                              | `false`                                                     |
-| `serviceMonitor.portName`                    | Name of the port to monitor                                                     | `metrics`                                                   |
-| `serviceMonitor.path`                        | Path to monitor                                                                 | `/debug/metrics/prometheus`                                 |
-| `serviceMonitor.interval`                    | Interval to monitor                                                             | `5s`                                                        |
-| `serviceMonitor.relabelings`                 | Add relabelings for the metrics being scraped                                   | `{}`                                                        |
-| `perReplicaService.enabled`                  | Enable a service for each sts replica                                           | `false`                                                     |
-| `perReplicaService.publishNotReadyAddresses` | Publish not ready addresses                                                     | `true`                                                      |
-| `headlessservice.enabled`                    | Enable headless service                                                         | `true`                                                      |
-| `headlessservice.publishNotReadyAddresses`   | Publish not ready addresses                                                     | `true`                                                      |
-| `jwtSecret.enabled`                          | Enable a jwt secret for use with the stateless validator                        | `false`                                                     |
-| `jwtSecret.value`                            | Value of the jwt secret for use with the stateless validator                    | `""`                                                        |
-| `auth.enabled`                               | Enable auth for the stateless validator                                         | `false`                                                     |
-| `pdb.enabled`                                | Enable pod disruption budget                                                    | `false`                                                     |
-| `pdb.minAvailable`                           | Minimum number of pods available                                                | `75%`                                                       |
-| `pdb.maxUnavailable`                         | Maximum number of pods unavailable                                              | `""`                                                        |
-| `serviceAccount.create`                      | Create a service account                                                        | `true`                                                      |
-| `serviceAccount.annotations`                 | Annotations for the service account                                             | `{}`                                                        |
-| `serviceAccount.name`                        | Name of the service account                                                     | `""`                                                        |
-| `podAnnotations`                             | Annotations for the pod                                                         | `{}`                                                        |
-| `podLabels`                                  | Labels for the pod                                                              | `{}`                                                        |
-| `podSecurityContext.fsGroup`                 | Group id for the pod                                                            | `1000`                                                      |
-| `podSecurityContext.runAsGroup`              | Group id for the user                                                           | `1000`                                                      |
-| `podSecurityContext.runAsNonRoot`            | Run as non root                                                                 | `true`                                                      |
-| `podSecurityContext.runAsUser`               | User id for the user                                                            | `1000`                                                      |
-| `podSecurityContext.fsGroupChangePolicy`     | Policy for the fs group                                                         | `OnRootMismatch`                                            |
-| `securityContext`                            | Security context for the container                                              | `{}`                                                        |
-| `priorityClassName`                          | Priority class name                                                             | `""`                                                        |
-| `service.type`                               | Service type                                                                    | `ClusterIP`                                                 |
-| `service.publishNotReadyAddresses`           | Publish not ready addresses                                                     | `false`                                                     |
-| `resources`                                  | Resources for the container                                                     | `{}`                                                        |
-| `nodeSelector`                               | Node selector for the pod                                                       | `{}`                                                        |
-| `tolerations`                                | Tolerations for the pod                                                         | `[]`                                                        |
-| `affinity`                                   | Affinity for the pod                                                            | `{}`                                                        |
-| `additionalVolumeClaims`                     | Additional volume claims for the pod                                            | `[]`                                                        |
-| `extraVolumes`                               | Additional volumes for the pod                                                  | `[]`                                                        |
-| `extraVolumeMounts`                          | Additional volume mounts for the pod                                            | `[]`                                                        |
-| `extraPorts`                                 | Additional ports for the pod                                                    | `[]`                                                        |
-| `configmap.enabled`                          | Enable a configmap for the nitro container                                      | `true`                                                      |
-| `configmap.data`                             | See Configuration Options for the full list of options                          |                                                             |
-| `configmap.data.conf.env-prefix`             | Environment variable prefix                                                     | `NITRO`                                                     |
-| `configmap.data.http.addr`                   | Address to bind http service to                                                 | `0.0.0.0`                                                   |
-| `configmap.data.http.api`                    | List of apis to enable                                                          | `["arb","personal","eth","net","web3","txpool","arbdebug"]` |
-| `configmap.data.http.corsdomain`             | CORS domain                                                                     | `*`                                                         |
-| `configmap.data.http.port`                   | Port to bind http service to                                                    | `8547`                                                      |
-| `configmap.data.http.rpcprefix`              | Prefix for rpc calls                                                            | `/rpc`                                                      |
-| `configmap.data.http.vhosts`                 | Vhosts to allow                                                                 | `*`                                                         |
-| `configmap.data.parent-chain.id`             | ID of the parent chain                                                          | `1`                                                         |
-| `configmap.data.parent-chain.connection.url` | URL of the parent chain                                                         | `""`                                                        |
-| `configmap.data.chain.id`                    | ID of the chain                                                                 | `42161`                                                     |
-| `configmap.data.log-type`                    | Type of log                                                                     | `json`                                                      |
-| `configmap.data.metrics`                     | Enable metrics                                                                  | `false`                                                     |
-| `configmap.data.metrics-server.addr`         | Address to bind metrics server to                                               | `0.0.0.0`                                                   |
-| `configmap.data.metrics-server.port`         | Port to bind metrics server to                                                  | `6070`                                                      |
-| `configmap.data.persistent.chain`            | Path to persistent chain data                                                   | `/home/user/data/`                                          |
-| `configmap.data.ws.addr`                     | Address to bind ws service to                                                   | `0.0.0.0`                                                   |
-| `configmap.data.ws.api`                      | List of apis to enable                                                          | `["net","web3","eth","arb"]`                                |
-| `configmap.data.ws.port`                     | Port to bind ws service to                                                      | `8548`                                                      |
-| `configmap.data.ws.rpcprefix`                | Prefix for rpc calls                                                            | `/ws`                                                       |
+| Name                                          | Description                                                                     | Value                                                       |
+| --------------------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `replicaCount`                                | Number of replicas to deploy                                                    | `1`                                                         |
+| `image.repository`                            | Docker image repository                                                         | `offchainlabs/nitro-node`                                   |
+| `image.pullPolicy`                            | Docker image pull policy                                                        | `Always`                                                    |
+| `image.tag`                                   | Docker image tag. Overrides the chart appVersion.                               | `""`                                                        |
+| `imagePullSecrets`                            | Docker registry pull secret names as an array                                   | `[]`                                                        |
+| `nameOverride`                                | String to partially override nitro.fullname                                     | `""`                                                        |
+| `fullnameOverride`                            | String to fully override nitro.fullname                                         | `""`                                                        |
+| `commandOverride`                             | Command override for the nitro container                                        | `{}`                                                        |
+| `livenessProbe`                               | Liveness probe configuration                                                    | `{}`                                                        |
+| `readinessProbe`                              | Readiness probe configuration                                                   | `{}`                                                        |
+| `startupProbe.enabled`                        | Enable built in startup probe                                                   | `true`                                                      |
+| `startupProbe.failureThreshold`               | Number of failures before pod is considered unhealthy                           | `2419200`                                                   |
+| `startupProbe.periodSeconds`                  | Number of seconds between startup probes                                        | `1`                                                         |
+| `startupProbe.command`                        | Command to run for the startup probe. If empty, the built in probe will be used | `""`                                                        |
+| `updateStrategy.type`                         | Update strategy type                                                            | `RollingUpdate`                                             |
+| `updateStrategy.rollingUpdate.partition`      | Partition to update                                                             | `0`                                                         |
+| `persistence.enabled`                         | Enable persistence                                                              | `true`                                                      |
+| `persistence.size`                            | Size of the persistent volume claim                                             | `500Gi`                                                     |
+| `persistence.storageClassName`                | Storage class of the persistent volume claim                                    | `nil`                                                       |
+| `persistence.accessModes`                     | Access modes of the persistent volume claim                                     | `["ReadWriteOnce"]`                                         |
+| `blobPersistence.enabled`                     | Enable blob persistence                                                         | `false`                                                     |
+| `blobPersistence.size`                        | Size of the blob persistent volume claim                                        | `100Gi`                                                     |
+| `blobPersistence.storageClassName`            | Storage class of the blob persistent volume claim                               | `nil`                                                       |
+| `blobPersistence.accessModes`                 | Access modes of the blob persistent volume claim                                | `["ReadWriteOnce"]`                                         |
+| `serviceMonitor.enabled`                      | Enable service monitor CRD for prometheus operator                              | `false`                                                     |
+| `serviceMonitor.portName`                     | Name of the port to monitor                                                     | `metrics`                                                   |
+| `serviceMonitor.path`                         | Path to monitor                                                                 | `/debug/metrics/prometheus`                                 |
+| `serviceMonitor.interval`                     | Interval to monitor                                                             | `5s`                                                        |
+| `serviceMonitor.relabelings`                  | Add relabelings for the metrics being scraped                                   | `{}`                                                        |
+| `perReplicaService.enabled`                   | Enable a service for each sts replica                                           | `false`                                                     |
+| `perReplicaService.publishNotReadyAddresses`  | Publish not ready addresses                                                     | `true`                                                      |
+| `headlessservice.enabled`                     | Enable headless service                                                         | `true`                                                      |
+| `headlessservice.publishNotReadyAddresses`    | Publish not ready addresses                                                     | `true`                                                      |
+| `jwtSecret.enabled`                           | Enable a jwt secret for use with the stateless validator                        | `false`                                                     |
+| `jwtSecret.value`                             | Value of the jwt secret for use with the stateless validator                    | `""`                                                        |
+| `auth.enabled`                                | Enable auth for the stateless validator                                         | `false`                                                     |
+| `pdb.enabled`                                 | Enable pod disruption budget                                                    | `false`                                                     |
+| `pdb.minAvailable`                            | Minimum number of pods available                                                | `75%`                                                       |
+| `pdb.maxUnavailable`                          | Maximum number of pods unavailable                                              | `""`                                                        |
+| `serviceAccount.create`                       | Create a service account                                                        | `true`                                                      |
+| `serviceAccount.annotations`                  | Annotations for the service account                                             | `{}`                                                        |
+| `serviceAccount.name`                         | Name of the service account                                                     | `""`                                                        |
+| `podAnnotations`                              | Annotations for the pod                                                         | `{}`                                                        |
+| `podLabels`                                   | Labels for the pod                                                              | `{}`                                                        |
+| `podSecurityContext.fsGroup`                  | Group id for the pod                                                            | `1000`                                                      |
+| `podSecurityContext.runAsGroup`               | Group id for the user                                                           | `1000`                                                      |
+| `podSecurityContext.runAsNonRoot`             | Run as non root                                                                 | `true`                                                      |
+| `podSecurityContext.runAsUser`                | User id for the user                                                            | `1000`                                                      |
+| `podSecurityContext.fsGroupChangePolicy`      | Policy for the fs group                                                         | `OnRootMismatch`                                            |
+| `securityContext`                             | Security context for the container                                              | `{}`                                                        |
+| `priorityClassName`                           | Priority class name                                                             | `""`                                                        |
+| `service.type`                                | Service type                                                                    | `ClusterIP`                                                 |
+| `service.publishNotReadyAddresses`            | Publish not ready addresses                                                     | `false`                                                     |
+| `resources`                                   | Resources for the container                                                     | `{}`                                                        |
+| `nodeSelector`                                | Node selector for the pod                                                       | `{}`                                                        |
+| `tolerations`                                 | Tolerations for the pod                                                         | `[]`                                                        |
+| `affinity`                                    | Affinity for the pod                                                            | `{}`                                                        |
+| `additionalVolumeClaims`                      | Additional volume claims for the pod                                            | `[]`                                                        |
+| `extraVolumes`                                | Additional volumes for the pod                                                  | `[]`                                                        |
+| `extraVolumeMounts`                           | Additional volume mounts for the pod                                            | `[]`                                                        |
+| `extraPorts`                                  | Additional ports for the pod                                                    | `[]`                                                        |
+| `wallet.mountPath`                            | Path to mount the wallets                                                       | `/wallet/`                                                  |
+| `wallet.files`                                | Key value pair of wallet name and contents (ethers json format)                 | `{}`                                                        |
+| `configmap.enabled`                           | Enable a configmap for the nitro container                                      | `true`                                                      |
+| `configmap.data`                              | See Configuration Options for the full list of options                          |                                                             |
+| `configmap.data.conf.env-prefix`              | Environment variable prefix                                                     | `NITRO`                                                     |
+| `configmap.data.http.addr`                    | Address to bind http service to                                                 | `0.0.0.0`                                                   |
+| `configmap.data.http.api`                     | List of apis to enable                                                          | `["arb","personal","eth","net","web3","txpool","arbdebug"]` |
+| `configmap.data.http.corsdomain`              | CORS domain                                                                     | `*`                                                         |
+| `configmap.data.http.port`                    | Port to bind http service to                                                    | `8547`                                                      |
+| `configmap.data.http.rpcprefix`               | Prefix for rpc calls                                                            | `/rpc`                                                      |
+| `configmap.data.http.vhosts`                  | Vhosts to allow                                                                 | `*`                                                         |
+| `configmap.data.enable-rpc`                   | Enable rpc                                                                      | `false`                                                     |
+| `configmap.data.parent-chain.id`              | ID of the parent chain                                                          | `1`                                                         |
+| `configmap.data.parent-chain.connection.url`  | URL of the parent chain                                                         | `""`                                                        |
+| `configmap.data.parent-chain.wallet.pathname` | Path to the parent chain wallet                                                 | `/wallet/`                                                  |
+| `configmap.data.chain.id`                     | ID of the chain                                                                 | `42161`                                                     |
+| `configmap.data.log-type`                     | Type of log                                                                     | `json`                                                      |
+| `configmap.data.metrics`                      | Enable metrics                                                                  | `false`                                                     |
+| `configmap.data.metrics-server.addr`          | Address to bind metrics server to                                               | `0.0.0.0`                                                   |
+| `configmap.data.metrics-server.port`          | Port to bind metrics server to                                                  | `6070`                                                      |
+| `configmap.data.persistent.chain`             | Path to persistent chain data                                                   | `/home/user/data/`                                          |
+| `configmap.data.ws.addr`                      | Address to bind ws service to                                                   | `0.0.0.0`                                                   |
+| `configmap.data.ws.api`                       | List of apis to enable                                                          | `["net","web3","eth","arb"]`                                |
+| `configmap.data.ws.port`                      | Port to bind ws service to                                                      | `8548`                                                      |
+| `configmap.data.ws.rpcprefix`                 | Prefix for rpc calls                                                            | `/ws`                                                       |
 
 ### Stateless Validator
 
