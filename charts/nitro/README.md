@@ -147,7 +147,6 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `configmap.data.http.port`                    | Port to bind http service to                                                    | `8547`                                                      |
 | `configmap.data.http.rpcprefix`               | Prefix for rpc calls                                                            | `/rpc`                                                      |
 | `configmap.data.http.vhosts`                  | Vhosts to allow                                                                 | `*`                                                         |
-| `configmap.data.enable-rpc`                   | Enable rpc                                                                      | `false`                                                     |
 | `configmap.data.parent-chain.id`              | ID of the parent chain                                                          | `1`                                                         |
 | `configmap.data.parent-chain.connection.url`  | URL of the parent chain                                                         | `""`                                                        |
 | `configmap.data.parent-chain.wallet.pathname` | Path to the parent chain wallet                                                 | `/wallet/`                                                  |
