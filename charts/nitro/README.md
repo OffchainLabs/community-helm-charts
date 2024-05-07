@@ -136,6 +136,8 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `extraVolumes`                               | Additional volumes for the pod                                                  | `[]`                                                        |
 | `extraVolumeMounts`                          | Additional volume mounts for the pod                                            | `[]`                                                        |
 | `extraPorts`                                 | Additional ports for the pod                                                    | `[]`                                                        |
+| `wallet.mountPath`                           | Path to mount the wallets                                                       | `/wallet/`                                                  |
+| `wallet.files`                               | Key value pair of wallet name and contents (ethers json format)                 | `{}`                                                        |
 | `configmap.enabled`                          | Enable a configmap for the nitro container                                      | `true`                                                      |
 | `configmap.data`                             | See Configuration Options for the full list of options                          |                                                             |
 | `configmap.data.conf.env-prefix`             | Environment variable prefix                                                     | `NITRO`                                                     |
