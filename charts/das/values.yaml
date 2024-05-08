@@ -256,6 +256,8 @@ configmap:
         capacity: 20000
 
       rest-aggregator:
+        ## @param configmap.data.data-availability.rest-aggregator.enable Enable rest aggregator
+        enable: false
         ## @param configmap.data.data-availability.rest-aggregator.sync-to-storage.eager Enable eagerly syncing batch data to this DAS's storage
         ## @param configmap.data.data-availability.rest-aggregator.sync-to-storage.state-dir Sync to storage directory
         ## @param configmap.data.data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block Start indexing forward from this L1 block
