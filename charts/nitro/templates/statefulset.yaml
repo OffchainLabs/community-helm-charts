@@ -12,7 +12,7 @@ spec:
   selector:
     matchLabels:
       {{- include "nitro.selectorLabels" . | nindent 6 }}
-  podManagementPolicy: Parallel
+  podManagementPolicy: {{ .Values.podManagementPolicy }}
   {{- if .Values.updateStrategy }}
   {{- with .Values.updateStrategy }}
   updateStrategy: 
