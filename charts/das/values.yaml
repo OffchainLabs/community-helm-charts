@@ -127,6 +127,9 @@ serviceAccount:
 ## @param podAnnotations Annotations for the das pod
 podAnnotations: {}
 
+## @param podManagementPolicy Pod management policy
+podManagementPolicy: Parallel
+
 ## @param podSecurityContext.fsGroup Group id for the pod
 ## @param podSecurityContext.runAsGroup Group id for the user
 ## @param podSecurityContext.runAsNonRoot Run as non root

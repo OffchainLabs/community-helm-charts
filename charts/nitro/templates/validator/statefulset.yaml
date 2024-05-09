@@ -17,7 +17,7 @@ spec:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
-  podManagementPolicy: Parallel
+  podManagementPolicy: {{ .Values.validator.statefulset.podManagementPolicy }}
   replicas: {{ .Values.replicas }}
   serviceName: {{ template "nitro.name" . }}-validator
   selector:

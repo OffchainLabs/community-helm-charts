@@ -124,6 +124,9 @@ podAnnotations: {}
 ## @param podLabels Labels for the pod
 podLabels: {}
 
+## @param podManagementPolicy Pod management policy
+podManagementPolicy: Parallel
+
 ## @param podSecurityContext.fsGroup Group id for the pod
 ## @param podSecurityContext.runAsGroup Group id for the user
 ## @param podSecurityContext.runAsNonRoot Run as non root
@@ -340,6 +343,9 @@ validator:
 
     ## @param validator.statefulset.podAnnotations Annotations for the stateless validator pod
     podAnnotations: {}
+
+    ## @param validator.statefulset.podManagementPolicy Pod management policy
+    podManagementPolicy: Parallel
 
     ## @param validator.statefulset.priorityClassName Priority class name for the stateless validator pod
     priorityClassName: ""

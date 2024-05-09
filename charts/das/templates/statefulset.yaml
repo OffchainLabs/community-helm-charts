@@ -10,7 +10,7 @@ spec:
   selector:
     matchLabels:
       {{- include "das.selectorLabels" . | nindent 6 }}
-  podManagementPolicy: Parallel
+  podManagementPolicy: {{ .Values.podManagementPolicy }}
   template:
     metadata:
       annotations:

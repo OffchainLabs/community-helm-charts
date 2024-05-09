@@ -208,6 +208,7 @@ extraEnv:
 | `serviceAccount.annotations`                    | Annotations for the service account                                         | `{}`                        |
 | `serviceAccount.name`                           | Name of the service account                                                 | `""`                        |
 | `podAnnotations`                                | Annotations for the das pod                                                 | `{}`                        |
+| `podManagementPolicy`                           | Pod management policy                                                       | `Parallel`                  |
 | `podSecurityContext.fsGroup`                    | Group id for the pod                                                        | `1000`                      |
 | `podSecurityContext.runAsGroup`                 | Group id for the user                                                       | `1000`                      |
 | `podSecurityContext.runAsNonRoot`               | Run as non root                                                             | `true`                      |
