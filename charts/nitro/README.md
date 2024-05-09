@@ -119,6 +119,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `serviceAccount.name`                        | Name of the service account                                                     | `""`                                                        |
 | `podAnnotations`                             | Annotations for the pod                                                         | `{}`                                                        |
 | `podLabels`                                  | Labels for the pod                                                              | `{}`                                                        |
+| `podManagementPolicy`                        | Pod management policy                                                           | `Parallel`                                                  |
 | `podSecurityContext.fsGroup`                 | Group id for the pod                                                            | `1000`                                                      |
 | `podSecurityContext.runAsGroup`              | Group id for the user                                                           | `1000`                                                      |
 | `podSecurityContext.runAsNonRoot`            | Run as non root                                                                 | `true`                                                      |
@@ -200,6 +201,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.statefulset.extraEnv`                           | Extra environment variables for the validator container  | `{}`                        |
 | `validator.statefulset.extraPorts`                         | Additional ports for the stateless validator pod         | `[]`                        |
 | `validator.statefulset.podAnnotations`                     | Annotations for the stateless validator pod              | `{}`                        |
+| `validator.statefulset.podManagementPolicy`                | Pod management policy                                    | `Parallel`                  |
 | `validator.statefulset.priorityClassName`                  | Priority class name for the stateless validator pod      | `""`                        |
 
 ## Configuration Options
