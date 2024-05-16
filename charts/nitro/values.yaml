@@ -246,7 +246,7 @@ validator:
     ## @param validator.image.tag Docker image tag
     tag: ""
   ## @param validator.enabled Enable the stateless validator
-  enabled: true
+  enabled: false
   ## @param validator.defaultNodeSelector.kubernetes.io/arch Architecture to schedule the pods on in the case of stateless validator
   defaultNodeSelector:
     kubernetes.io/arch: amd64
