@@ -154,6 +154,11 @@ resources: {}
 ## @param nodeSelector Node selector for the pod
 nodeSelector: {}
 
+## @param defaultNodeSelector Default node selector used if stateless validation is configured. This ensures the stateless validator is scheduled on the same architecture
+## @param defaultNodeSelector.kubernetes.io/arch Architecture to schedule the pod on
+defaultNodeSelector:
+  kubernetes.io/arch: amd64
+
 ## @param tolerations Tolerations for the pod
 tolerations: []
 

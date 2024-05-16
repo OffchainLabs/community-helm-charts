@@ -206,9 +206,16 @@ spec:
           claimName: {{ .name }}
       {{- end }}
       {{- end }}
-      {{- with .Values.nodeSelector }}
+      {{- if .Values.validator.enabled }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
+        {{- if .Values.nodeSelector }}
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- else }}
+        kubernetes.io/arch: amd64
+        {{- end }}
+      {{- else if .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 600 }}
       {{- with .Values.affinity }}
