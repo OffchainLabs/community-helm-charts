@@ -166,7 +166,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | ---------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------- |
 | `validator.image.repository`                               | Docker image repository                                                 | `""`                        |
 | `validator.image.tag`                                      | Docker image tag                                                        | `""`                        |
-| `validator.enabled`                                        | Enable the stateless validator                                          | `true`                      |
+| `validator.enabled`                                        | Enable the stateless validator                                          | `false`                     |
 | `validator.defaultNodeSelector.kubernetes.io/arch`         | Architecture to schedule the pods on in the case of stateless validator | `amd64`                     |
 | `validator.configmap.data.auth.addr`                       | Address to bind auth service to                                         | `0.0.0.0`                   |
 | `validator.configmap.data.auth.port`                       | Port to bind auth service to                                            | `8549`                      |
