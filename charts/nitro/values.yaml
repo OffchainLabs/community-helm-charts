@@ -154,11 +154,6 @@ resources: {}
 ## @param nodeSelector Node selector for the pod
 nodeSelector: {}
 
-## @param defaultNodeSelector Default node selector used if stateless validation is configured. This ensures the stateless validator is scheduled on the same architecture
-## @param defaultNodeSelector.kubernetes.io/arch Architecture to schedule the pod on
-defaultNodeSelector:
-  kubernetes.io/arch: amd64
-
 ## @param tolerations Tolerations for the pod
 tolerations: []
 
@@ -251,7 +246,10 @@ validator:
     ## @param validator.image.tag Docker image tag
     tag: ""
   ## @param validator.enabled Enable the stateless validator
-  enabled: false
+  enabled: true
+  ## @param validator.defaultNodeSelector.kubernetes.io/arch Architecture to schedule the pods on in the case of stateless validator
+  defaultNodeSelector:
+    kubernetes.io/arch: amd64
   configmap:
     data:
       ## @param validator.configmap.data.auth.addr Address to bind auth service to
