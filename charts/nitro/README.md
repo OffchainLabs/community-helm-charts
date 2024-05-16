@@ -162,46 +162,46 @@ helm install xai offchainlabs/nitro -f values.yaml
 
 ### Stateless Validator
 
-| Name                                                       | Description                                                             | Value                       |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------- |
-| `validator.image.repository`                               | Docker image repository                                                 | `""`                        |
-| `validator.image.tag`                                      | Docker image tag                                                        | `""`                        |
-| `validator.enabled`                                        | Enable the stateless validator                                          | `false`                     |
-| `validator.defaultNodeSelector.kubernetes.io/arch`         | Architecture to schedule the pods on in the case of stateless validator | `amd64`                     |
-| `validator.configmap.data.auth.addr`                       | Address to bind auth service to                                         | `0.0.0.0`                   |
-| `validator.configmap.data.auth.port`                       | Port to bind auth service to                                            | `8549`                      |
-| `validator.configmap.data.auth.origins`                    | Origins to allow to access auth service                                 | `*`                         |
-| `validator.configmap.data.auth.jwtsecret`                  | Path to jwt secret for auth service                                     | `/secrets/jwtsecret`        |
-| `validator.configmap.data.metrics`                         | Enable metrics                                                          | `false`                     |
-| `validator.configmap.data.metrics-server.addr`             | Address to bind metrics server to                                       | `0.0.0.0`                   |
-| `validator.configmap.data.metrics-server.port`             | Port to bind metrics server to                                          | `6070`                      |
-| `validator.extraArgs`                                      | Extra arguments for the validator container                             | `[]`                        |
-| `validator.serviceMonitor.enabled`                         | Enable service monitor CRD for prometheus operator                      | `false`                     |
-| `validator.serviceMonitor.portName`                        | Name of the port to monitor                                             | `metrics`                   |
-| `validator.serviceMonitor.path`                            | Path to monitor                                                         | `/debug/metrics/prometheus` |
-| `validator.serviceMonitor.interval`                        | Interval to monitor                                                     | `5s`                        |
-| `validator.serviceMonitor.relabelings`                     | Add relabelings for the metrics being scraped                           | `{}`                        |
-| `validator.statefulset.useConfigmap`                       | Use the configmap for the validator container                           | `true`                      |
-| `validator.statefulset.auth.enabled`                       | Enable the auth service for the validator statefulset                   | `true`                      |
-| `validator.statefulset.auth.port`                          | Port to bind auth service to                                            | `8549`                      |
-| `validator.statefulset.extraLabels`                        | Extra labels for the liveness probe                                     | `{}`                        |
-| `validator.statefulset.livenessProbe.enabled`              | Enable the liveness probe for the validator statefulset                 | `true`                      |
-| `validator.statefulset.livenessProbe.tcpSocket.port`       | Port to probe                                                           | `auth`                      |
-| `validator.statefulset.livenessProbe.initialDelaySeconds`  | Initial delay for the liveness probe                                    | `30`                        |
-| `validator.statefulset.livenessProbe.periodSeconds`        | Period for the liveness probe                                           | `10`                        |
-| `validator.statefulset.pdb.enabled`                        | Enable pod disruption budget                                            | `false`                     |
-| `validator.statefulset.pdb.minAvailable`                   | Minimum number of pods available                                        | `75%`                       |
-| `validator.statefulset.pdb.maxUnavailable`                 | Maximum number of pods unavailable                                      | `""`                        |
-| `validator.statefulset.readinessProbe.enabled`             | Enable the readiness probe for the validator statefulset                | `true`                      |
-| `validator.statefulset.readinessProbe.tcpSocket.port`      | Port to probe                                                           | `auth`                      |
-| `validator.statefulset.readinessProbe.initialDelaySeconds` | Initial delay for the readiness probe                                   | `3`                         |
-| `validator.statefulset.readinessProbe.periodSeconds`       | Period for the readiness probe                                          | `3`                         |
-| `validator.statefulset.startupProbe.enabled`               | Enable the startup probe for the validator statefulset                  | `false`                     |
-| `validator.statefulset.resources`                          | Resources for the validator container                                   | `{}`                        |
-| `validator.statefulset.extraEnv`                           | Extra environment variables for the validator container                 | `{}`                        |
-| `validator.statefulset.extraPorts`                         | Additional ports for the stateless validator pod                        | `[]`                        |
-| `validator.statefulset.podAnnotations`                     | Annotations for the stateless validator pod                             | `{}`                        |
-| `validator.statefulset.priorityClassName`                  | Priority class name for the stateless validator pod                     | `""`                        |
+| Name                                                       | Description                                                                                                                    | Value                       |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
+| `validator.image.repository`                               | Docker image repository                                                                                                        | `""`                        |
+| `validator.image.tag`                                      | Docker image tag                                                                                                               | `""`                        |
+| `validator.enabled`                                        | Enable the stateless validator                                                                                                 | `false`                     |
+| `validator.defaultNodeSelector.kubernetes.io/arch`         | Architecture to schedule the pods to enure both the stateless validator and nitro node are scheduled on the same architecture. | `amd64`                     |
+| `validator.configmap.data.auth.addr`                       | Address to bind auth service to                                                                                                | `0.0.0.0`                   |
+| `validator.configmap.data.auth.port`                       | Port to bind auth service to                                                                                                   | `8549`                      |
+| `validator.configmap.data.auth.origins`                    | Origins to allow to access auth service                                                                                        | `*`                         |
+| `validator.configmap.data.auth.jwtsecret`                  | Path to jwt secret for auth service                                                                                            | `/secrets/jwtsecret`        |
+| `validator.configmap.data.metrics`                         | Enable metrics                                                                                                                 | `false`                     |
+| `validator.configmap.data.metrics-server.addr`             | Address to bind metrics server to                                                                                              | `0.0.0.0`                   |
+| `validator.configmap.data.metrics-server.port`             | Port to bind metrics server to                                                                                                 | `6070`                      |
+| `validator.extraArgs`                                      | Extra arguments for the validator container                                                                                    | `[]`                        |
+| `validator.serviceMonitor.enabled`                         | Enable service monitor CRD for prometheus operator                                                                             | `false`                     |
+| `validator.serviceMonitor.portName`                        | Name of the port to monitor                                                                                                    | `metrics`                   |
+| `validator.serviceMonitor.path`                            | Path to monitor                                                                                                                | `/debug/metrics/prometheus` |
+| `validator.serviceMonitor.interval`                        | Interval to monitor                                                                                                            | `5s`                        |
+| `validator.serviceMonitor.relabelings`                     | Add relabelings for the metrics being scraped                                                                                  | `{}`                        |
+| `validator.statefulset.useConfigmap`                       | Use the configmap for the validator container                                                                                  | `true`                      |
+| `validator.statefulset.auth.enabled`                       | Enable the auth service for the validator statefulset                                                                          | `true`                      |
+| `validator.statefulset.auth.port`                          | Port to bind auth service to                                                                                                   | `8549`                      |
+| `validator.statefulset.extraLabels`                        | Extra labels for the liveness probe                                                                                            | `{}`                        |
+| `validator.statefulset.livenessProbe.enabled`              | Enable the liveness probe for the validator statefulset                                                                        | `true`                      |
+| `validator.statefulset.livenessProbe.tcpSocket.port`       | Port to probe                                                                                                                  | `auth`                      |
+| `validator.statefulset.livenessProbe.initialDelaySeconds`  | Initial delay for the liveness probe                                                                                           | `30`                        |
+| `validator.statefulset.livenessProbe.periodSeconds`        | Period for the liveness probe                                                                                                  | `10`                        |
+| `validator.statefulset.pdb.enabled`                        | Enable pod disruption budget                                                                                                   | `false`                     |
+| `validator.statefulset.pdb.minAvailable`                   | Minimum number of pods available                                                                                               | `75%`                       |
+| `validator.statefulset.pdb.maxUnavailable`                 | Maximum number of pods unavailable                                                                                             | `""`                        |
+| `validator.statefulset.readinessProbe.enabled`             | Enable the readiness probe for the validator statefulset                                                                       | `true`                      |
+| `validator.statefulset.readinessProbe.tcpSocket.port`      | Port to probe                                                                                                                  | `auth`                      |
+| `validator.statefulset.readinessProbe.initialDelaySeconds` | Initial delay for the readiness probe                                                                                          | `3`                         |
+| `validator.statefulset.readinessProbe.periodSeconds`       | Period for the readiness probe                                                                                                 | `3`                         |
+| `validator.statefulset.startupProbe.enabled`               | Enable the startup probe for the validator statefulset                                                                         | `false`                     |
+| `validator.statefulset.resources`                          | Resources for the validator container                                                                                          | `{}`                        |
+| `validator.statefulset.extraEnv`                           | Extra environment variables for the validator container                                                                        | `{}`                        |
+| `validator.statefulset.extraPorts`                         | Additional ports for the stateless validator pod                                                                               | `[]`                        |
+| `validator.statefulset.podAnnotations`                     | Annotations for the stateless validator pod                                                                                    | `{}`                        |
+| `validator.statefulset.priorityClassName`                  | Priority class name for the stateless validator pod                                                                            | `""`                        |
 
 ## Configuration Options
 The following table lists the exhaustive configurable parameters that can be applied as part of the configmap (nested under `configmap.data`) or as standalone cli flags.
