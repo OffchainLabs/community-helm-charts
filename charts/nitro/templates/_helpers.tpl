@@ -89,5 +89,5 @@ nitro args
 {{- define "nitro.initContainers" -}}
 {{- end }}
 
-{{- define "nitro.sideCars" -}}
+{{- define "nitro.sidecars" -}}
 {{- end }}
