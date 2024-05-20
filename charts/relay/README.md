@@ -130,7 +130,7 @@ Option | Description | Default
 `conf.s3.region` | string                                                   S3 region | None
 `conf.s3.secret-key` | string                                               S3 secret key | None
 `conf.string` | string                                                      configuration as JSON string | None
-`log-level` | int                                                           log level | `3`
+`log-level` | int                                                           log level | None
 `log-type` | string                                                         log type | `plaintext`
 `metrics` | enable metrics | None
 `metrics-server.addr` | string                                              metrics server address | `127.0.0.1`
