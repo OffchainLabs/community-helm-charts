@@ -180,6 +180,7 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+        {{- include "nitro.sidecars" . | nindent 8 }}
       volumes:
       {{- if .Values.jwtSecret.enabled }}
       - name: jwt-secret
