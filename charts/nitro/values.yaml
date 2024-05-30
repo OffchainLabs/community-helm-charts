@@ -238,7 +238,6 @@ configmap:
       rpcprefix: "/ws"
 
 ## @section Stateless Validator
-
 validator:
   ## @param validator.enabled Enable the stateless validator
   enabled: true
@@ -340,12 +339,13 @@ validator:
         ## @param validator.splitvalidator.global.hpa.maxReplicas Maximum number of replicas
         maxReplicas: 10
         metrics:
-          - ## @param validator.splitvalidator.global.hpa.metrics[0].type Type of metric to monitor
-            type: Resource
+          ## @param validator.splitvalidator.global.hpa.metrics[0].type Type of metric to monitor
+          - type: Resource
             resource:
               ## @param validator.splitvalidator.global.hpa.metrics[0].resource.name Name of the resource to monitor (cpu/memory)
               name: cpu
               target:
+                ## @param validator.splitvalidator.global.hpa.metrics[0].resource.target.type Type of target
                 type: Utilization
                 ## @param validator.splitvalidator.global.hpa.metrics[0].resource.target.averageUtilization Target average utilization of the resource
                 averageUtilization: 80
@@ -356,8 +356,8 @@ validator:
             ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.selectPolicy Policy to use when scaling up
             selectPolicy: "Max"
             policies:
-              - ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].type Type of scale up policy
-                type: Percent
+              ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].type Type of scale up policy
+              - type: Percent
                 ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].value Percentage of pods to scale up
                 value: 50
                 ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].periodSeconds Period for scaling up
@@ -368,8 +368,8 @@ validator:
             ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.selectPolicy Policy to use when scaling down
             selectPolicy: "Min"
             policies:
-              - ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].type Type of scale down policy
-                type: Percent
+              ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].type Type of scale down policy
+              - type: Percent
                 ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].value Percentage of pods to scale down
                 value: 50
                 ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].periodSeconds Period for scaling down
