@@ -1,41 +1,49 @@
-{{- if and $.Values.validator.enabled $.Values.validator.serviceMonitor.enabled }}
-{{- $fullName := include "nitro.fullname" . }}
-{{- $labels := include "nitro.labels" . }}
-{{- $selectorLabels := include "nitro.selectorLabels" .}}
+{{- if .Values.validator.enabled }}
+{{- range .Values.validator.splitvalidator.deployments }}
+{{- $global := deepCopy $.Values.validator.splitvalidator.global }}
+{{- $deployment := . }}
+{{- $mergedValues := merge $global $deployment }}
+{{- $serviceMonitorEnabled := $mergedValues.serviceMonitor.enabled | default $.Values.validator.splitvalidator.global.serviceMonitor.enabled }}
+{{- if $serviceMonitorEnabled }}
+{{- $labels := include "nitro.labels" $ }}
+{{- $selectorLabels := include "nitro.selectorLabels" $ }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ $fullName }}-validator
+  name: {{ $.Chart.Name }}-val-{{ .name }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
   selector:
     matchLabels:
       {{- $selectorLabels | nindent 6 }}
-      function: arb-validator
+      validator: {{ .name }}
+      function: split-validator
   endpoints:
-    - port: {{ .Values.validator.serviceMonitor.portName | default "http" }}
-      {{- if .Values.validator.serviceMonitor.interval }}
-      interval: {{ .Values.validator.serviceMonitor.interval }}
+    - port: {{ $mergedValues.serviceMonitor.portName | default "http" }}
+      {{- if $mergedValues.serviceMonitor.interval }}
+      interval: {{ $mergedValues.serviceMonitor.interval }}
       {{- end }}
-      {{- if .Values.validator.serviceMonitor.scrapeTimeout }}
-      scrapeTimeout: {{ .Values.validator.serviceMonitor.scrapeTimeout }}
+      {{- if $mergedValues.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ $mergedValues.serviceMonitor.scrapeTimeout }}
       {{- end }}
-      {{- if .Values.validator.serviceMonitor.path }}
-      path: {{ .Values.validator.serviceMonitor.path }}
+      {{- if $mergedValues.serviceMonitor.path }}
+      path: {{ $mergedValues.serviceMonitor.path }}
       {{- end }}
-      {{- if .Values.validator.serviceMonitor.scheme }}
-      scheme: {{ .Values.validator.serviceMonitor.scheme }}
+      {{- if $mergedValues.serviceMonitor.scheme }}
+      scheme: {{ $mergedValues.serviceMonitor.scheme }}
       {{- end }}
-      {{- if .Values.validator.serviceMonitor.tlsConfig }}
+      {{- if $mergedValues.serviceMonitor.tlsConfig }}
       tlsConfig: 
-        {{- toYaml .Values.validator.serviceMonitor.tlsConfig | nindent 8 }}
+        {{- toYaml $mergedValues.serviceMonitor.tlsConfig | nindent 8 }}
       {{- end }}
-      {{- with .Values.validator.serviceMonitor.relabelings }}
+      {{- with $mergedValues.serviceMonitor.relabelings }}
       relabelings: {{- toYaml . | nindent 8 }}
       {{- end }}
   namespaceSelector:
     matchNames:
-    - {{ .Release.Namespace }}
+    - {{ $.Release.Namespace }}
+{{- end }}
+{{- end }}
 {{- end }}

@@ -1,0 +1,94 @@
+{{- if .Values.validator.enabled }}
+{{- range .Values.validator.splitvalidator.deployments }}
+{{- $global := deepCopy $.Values.validator.splitvalidator.global }}
+{{- $deployment := . }}
+{{- $mergedValues := merge $global $deployment }}
+{{- $hpaEnabled := $mergedValues.hpa.enabled | default $.Values.validator.splitvalidator.global.hpa.enabled }}
+{{- if $hpaEnabled }}
+{{- $labels := include "nitro.labels" $ }}
+{{- $selectorLabels := include "nitro.selectorLabels" $ }}
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $.Chart.Name }}-val-{{ .name }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $.Chart.Name }}-val-{{ .name }}
+  minReplicas: {{ $mergedValues.hpa.minReplicas | default 1 }}
+  maxReplicas: {{ $mergedValues.hpa.maxReplicas | default 10 }}
+  metrics:
+  {{- range $metric := $mergedValues.hpa.metrics }}
+    - type: {{ $metric.type }}
+      {{- if eq $metric.type "Resource" }}
+      resource:
+        name: {{ $metric.resource.name }}
+        target:
+          type: {{ $metric.resource.target.type }}
+          {{- if $metric.resource.target.averageUtilization }}
+          averageUtilization: {{ $metric.resource.target.averageUtilization }}
+          {{- end }}
+          {{- if $metric.resource.target.averageValue }}
+          averageValue: {{ $metric.resource.target.averageValue }}
+          {{- end }}
+          {{- if $metric.resource.target.value }}
+          value: {{ $metric.resource.target.value }}
+          {{- end }}
+      {{- end }}
+      {{- if eq $metric.type "Pods" }}
+      pods:
+        metric:
+          name: {{ $metric.pods.metric.name }}
+        target:
+          type: {{ $metric.pods.target.type }}
+          {{- if $metric.pods.target.averageValue }}
+          averageValue: {{ $metric.pods.target.averageValue }}
+          {{- end }}
+          {{- if $metric.pods.target.value }}
+          value: {{ $metric.pods.target.value }}
+          {{- end }}
+      {{- end }}
+      {{- if eq $metric.type "Object" }}
+      object:
+        metric:
+          name: {{ $metric.object.metric.name }}
+        describedObject:
+          apiVersion: {{ $metric.object.describedObject.apiVersion }}
+          kind: {{ $metric.object.describedObject.kind }}
+          name: {{ $metric.object.describedObject.name }}
+        target:
+          type: {{ $metric.object.target.type }}
+          {{- if $metric.object.target.value }}
+          value: {{ $metric.object.target.value }}
+          {{- end }}
+          {{- if $metric.object.target.averageValue }}
+          averageValue: {{ $metric.object.target.averageValue }}
+          {{- end }}
+      {{- end }}
+  {{- end }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: {{ $mergedValues.hpa.behavior.scaleUp.stabilizationWindowSeconds | default 0 }}
+      selectPolicy: {{ $mergedValues.hpa.behavior.scaleUp.selectPolicy | default "Max" }}
+      policies:
+      {{- range $policy := $mergedValues.hpa.behavior.scaleUp.policies }}
+        - type: {{ $policy.type }}
+          value: {{ $policy.value }}
+          periodSeconds: {{ $policy.periodSeconds }}
+      {{- end }}
+    scaleDown:
+      stabilizationWindowSeconds: {{ $mergedValues.hpa.behavior.scaleDown.stabilizationWindowSeconds | default 0 }}
+      selectPolicy: {{ $mergedValues.hpa.behavior.scaleDown.selectPolicy | default "Max" }}
+      policies:
+      {{- range $policy := $mergedValues.hpa.behavior.scaleDown.policies }}
+        - type: {{ $policy.type }}
+          value: {{ $policy.value }}
+          periodSeconds: {{ $policy.periodSeconds }}
+      {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
