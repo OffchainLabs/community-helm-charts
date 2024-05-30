@@ -240,7 +240,7 @@ configmap:
 ## @section Stateless Validator
 validator:
   ## @param validator.enabled Enable the stateless validator
-  enabled: true
+  enabled: false
   ## @param validator.defaultNodeSelector.kubernetes.io/arch Architecture to schedule the pods to ensure both the stateless validator and nitro node are scheduled on the same architecture.
   defaultNodeSelector:
     kubernetes.io/arch: amd64
