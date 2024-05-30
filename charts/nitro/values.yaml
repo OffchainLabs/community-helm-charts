@@ -247,16 +247,13 @@ validator:
     kubernetes.io/arch: amd64
 
   splitvalidator:
+    ## @skip validator.splitvalidator.deployments
     deployments:
-      - ## @param validator.splitvalidator.deployments[0].name Name of the first deployment
-        name: "1"
+      - name: "1"
         image:
-          ## @param validator.splitvalidator.deployments[0].image.tag Tag for the first split validator image
           tag: "1"
-      - ## @param validator.splitvalidator.deployments[1].name Name of the second deployment
-        name: "2"
+      - name: "2"
         image:
-          ## @param validator.splitvalidator.deployments[1].image.tag Tag for the second split validator image
           tag: "2"
 
     global:
