@@ -248,13 +248,15 @@ validator:
 
   splitvalidator:
     deployments:
-      - name: "1"
+      - ## @param validator.splitvalidator.deployments[0].name Name of the first deployment
+        name: "1"
         image:
-          ## @param validator.splitvalidator.deployments.image.tag Tag for the first split validator image
+          ## @param validator.splitvalidator.deployments[0].image.tag Tag for the first split validator image
           tag: "1"
-      - name: "2"
+      - ## @param validator.splitvalidator.deployments[1].name Name of the second deployment
+        name: "2"
         image:
-          ## @param validator.splitvalidator.deployments.image.tag Tag for the second split validator image
+          ## @param validator.splitvalidator.deployments[1].image.tag Tag for the second split validator image
           tag: "2"
 
     global:
@@ -282,12 +284,12 @@ validator:
             ## @param validator.splitvalidator.global.configmap.data.auth.jwtsecret Path to jwt secret for auth service
             jwtsecret: "/secrets/jwtsecret"
 
-      ## @param validator.splitvalidator.global.configmap.data.metrics Enable metrics
+      ## @param validator.splitvalidator.global.metrics Enable metrics
       metrics: false
       metrics-server:
-        ## @param validator.splitvalidator.global.configmap.data.metrics-server.addr Address to bind metrics server to
+        ## @param validator.splitvalidator.global.metrics-server.addr Address to bind metrics server to
         addr: "0.0.0.0"
-        ## @param validator.splitvalidator.global.configmap.data.metrics-server.port Port to bind metrics server to
+        ## @param validator.splitvalidator.global.metrics-server.port Port to bind metrics server to
         port: 6070
 
       ## @param validator.splitvalidator.global.extraArgs Extra arguments for the validator container
@@ -342,12 +344,13 @@ validator:
         maxReplicas: 10
         metrics:
           - type: Resource
+            ## @param validator.splitvalidator.global.hpa.metrics[0].type Type of metric to monitor
+            ## @param validator.splitvalidator.global.hpa.metrics[0].resource.name Name of the resource to monitor (cpu/memory)
             resource:
-              ## @param validator.splitvalidator.global.hpa.metrics.resource.name Name of the resource to monitor (cpu/memory)
               name: cpu
               target:
                 type: Utilization
-                ## @param validator.splitvalidator.global.hpa.metrics.resource.target.type Type of metric to monitor
+                ## @param validator.splitvalidator.global.hpa.metrics[0].resource.target.type Type of target metric
                 averageUtilization: 80
         behavior:
           scaleUp:
@@ -357,9 +360,9 @@ validator:
             selectPolicy: "Max"
             policies:
               - type: Percent
-                ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies.value Percentage of pods to scale up
+                ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].type Type of scale up policy
                 value: 50
-                ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies.periodSeconds Period for scaling up
+                ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].periodSeconds Period for scaling up
                 periodSeconds: 60
           scaleDown:
             ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.stabilizationWindowSeconds Stabilization window for scaling down
@@ -368,9 +371,9 @@ validator:
             selectPolicy: "Min"
             policies:
               - type: Percent
-                ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies.value Percentage of pods to scale down
+                ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].type Type of scale down policy
                 value: 50
-                ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies.periodSeconds Period for scaling down
+                ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].periodSeconds Period for scaling down
                 periodSeconds: 60
 
       readinessProbe:
