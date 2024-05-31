@@ -18,7 +18,7 @@ spec:
   selector:
     matchLabels:
       {{- $selectorLabels | nindent 6 }}
-      validator: {{ .name }}
+      validator: {{ .name | quote }}
       function: split-validator
   endpoints:
     - port: {{ $mergedValues.serviceMonitor.portName | default "http" }}

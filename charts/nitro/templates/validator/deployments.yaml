@@ -18,7 +18,7 @@ spec:
   selector:
     matchLabels:
       {{- include "nitro.selectorLabels" $ | nindent 6 }}
-      validator: {{ .name }}
+      validator: {{ .name | quote }}
   template:
     metadata:
       annotations:
@@ -27,7 +27,7 @@ spec:
         {{- end }}
       labels:
         {{- include "nitro.selectorLabels" $ | nindent 8 }}
-        validator: {{ .name }}
+        validator: {{ .name | quote }}
         function: split-validator
     spec:
       serviceAccountName: {{ include "nitro.serviceAccountName" $ }}
@@ -52,7 +52,7 @@ spec:
           labelSelector:
             matchLabels:
               {{- include "nitro.selectorLabels" $ | nindent 14 }}
-              validator: {{ .name }}
+              validator: {{ .name | quote }}
               function: arb-validator
           {{- end }}
         {{- end }}
@@ -154,9 +154,9 @@ spec:
             secretName: {{ include "nitro.fullname" $ }}-jwt
         {{- end }}
         {{- if $mergedValues.useConfigmap }}
-        - name: config-validator
+        - name: config-validator-{{ .name }}
           configMap:
-            name: {{ include "nitro.fullname" $ }}-validator
+            name: config-validator-{{ .name }}
         {{- end }}
         {{- with $mergedValues.extraVolumes }}
         {{- toYaml . | nindent 6 }}

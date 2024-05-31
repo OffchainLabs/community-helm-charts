@@ -95,8 +95,8 @@ headlessservice:
 ## @param jwtSecret.enabled Enable a jwt secret for use with the stateless validator
 ## @param jwtSecret.value Value of the jwt secret for use with the stateless validator
 jwtSecret:
-  enabled: false
-  value: ""
+  enabled: true
+  value: "e3e65b17fcf3f3b109dab33f8bedb388bf5c8003b6615a35c75c016fcec4a91d"
 
 ## @param auth.enabled Enable auth for the stateless validator
 auth:
@@ -243,17 +243,13 @@ validator:
   enabled: true
   ## @param validator.defaultNodeSelector.kubernetes.io/arch Architecture to schedule the pods to ensure both the stateless validator and nitro node are scheduled on the same architecture.
   defaultNodeSelector:
-    kubernetes.io/arch: amd64
+    kubernetes.io/arch: arm64
 
   splitvalidator:
     ## @skip validator.splitvalidator.deployments
     deployments:
       - name: "1"
-        image:
-          tag: "1"
       - name: "2"
-        image:
-          tag: "2"
 
     global:
       ## @param validator.splitvalidator.global.replicaCount Number of replicas for the split validator

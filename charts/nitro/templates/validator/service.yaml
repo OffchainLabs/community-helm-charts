@@ -12,7 +12,7 @@ metadata:
   name: {{ $.Chart.Name }}-val-{{ .name }}
   labels:
     {{- $labels | nindent 4 }}
-    validator: {{ .name }}
+    validator: {{ .name | quote }}
     function: split-validator
 spec:
   type: ClusterIP
@@ -39,7 +39,7 @@ spec:
   {{- end }}
   selector:
     {{- $selectorLabels | nindent 4 }}
-    validator: {{ .name }}
+    validator: {{ .name | quote }}
     function: split-validator
 {{- end }}
 {{- end }}
