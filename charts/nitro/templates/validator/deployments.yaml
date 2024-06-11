@@ -7,7 +7,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "nitro.fullname" . }}-val-{{ .name }}
+  name: {{ include "nitro.fullname" $ }}-val-{{ .name }}
   labels:
     {{- include "nitro.labels" $ | nindent 4 }}
     {{- with $mergedValues.extraLabels }}

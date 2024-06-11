@@ -11,7 +11,7 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "nitro.fullname" . }}-val-{{ .name }}
+  name: {{ include "nitro.fullname" $ }}-val-{{ .name }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
