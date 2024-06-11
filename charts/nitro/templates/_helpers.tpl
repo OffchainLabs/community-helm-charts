@@ -91,31 +91,29 @@ nitro args
 
 {{- define "nitro.sidecars" -}}
 {{- end }}
-
-
-
-
 {{- define "nitro.configProcessor" -}}
 {{- $values := deepCopy .Values -}}
 
-{{- $deployments := list -}}
-{{- $chartName := $.Chart.Name -}}
-{{- $port := int .Values.configmap.data.http.port -}}
-{{- $rpcprefix := .Values.configmap.data.http.rpcprefix | default "" | trimPrefix "/" -}}
-{{- range .Values.validator.splitvalidator.deployments -}}
-  {{- $url := printf "http://%s-val-%s:%d/%s" $chartName .name $port $rpcprefix -}}
-  {{- $deployment := dict "jwtsecret" "/secrets/jwtsecret" "url" $url -}}
-  {{- $deployments = append $deployments $deployment -}}
+{{- if .Values.enableAutoConfigProcessing -}}
+  {{- $deployments := list -}}
+  {{- $chartName := $.Chart.Name -}}
+  {{- $port := int .Values.configmap.data.http.port -}}
+  {{- $rpcprefix := .Values.configmap.data.http.rpcprefix | default "" | trimPrefix "/" -}}
+  {{- range .Values.validator.splitvalidator.deployments -}}
+    {{- $url := printf "http://%s-val-%s:%d/%s" $chartName .name $port $rpcprefix -}}
+    {{- $deployment := dict "jwtsecret" "/secrets/jwtsecret" "url" $url -}}
+    {{- $deployments = append $deployments $deployment -}}
+  {{- end -}}
+
+  {{- $valconfig := dict "configmap" (dict "data" (dict "node" (dict "block-validator" (dict "validation-server-configs-list" (toJson $deployments | replace "\\" "")))) ) -}}
+  {{- $values := merge $values $valconfig -}}
 {{- end -}}
-
-{{- $valconfig := dict "configmap" (dict "data" (dict "node" (dict "block-validator" (dict "validation-server-configs-list" (toJson $deployments | replace "\\" "")))) ) -}}
-
-{{- $values := merge $values $valconfig -}}
 
 {{- $processed := $values.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" -}}
 {{- $processed -}}
 
 {{- end -}}
+
 
 
 

@@ -178,6 +178,9 @@ wallet:
   mountPath: "/wallet/"
   files: {} # sequencer-wallet1.json: '{"address": "0x...", "encryptedData": "..." }'
 
+## @param enableAutoConfigProcessing Enable intelligent automatic configuration processing
+enableAutoConfigProcessing: true
+
 configmap:
   ## @param configmap.enabled Enable a configmap for the nitro container
   enabled: true
