@@ -101,7 +101,7 @@ nitro args
     {{- $fullName := include "nitro.fullname" . -}}
     {{- $port := int .Values.validator.splitvalidator.global.configmap.data.auth.port -}}
     {{- range .Values.validator.splitvalidator.deployments -}}
-      {{- $url := printf "http://%s-val-%s:%d" $fullName .name $port -}}
+      {{- $url := printf "ws://%s-val-%s:%d" $fullName .name $port -}}
       {{- $deployment := dict "jwtsecret" "/secrets/jwtsecret" "url" $url -}}
       {{- $deployments = append $deployments $deployment -}}
     {{- end -}}

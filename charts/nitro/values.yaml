@@ -249,7 +249,7 @@ validator:
     kubernetes.io/arch: amd64
 
   splitvalidator:
-    ## @skip validator.splitvalidator.deployments
+    ## @param validator.splitvalidator.deployments List of deployments for the split validator. Each deploymeny can have its own image, config, etc.
     deployments: []
 
     global:
