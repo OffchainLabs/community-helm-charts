@@ -285,13 +285,7 @@ Option | Description | Default
 `data-availability.disable-signature-checking` | disables signature checking on Data Availability Store requests (DANGEROUS, FOR TESTING ONLY) | None
 `data-availability.enable` | enable Anytrust Data Availability mode | `true`
 `data-availability.extra-signature-checking-public-key` | string                               public key to use to validate Data Availability Store requests in addition to the Sequencer's public key determined using sequencer-inbox-address, can be a file or the hex-encoded public key beginning with 0x; useful for testing | None
-`data-availability.ipfs-storage.enable` | enable storage/retrieval of sequencer batch data from IPFS | None
-`data-availability.ipfs-storage.peers` | strings                                               list of IPFS peers to connect to, eg /ip4/1.2.3.4/tcp/12345/p2p/abc...xyz | None
-`data-availability.ipfs-storage.pin-after-get` | pin sequencer batch data in IPFS | `true`
-`data-availability.ipfs-storage.pin-percentage` | float                                        percent of sequencer batch data to pin, as a floating point number in the range 0.0 to 100.0 | `100`
-`data-availability.ipfs-storage.profiles` | string                                             comma separated list of IPFS profiles to use, see https://docs.ipfs.tech/how-to/default-profile | None
-`data-availability.ipfs-storage.read-timeout` | duration                                       timeout for IPFS reads, since by default it will wait forever. Treat timeout as not found | `1m0s`
-`data-availability.ipfs-storage.repo-dir` | string                                             directory to use to store the local IPFS repo | None
+`data-availability.ipfs-storage.enable` | legacy option - not supported | None
 `data-availability.key.key-dir` | string                                                       the directory to read the bls keypair ('das_bls.pub' and 'das_bls') from; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
 `data-availability.key.priv-key` | string                                                      the base64 BLS private key to use for signing DAS certificates; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
 `data-availability.local-cache.capacity` | int                                                 Maximum number of entries (up to 64KB each) to store in the cache. | `20000`
@@ -352,7 +346,7 @@ Option | Description | Default
 `data-availability.sequencer-inbox-address` | string                                           parent chain address of SequencerInbox contract | None
 `enable-rest` | enable the REST server listening on rest-addr and rest-port | None
 `enable-rpc` | enable the HTTP-RPC server listening on rpc-addr and rpc-port | None
-`log-level` | int                                                                              log level; 1: ERROR, 2: WARN, 3: INFO, 4: DEBUG, 5: TRACE | None
+`log-level` | string                                                                           log level, valid values are CRIT, ERROR, WARN, INFO, DEBUG, TRACE | `INFO`
 `log-type` | string                                                                            log type (plaintext or json) | `plaintext`
 `metrics` | enable metrics | None
 `metrics-server.addr` | string                                                                 metrics server address | `127.0.0.1`
@@ -369,6 +363,7 @@ Option | Description | Default
 `rest-server-timeouts.write-timeout` | duration                                                the maximum duration before timing out writes of the response (http.Server.WriteTimeout) | `30s`
 `rpc-addr` | string                                                                            HTTP-RPC server listening interface | `localhost`
 `rpc-port` | uint                                                                              HTTP-RPC server listening port | `9876`
+`rpc-server-body-limit` | int                                                                  HTTP-RPC server maximum request body size in bytes; the default (0) uses geth's 5MB limit | None
 `rpc-server-timeouts.idle-timeout` | duration                                                  the maximum amount of time to wait for the next request when keep-alives are enabled (http.Server.IdleTimeout) | `2m0s`
 `rpc-server-timeouts.read-header-timeout` | duration                                           the amount of time allowed to read the request headers (http.Server.ReadHeaderTimeout) | `30s`
 `rpc-server-timeouts.read-timeout` | duration                                                  the maximum duration for reading the entire request (http.Server.ReadTimeout) | `30s`
