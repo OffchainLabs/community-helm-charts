@@ -90,14 +90,14 @@ spec:
           - name: auth
             containerPort: {{ $mergedValues.auth.port }}
           {{- end }}
-          {{- if $mergedValues.configmap.data.metrics }}
+          {{- if $mergedValues.metrics }}
           - name: metrics
-            containerPort: {{ index $.Values "validator" "configmap" "data" "metrics-server" "port" }}
+            containerPort: {{ index $mergedValues "metrics" "port" }}
             protocol: TCP
           {{- end }}
-          {{- if $mergedValues.configmap.data.pprof }}
+          {{- if $mergedValues.pprof }}
           - name: pprof
-            containerPort: {{ index $.Values "validator" "configmap" "data" "pprof-cfg" "port" }}
+            containerPort: {{ index $mergedValues "pprof" "port" }}
             protocol: TCP
           {{- end }}
           {{- with $mergedValues.extraPorts }}
