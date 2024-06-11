@@ -295,7 +295,7 @@ validator:
         port: 8549
 
       metrics:
-        ## @param validator.splitvalidator.global.metrics Enable metrics for the validator statefulset
+        ## @param validator.splitvalidator.global.metrics.enabled Enable metrics for the validator statefulset
         enabled: false
         ## @param validator.splitvalidator.global.metrics.port Port to bind metrics server to
         port: 6070
