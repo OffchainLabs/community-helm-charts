@@ -11,7 +11,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ $.Chart.Name }}-val-{{ .name }}
+  name: {{ include "nitro.fullname" . }}-val-{{ .name }}
   labels:
     {{- $labels | nindent 4 }}
 spec:

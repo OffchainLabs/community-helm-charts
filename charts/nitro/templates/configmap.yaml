@@ -7,5 +7,5 @@ metadata:
     {{- include "nitro.labels" . | nindent 4 }}
 data:
   config.json: |
-    {{ include "nitro.configProcessor" . | nindent 4 }}
+    {{- include "nitro.configProcessor" . | nindent 4 }}
 {{- end }}

@@ -98,11 +98,10 @@ nitro args
 {{- if .Values.enableAutoConfigProcessing -}}
   {{- if .Values.validator.enabled -}}
     {{- $deployments := list -}}
-    {{- $chartName := $.Chart.Name -}}
-    {{- $port := int .Values.configmap.data.http.port -}}
-    {{- $rpcprefix := .Values.configmap.data.http.rpcprefix | default "" | trimPrefix "/" -}}
+    {{- $fullName := include "nitro.fullname" . -}}
+    {{- $port := int .Values.validator.splitvalidator.global.configmap.data.auth.port -}}
     {{- range .Values.validator.splitvalidator.deployments -}}
-      {{- $url := printf "http://%s-val-%s:%d/%s" $chartName .name $port $rpcprefix -}}
+      {{- $url := printf "http://%s-val-%s:%d" $fullName .name $port -}}
       {{- $deployment := dict "jwtsecret" "/secrets/jwtsecret" "url" $url -}}
       {{- $deployments = append $deployments $deployment -}}
     {{- end -}}

@@ -11,14 +11,14 @@
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ $.Chart.Name }}-val-{{ .name }}
+  name: {{ include "nitro.fullname" . }}-val-{{ .name }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ $.Chart.Name }}-val-{{ .name }}
+    name: {{ include "nitro.fullname" . }}-val-{{ .name }}
   minReplicas: {{ $mergedValues.hpa.minReplicas | default 1 }}
   maxReplicas: {{ $mergedValues.hpa.maxReplicas | default 10 }}
   metrics:
