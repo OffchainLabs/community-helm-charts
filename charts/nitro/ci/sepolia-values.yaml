@@ -20,9 +20,6 @@ blobPersistence:
 validator:
   enabled: true
 
-  defaultNodeSelector:
-    kubernetes.io/arch: arm64
-
   splitvalidator:
     deployments:
       - name: "1"
