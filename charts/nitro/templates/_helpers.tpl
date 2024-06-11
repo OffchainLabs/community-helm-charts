@@ -92,27 +92,57 @@ nitro args
 {{- define "nitro.sidecars" -}}
 {{- end }}
 
+{{/*
+Process config data automatically depending on values that are set.
+Currently primarily used for stateless validator configuration
+*/}}
 {{- define "nitro.configProcessor" -}}
+
+{{- /* Make a deep copy of the values from the Helm chart */ -}}
 {{- $values := deepCopy .Values -}}
 
+{{- /* Check if auto config processing is enabled */ -}}
 {{- if .Values.enableAutoConfigProcessing -}}
+  
+  {{- /* Check if the validator is enabled */ -}}
   {{- if .Values.validator.enabled -}}
+    
+    {{- /* Initialize an empty list to hold deployment configurations */ -}}
     {{- $deployments := list -}}
+    
+    {{- /* Get the full name for the deployment using the included nitro.fullname template */ -}}
     {{- $fullName := include "nitro.fullname" . -}}
+    
+    {{- /* Retrieve the port number from the validator's configuration */ -}}
     {{- $port := int .Values.validator.splitvalidator.global.configmap.data.auth.port -}}
+    
+    {{- /* Iterate over each deployment in the validator splitvalidator deployments */ -}}
     {{- range .Values.validator.splitvalidator.deployments -}}
+      
+      {{- /* Construct the URL for the websocket connection */ -}}
       {{- $url := printf "ws://%s-val-%s:%d" $fullName .name $port -}}
+      
+      {{- /* Create a deployment configuration dictionary with jwtsecret and URL */ -}}
       {{- $deployment := dict "jwtsecret" "/secrets/jwtsecret" "url" $url -}}
+      
+      {{- /* Append the deployment configuration to the deployments list */ -}}
       {{- $deployments = append $deployments $deployment -}}
     {{- end -}}
 
+    {{- /* Create the validation server config list in the configmap */ -}}
     {{- $valconfig := dict "configmap" (dict "data" (dict "node" (dict "block-validator" (dict "validation-server-configs-list" (toJson $deployments | replace "\\" "")))) ) -}}
+    
+    {{- /* Merge the new validation config into the original values */ -}}
     {{- $values = merge $values $valconfig -}}
   {{- end -}}
 {{- end -}}
 
+{{- /* Process the final configmap data into pretty JSON format */ -}}
 {{- $processed := $values.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" -}}
+
+{{- /* Return the processed JSON data */ -}}
 {{- $processed -}}
 
 {{- end -}}
+
 
