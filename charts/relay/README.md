@@ -97,22 +97,23 @@ helm install <my-release> offchainlabs/relay \
 
 ### Relay Configmap
 
-| Name                                                       | Description                                            | Value     |
-| ---------------------------------------------------------- | ------------------------------------------------------ | --------- |
-| `configmap.enabled`                                        | Enable configmap                                       | `true`    |
-| `configmap.data`                                           | See Configuration Options for the full list of options |           |
-| `configmap.data.chain.id`                                  | Chain id                                               | `42161`   |
-| `configmap.data.conf.env-prefix`                           | Environment variable prefix                            | `NITRO`   |
-| `configmap.data.log-type`                                  | Log type                                               | `json`    |
-| `configmap.data.metrics`                                   | Enable metrics                                         | `false`   |
-| `configmap.data.metrics-server.addr`                       | Metrics server address                                 | `0.0.0.0` |
-| `configmap.data.metrics-server.port`                       | Metrics server port                                    | `6070`    |
-| `configmap.data.node.feed.input.url`                       | Feed input url                                         | `""`      |
-| `configmap.data.node.feed.input.reconnect-initial-backoff` | Feed input reconnect initial backoff                   | `50ms`    |
-| `configmap.data.node.feed.input.reconnect-maximum-backoff` | Feed input reconnect maximum backoff                   | `800ms`   |
-| `configmap.data.node.feed.input.timeout`                   | Feed input timeout                                     | `10s`     |
-| `configmap.data.node.feed.output.addr`                     | Feed output address                                    | `0.0.0.0` |
-| `configmap.data.node.feed.output.port`                     | Feed output port                                       | `9642`    |
+| Name                                                       | Description                                            | Value                                                               |
+| ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------- |
+| `configmap.enabled`                                        | Enable configmap                                       | `true`                                                              |
+| `configmap.data`                                           | See Configuration Options for the full list of options |                                                                     |
+| `configmap.data.chain.id`                                  | Chain id                                               | `42161`                                                             |
+| `configmap.data.conf.env-prefix`                           | Environment variable prefix                            | `NITRO`                                                             |
+| `configmap.data.log-type`                                  | Log type                                               | `json`                                                              |
+| `configmap.data.metrics`                                   | Enable metrics                                         | `false`                                                             |
+| `configmap.data.metrics-server.addr`                       | Metrics server address                                 | `0.0.0.0`                                                           |
+| `configmap.data.metrics-server.port`                       | Metrics server port                                    | `6070`                                                              |
+| `configmap.data.node.feed.input.url`                       | Feed input url                                         | `""`                                                                |
+| `configmap.data.node.feed.input.reconnect-initial-backoff` | Feed input reconnect initial backoff                   | `50ms`                                                              |
+| `configmap.data.node.feed.input.reconnect-maximum-backoff` | Feed input reconnect maximum backoff                   | `800ms`                                                             |
+| `configmap.data.node.feed.input.timeout`                   | Feed input timeout                                     | `10s`                                                               |
+| `configmap.data.node.feed.output.addr`                     | Feed output address                                    | `0.0.0.0`                                                           |
+| `configmap.data.node.feed.output.port`                     | Feed output port                                       | `9642`                                                              |
+| `configmap.data.validation.wasm.allowed-wasm-module-roots` | Default flags as of v3.0.0                             | `["/home/user/nitro-legacy/machines","/home/user/target/machines"]` |
 
 ## Configuration Options
 The following table lists the exhaustive configurable parameters that can be applied as part of the configmap (nested under `configmap.data`) or as standalone cli flags.
@@ -130,7 +131,7 @@ Option | Description | Default
 `conf.s3.region` | string                                                   S3 region | None
 `conf.s3.secret-key` | string                                               S3 secret key | None
 `conf.string` | string                                                      configuration as JSON string | None
-`log-level` | int                                                           log level | None
+`log-level` | string                                                        log level, valid values are CRIT, ERROR, WARN, INFO, DEBUG, TRACE | `INFO`
 `log-type` | string                                                         log type | `plaintext`
 `metrics` | enable metrics | None
 `metrics-server.addr` | string                                              metrics server address | `127.0.0.1`

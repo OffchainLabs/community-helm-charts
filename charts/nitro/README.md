@@ -73,92 +73,93 @@ helm install xai offchainlabs/nitro -f values.yaml
 
 ### Nitro Deployment Options
 
-| Name                                         | Description                                                                     | Value                                                       |
-| -------------------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `replicaCount`                               | Number of replicas to deploy                                                    | `1`                                                         |
-| `image.repository`                           | Docker image repository                                                         | `offchainlabs/nitro-node`                                   |
-| `image.pullPolicy`                           | Docker image pull policy                                                        | `Always`                                                    |
-| `image.tag`                                  | Docker image tag. Overrides the chart appVersion.                               | `""`                                                        |
-| `imagePullSecrets`                           | Docker registry pull secret names as an array                                   | `[]`                                                        |
-| `nameOverride`                               | String to partially override nitro.fullname                                     | `""`                                                        |
-| `fullnameOverride`                           | String to fully override nitro.fullname                                         | `""`                                                        |
-| `commandOverride`                            | Command override for the nitro container                                        | `{}`                                                        |
-| `livenessProbe`                              | Liveness probe configuration                                                    | `{}`                                                        |
-| `readinessProbe`                             | Readiness probe configuration                                                   | `{}`                                                        |
-| `startupProbe.enabled`                       | Enable built in startup probe                                                   | `true`                                                      |
-| `startupProbe.failureThreshold`              | Number of failures before pod is considered unhealthy                           | `2419200`                                                   |
-| `startupProbe.periodSeconds`                 | Number of seconds between startup probes                                        | `1`                                                         |
-| `startupProbe.command`                       | Command to run for the startup probe. If empty, the built in probe will be used | `""`                                                        |
-| `updateStrategy.type`                        | Update strategy type                                                            | `RollingUpdate`                                             |
-| `updateStrategy.rollingUpdate.partition`     | Partition to update                                                             | `0`                                                         |
-| `persistence.enabled`                        | Enable persistence                                                              | `true`                                                      |
-| `persistence.size`                           | Size of the persistent volume claim                                             | `500Gi`                                                     |
-| `persistence.storageClassName`               | Storage class of the persistent volume claim                                    | `nil`                                                       |
-| `persistence.accessModes`                    | Access modes of the persistent volume claim                                     | `["ReadWriteOnce"]`                                         |
-| `blobPersistence.enabled`                    | Enable blob persistence                                                         | `false`                                                     |
-| `blobPersistence.size`                       | Size of the blob persistent volume claim                                        | `100Gi`                                                     |
-| `blobPersistence.storageClassName`           | Storage class of the blob persistent volume claim                               | `nil`                                                       |
-| `blobPersistence.accessModes`                | Access modes of the blob persistent volume claim                                | `["ReadWriteOnce"]`                                         |
-| `serviceMonitor.enabled`                     | Enable service monitor CRD for prometheus operator                              | `false`                                                     |
-| `serviceMonitor.portName`                    | Name of the port to monitor                                                     | `metrics`                                                   |
-| `serviceMonitor.path`                        | Path to monitor                                                                 | `/debug/metrics/prometheus`                                 |
-| `serviceMonitor.interval`                    | Interval to monitor                                                             | `5s`                                                        |
-| `serviceMonitor.relabelings`                 | Add relabelings for the metrics being scraped                                   | `{}`                                                        |
-| `perReplicaService.enabled`                  | Enable a service for each sts replica                                           | `false`                                                     |
-| `perReplicaService.publishNotReadyAddresses` | Publish not ready addresses                                                     | `true`                                                      |
-| `headlessservice.enabled`                    | Enable headless service                                                         | `true`                                                      |
-| `headlessservice.publishNotReadyAddresses`   | Publish not ready addresses                                                     | `true`                                                      |
-| `jwtSecret.enabled`                          | Enable a jwt secret for use with the stateless validator                        | `false`                                                     |
-| `jwtSecret.value`                            | Value of the jwt secret for use with the stateless validator                    | `""`                                                        |
-| `auth.enabled`                               | Enable auth for the stateless validator                                         | `false`                                                     |
-| `pdb.enabled`                                | Enable pod disruption budget                                                    | `false`                                                     |
-| `pdb.minAvailable`                           | Minimum number of pods available                                                | `75%`                                                       |
-| `pdb.maxUnavailable`                         | Maximum number of pods unavailable                                              | `""`                                                        |
-| `serviceAccount.create`                      | Create a service account                                                        | `true`                                                      |
-| `serviceAccount.annotations`                 | Annotations for the service account                                             | `{}`                                                        |
-| `serviceAccount.name`                        | Name of the service account                                                     | `""`                                                        |
-| `podAnnotations`                             | Annotations for the pod                                                         | `{}`                                                        |
-| `podLabels`                                  | Labels for the pod                                                              | `{}`                                                        |
-| `podSecurityContext.fsGroup`                 | Group id for the pod                                                            | `1000`                                                      |
-| `podSecurityContext.runAsGroup`              | Group id for the user                                                           | `1000`                                                      |
-| `podSecurityContext.runAsNonRoot`            | Run as non root                                                                 | `true`                                                      |
-| `podSecurityContext.runAsUser`               | User id for the user                                                            | `1000`                                                      |
-| `podSecurityContext.fsGroupChangePolicy`     | Policy for the fs group                                                         | `OnRootMismatch`                                            |
-| `securityContext`                            | Security context for the container                                              | `{}`                                                        |
-| `priorityClassName`                          | Priority class name                                                             | `""`                                                        |
-| `service.type`                               | Service type                                                                    | `ClusterIP`                                                 |
-| `service.publishNotReadyAddresses`           | Publish not ready addresses                                                     | `false`                                                     |
-| `resources`                                  | Resources for the container                                                     | `{}`                                                        |
-| `nodeSelector`                               | Node selector for the pod                                                       | `{}`                                                        |
-| `tolerations`                                | Tolerations for the pod                                                         | `[]`                                                        |
-| `affinity`                                   | Affinity for the pod                                                            | `{}`                                                        |
-| `additionalVolumeClaims`                     | Additional volume claims for the pod                                            | `[]`                                                        |
-| `extraVolumes`                               | Additional volumes for the pod                                                  | `[]`                                                        |
-| `extraVolumeMounts`                          | Additional volume mounts for the pod                                            | `[]`                                                        |
-| `extraPorts`                                 | Additional ports for the pod                                                    | `[]`                                                        |
-| `wallet.mountPath`                           | Path to mount the wallets                                                       | `/wallet/`                                                  |
-| `wallet.files`                               | Key value pair of wallet name and contents (ethers json format)                 | `{}`                                                        |
-| `configmap.enabled`                          | Enable a configmap for the nitro container                                      | `true`                                                      |
-| `configmap.data`                             | See Configuration Options for the full list of options                          |                                                             |
-| `configmap.data.conf.env-prefix`             | Environment variable prefix                                                     | `NITRO`                                                     |
-| `configmap.data.http.addr`                   | Address to bind http service to                                                 | `0.0.0.0`                                                   |
-| `configmap.data.http.api`                    | List of apis to enable                                                          | `["arb","personal","eth","net","web3","txpool","arbdebug"]` |
-| `configmap.data.http.corsdomain`             | CORS domain                                                                     | `*`                                                         |
-| `configmap.data.http.port`                   | Port to bind http service to                                                    | `8547`                                                      |
-| `configmap.data.http.rpcprefix`              | Prefix for rpc calls                                                            | `/rpc`                                                      |
-| `configmap.data.http.vhosts`                 | Vhosts to allow                                                                 | `*`                                                         |
-| `configmap.data.parent-chain.id`             | ID of the parent chain                                                          | `1`                                                         |
-| `configmap.data.parent-chain.connection.url` | URL of the parent chain                                                         | `""`                                                        |
-| `configmap.data.chain.id`                    | ID of the chain                                                                 | `42161`                                                     |
-| `configmap.data.log-type`                    | Type of log                                                                     | `json`                                                      |
-| `configmap.data.metrics`                     | Enable metrics                                                                  | `false`                                                     |
-| `configmap.data.metrics-server.addr`         | Address to bind metrics server to                                               | `0.0.0.0`                                                   |
-| `configmap.data.metrics-server.port`         | Port to bind metrics server to                                                  | `6070`                                                      |
-| `configmap.data.persistent.chain`            | Path to persistent chain data                                                   | `/home/user/data/`                                          |
-| `configmap.data.ws.addr`                     | Address to bind ws service to                                                   | `0.0.0.0`                                                   |
-| `configmap.data.ws.api`                      | List of apis to enable                                                          | `["net","web3","eth","arb"]`                                |
-| `configmap.data.ws.port`                     | Port to bind ws service to                                                      | `8548`                                                      |
-| `configmap.data.ws.rpcprefix`                | Prefix for rpc calls                                                            | `/ws`                                                       |
+| Name                                                       | Description                                                                     | Value                                                               |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `replicaCount`                                             | Number of replicas to deploy                                                    | `1`                                                                 |
+| `image.repository`                                         | Docker image repository                                                         | `offchainlabs/nitro-node`                                           |
+| `image.pullPolicy`                                         | Docker image pull policy                                                        | `Always`                                                            |
+| `image.tag`                                                | Docker image tag. Overrides the chart appVersion.                               | `""`                                                                |
+| `imagePullSecrets`                                         | Docker registry pull secret names as an array                                   | `[]`                                                                |
+| `nameOverride`                                             | String to partially override nitro.fullname                                     | `""`                                                                |
+| `fullnameOverride`                                         | String to fully override nitro.fullname                                         | `""`                                                                |
+| `commandOverride`                                          | Command override for the nitro container                                        | `{}`                                                                |
+| `livenessProbe`                                            | Liveness probe configuration                                                    | `{}`                                                                |
+| `readinessProbe`                                           | Readiness probe configuration                                                   | `{}`                                                                |
+| `startupProbe.enabled`                                     | Enable built in startup probe                                                   | `true`                                                              |
+| `startupProbe.failureThreshold`                            | Number of failures before pod is considered unhealthy                           | `2419200`                                                           |
+| `startupProbe.periodSeconds`                               | Number of seconds between startup probes                                        | `1`                                                                 |
+| `startupProbe.command`                                     | Command to run for the startup probe. If empty, the built in probe will be used | `""`                                                                |
+| `updateStrategy.type`                                      | Update strategy type                                                            | `RollingUpdate`                                                     |
+| `updateStrategy.rollingUpdate.partition`                   | Partition to update                                                             | `0`                                                                 |
+| `persistence.enabled`                                      | Enable persistence                                                              | `true`                                                              |
+| `persistence.size`                                         | Size of the persistent volume claim                                             | `500Gi`                                                             |
+| `persistence.storageClassName`                             | Storage class of the persistent volume claim                                    | `nil`                                                               |
+| `persistence.accessModes`                                  | Access modes of the persistent volume claim                                     | `["ReadWriteOnce"]`                                                 |
+| `blobPersistence.enabled`                                  | Enable blob persistence                                                         | `false`                                                             |
+| `blobPersistence.size`                                     | Size of the blob persistent volume claim                                        | `100Gi`                                                             |
+| `blobPersistence.storageClassName`                         | Storage class of the blob persistent volume claim                               | `nil`                                                               |
+| `blobPersistence.accessModes`                              | Access modes of the blob persistent volume claim                                | `["ReadWriteOnce"]`                                                 |
+| `serviceMonitor.enabled`                                   | Enable service monitor CRD for prometheus operator                              | `false`                                                             |
+| `serviceMonitor.portName`                                  | Name of the port to monitor                                                     | `metrics`                                                           |
+| `serviceMonitor.path`                                      | Path to monitor                                                                 | `/debug/metrics/prometheus`                                         |
+| `serviceMonitor.interval`                                  | Interval to monitor                                                             | `5s`                                                                |
+| `serviceMonitor.relabelings`                               | Add relabelings for the metrics being scraped                                   | `{}`                                                                |
+| `perReplicaService.enabled`                                | Enable a service for each sts replica                                           | `false`                                                             |
+| `perReplicaService.publishNotReadyAddresses`               | Publish not ready addresses                                                     | `true`                                                              |
+| `headlessservice.enabled`                                  | Enable headless service                                                         | `true`                                                              |
+| `headlessservice.publishNotReadyAddresses`                 | Publish not ready addresses                                                     | `true`                                                              |
+| `jwtSecret.enabled`                                        | Enable a jwt secret for use with the stateless validator                        | `false`                                                             |
+| `jwtSecret.value`                                          | Value of the jwt secret for use with the stateless validator                    | `""`                                                                |
+| `auth.enabled`                                             | Enable auth for the stateless validator                                         | `false`                                                             |
+| `pdb.enabled`                                              | Enable pod disruption budget                                                    | `false`                                                             |
+| `pdb.minAvailable`                                         | Minimum number of pods available                                                | `75%`                                                               |
+| `pdb.maxUnavailable`                                       | Maximum number of pods unavailable                                              | `""`                                                                |
+| `serviceAccount.create`                                    | Create a service account                                                        | `true`                                                              |
+| `serviceAccount.annotations`                               | Annotations for the service account                                             | `{}`                                                                |
+| `serviceAccount.name`                                      | Name of the service account                                                     | `""`                                                                |
+| `podAnnotations`                                           | Annotations for the pod                                                         | `{}`                                                                |
+| `podLabels`                                                | Labels for the pod                                                              | `{}`                                                                |
+| `podSecurityContext.fsGroup`                               | Group id for the pod                                                            | `1000`                                                              |
+| `podSecurityContext.runAsGroup`                            | Group id for the user                                                           | `1000`                                                              |
+| `podSecurityContext.runAsNonRoot`                          | Run as non root                                                                 | `true`                                                              |
+| `podSecurityContext.runAsUser`                             | User id for the user                                                            | `1000`                                                              |
+| `podSecurityContext.fsGroupChangePolicy`                   | Policy for the fs group                                                         | `OnRootMismatch`                                                    |
+| `securityContext`                                          | Security context for the container                                              | `{}`                                                                |
+| `priorityClassName`                                        | Priority class name                                                             | `""`                                                                |
+| `service.type`                                             | Service type                                                                    | `ClusterIP`                                                         |
+| `service.publishNotReadyAddresses`                         | Publish not ready addresses                                                     | `false`                                                             |
+| `resources`                                                | Resources for the container                                                     | `{}`                                                                |
+| `nodeSelector`                                             | Node selector for the pod                                                       | `{}`                                                                |
+| `tolerations`                                              | Tolerations for the pod                                                         | `[]`                                                                |
+| `affinity`                                                 | Affinity for the pod                                                            | `{}`                                                                |
+| `additionalVolumeClaims`                                   | Additional volume claims for the pod                                            | `[]`                                                                |
+| `extraVolumes`                                             | Additional volumes for the pod                                                  | `[]`                                                                |
+| `extraVolumeMounts`                                        | Additional volume mounts for the pod                                            | `[]`                                                                |
+| `extraPorts`                                               | Additional ports for the pod                                                    | `[]`                                                                |
+| `wallet.mountPath`                                         | Path to mount the wallets                                                       | `/wallet/`                                                          |
+| `wallet.files`                                             | Key value pair of wallet name and contents (ethers json format)                 | `{}`                                                                |
+| `configmap.enabled`                                        | Enable a configmap for the nitro container                                      | `true`                                                              |
+| `configmap.data`                                           | See Configuration Options for the full list of options                          |                                                                     |
+| `configmap.data.conf.env-prefix`                           | Environment variable prefix                                                     | `NITRO`                                                             |
+| `configmap.data.http.addr`                                 | Address to bind http service to                                                 | `0.0.0.0`                                                           |
+| `configmap.data.http.api`                                  | List of apis to enable                                                          | `["arb","personal","eth","net","web3","txpool","arbdebug"]`         |
+| `configmap.data.http.corsdomain`                           | CORS domain                                                                     | `*`                                                                 |
+| `configmap.data.http.port`                                 | Port to bind http service to                                                    | `8547`                                                              |
+| `configmap.data.http.rpcprefix`                            | Prefix for rpc calls                                                            | `/rpc`                                                              |
+| `configmap.data.http.vhosts`                               | Vhosts to allow                                                                 | `*`                                                                 |
+| `configmap.data.parent-chain.id`                           | ID of the parent chain                                                          | `1`                                                                 |
+| `configmap.data.parent-chain.connection.url`               | URL of the parent chain                                                         | `""`                                                                |
+| `configmap.data.chain.id`                                  | ID of the chain                                                                 | `42161`                                                             |
+| `configmap.data.log-type`                                  | Type of log                                                                     | `json`                                                              |
+| `configmap.data.metrics`                                   | Enable metrics                                                                  | `false`                                                             |
+| `configmap.data.metrics-server.addr`                       | Address to bind metrics server to                                               | `0.0.0.0`                                                           |
+| `configmap.data.metrics-server.port`                       | Port to bind metrics server to                                                  | `6070`                                                              |
+| `configmap.data.persistent.chain`                          | Path to persistent chain data                                                   | `/home/user/data/`                                                  |
+| `configmap.data.ws.addr`                                   | Address to bind ws service to                                                   | `0.0.0.0`                                                           |
+| `configmap.data.ws.api`                                    | List of apis to enable                                                          | `["net","web3","eth","arb"]`                                        |
+| `configmap.data.ws.port`                                   | Port to bind ws service to                                                      | `8548`                                                              |
+| `configmap.data.ws.rpcprefix`                              | Prefix for rpc calls                                                            | `/ws`                                                               |
+| `configmap.data.validation.wasm.allowed-wasm-module-roots` | Default flags as of v3.0.0                                                      | `["/home/user/nitro-legacy/machines","/home/user/target/machines"]` |
 
 ### Stateless Validator
 
@@ -213,11 +214,11 @@ Option | Description | Default
 `auth.jwtsecret` | string                                                                                  Path to file holding JWT secret (32B hex) | None
 `auth.origins` | strings                                                                                   Origins from which to accept AUTH requests | `[localhost]`
 `auth.port` | int                                                                                          AUTH-RPC server listening port | `8549`
-`blocks-reexecutor.blocks-per-thread` | uint                                                               minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | `10000`
+`blocks-reexecutor.blocks-per-thread` | uint                                                               minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | None
 `blocks-reexecutor.enable` | enables re-execution of a range of blocks against historic state | None
 `blocks-reexecutor.end-block` | uint                                                                       last block number of the block range for re-execution | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
-`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `10`
+`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `12`
 `blocks-reexecutor.start-block` | uint                                                                     first block number of the block range for re-execution | None
 `chain.dev-wallet.account` | string                                                                        account to use | `is first account in keystore`
 `chain.dev-wallet.only-create-key` | if true, creates new key then exits | None
@@ -248,6 +249,7 @@ Option | Description | Default
 `execution.caching.max-number-of-blocks-to-skip-state-saving` | uint32                                     maximum number of blocks to skip state saving to persistent storage (archive node only) -- warning: this option seems to cause issues | None
 `execution.caching.snapshot-cache` | int                                                                   amount of memory in megabytes to cache state snapshots with | `400`
 `execution.caching.snapshot-restore-gas-limit` | uint                                                      maximum gas rolled back to recover snapshot | `300000000000`
+`execution.caching.stylus-lru-cache` | uint32                                                              initialized stylus programs to keep in LRU cache | `256`
 `execution.caching.trie-clean-cache` | int                                                                 amount of memory in megabytes to cache unchanged state trie nodes with | `600`
 `execution.caching.trie-dirty-cache` | int                                                                 amount of memory in megabytes to cache state diffs against disk with (larger cache lowers database growth) | `1024`
 `execution.caching.trie-time-limit` | duration                                                             maximum block processing time before trie is written to hard-disk | `1h0m0s`
@@ -287,6 +289,7 @@ Option | Description | Default
 `execution.rpc.tx-fee-cap` | float                                                                         cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
 `execution.secondary-forwarding-target` | strings                                                          secondary transaction forwarding target URL | None
 `execution.sequencer.enable` | act and post to l1 as sequencer | None
+`execution.sequencer.enable-profiling` | enable CPU profiling and tracing | None
 `execution.sequencer.expected-surplus-hard-threshold` | string                                             if expected surplus is lower than this value, new incoming transactions will be denied | `default`
 `execution.sequencer.expected-surplus-soft-threshold` | string                                             if expected surplus is lower than this value, warnings are posted | `default`
 `execution.sequencer.forwarder.connection-timeout` | duration                                              total time to wait before cancelling connection | `30s`
@@ -346,9 +349,9 @@ Option | Description | Default
 `init.recreate-missing-state-from` | uint                                                                  block number to start recreating missing states from (0 = disabled) | None
 `init.reset-to-message` | int                                                                              forces a reset to an old message height. Also set max-reorg-resequence-depth=0 to force re-reading messages | `-1`
 `init.then-quit` | quit after init is done | None
-`init.url` | string                                                                                        url to download initializtion data - will poll if download fails | None
+`init.url` | string                                                                                        url to download initialization data - will poll if download fails | None
 `ipc.path` | string                                                                                        Requested location to place the IPC endpoint. An empty path disables IPC. | None
-`log-level` | int                                                                                          log level | None
+`log-level` | string                                                                                       log level, valid values are CRIT, ERROR, WARN, INFO, DEBUG, TRACE | `INFO`
 `log-type` | string                                                                                        log type (plaintext or json) | `plaintext`
 `metrics` | enable metrics | None
 `metrics-server.addr` | string                                                                             metrics server address | `127.0.0.1`
@@ -364,6 +367,7 @@ Option | Description | Default
 `node.batch-poster.data-poster.external-signer.address` | string                                           external signer address | None
 `node.batch-poster.data-poster.external-signer.client-cert` | string                                       rpc client cert | None
 `node.batch-poster.data-poster.external-signer.client-private-key` | string                                rpc client private key | None
+`node.batch-poster.data-poster.external-signer.insecure-skip-verify` | skip TLS certificate verification | None
 `node.batch-poster.data-poster.external-signer.method` | string                                            external signer method | `eth_signTransaction`
 `node.batch-poster.data-poster.external-signer.root-ca` | string                                           external signer root CA | None
 `node.batch-poster.data-poster.external-signer.url` | string                                               external signer url | None
@@ -387,7 +391,7 @@ Option | Description | Default
 `node.batch-poster.data-poster.use-db-storage` | uses database storage when enabled | `true`
 `node.batch-poster.data-poster.use-noop-storage` | uses noop storage, it doesn't store anything | None
 `node.batch-poster.data-poster.wait-for-l1-finality` | only treat a transaction as confirmed after L1 finality has been achieved (recommended) | `true`
-`node.batch-poster.disable-das-fallback-store-data-on-chain` | If unable to batch to DAS, disable fallback storing data on chain | None
+`node.batch-poster.disable-dap-fallback-store-data-on-chain` | If unable to batch to DA provider, disable fallback storing data on chain | None
 `node.batch-poster.enable` | enable posting batches to l1 | None
 `node.batch-poster.error-delay` | duration                                                                 how long to delay after error posting batch | `10s`
 `node.batch-poster.extra-batch-gas` | uint                                                                 use this much more gas than estimation says is necessary to post batches | `50000`
@@ -396,7 +400,7 @@ Option | Description | Default
 `node.batch-poster.ignore-blob-price` | if the parent chain supports 4844 blobs and ignore-blob-price is true, post 4844 blobs even if it's not price efficient | None
 `node.batch-poster.l1-block-bound` | string                                                                only post messages to batches when they're within the max future block/timestamp as of this L1 block tag ("safe", "finalized", "latest", or "ignore" to ignore this check) | None
 `node.batch-poster.l1-block-bound-bypass` | duration                                                       post batches even if not within the layer 1 future bounds if we're within this margin of the max delay | `1h0m0s`
-`node.batch-poster.max-4844-batch-size` | int                                                              maximum 4844 blob enabled batch size | `778288`
+`node.batch-poster.max-4844-batch-size` | int                                                              maximum 4844 blob enabled batch size | `388144`
 `node.batch-poster.max-delay` | duration                                                                   maximum batch posting delay | `1h0m0s`
 `node.batch-poster.max-size` | int                                                                         maximum batch size | `100000`
 `node.batch-poster.parent-chain-wallet.account` | string                                                   account to use | `is first account in keystore`
@@ -422,7 +426,8 @@ Option | Description | Default
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (small footprint) | `1024`
 `node.block-validator.memory-free-limit` | string                                                          minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                                pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
-`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `20`
+`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `24`
+`node.block-validator.redis-validation-client-config.create-streams` | create redis streams if it does not exist | `true`
 `node.block-validator.redis-validation-client-config.name` | string                                        validation client name | `redis validation client`
 `node.block-validator.redis-validation-client-config.producer-config.check-pending-interval` | duration    interval in which producer checks pending messages whether consumer processing them is inactive | `1s`
 `node.block-validator.redis-validation-client-config.producer-config.check-result-interval` | duration     interval in which producer checks pending messages whether consumer processing them is inactive | `5s`
@@ -439,17 +444,12 @@ Option | Description | Default
 `node.block-validator.validation-server.retry-errors` | string                                             Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
 `node.block-validator.validation-server.timeout` | duration                                                per-response timeout (0-disabled) | None
 `node.block-validator.validation-server.url` | string                                                      url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
+`node.block-validator.validation-server.websocket-message-size-limit` | int                                websocket message size limit used by the RPC client. 0 means no limit | `268435456`
 `node.dangerous.disable-blob-reader` | DANGEROUS! disables the EIP-4844 blob reader, which is necessary to read batches | None
 `node.dangerous.no-l1-listener` | DANGEROUS! disables listening to L1. To be used in test nodes only | None
 `node.dangerous.no-sequencer-coordinator` | DANGEROUS! allows sequencing without sequencer-coordinator | None
 `node.data-availability.enable` | enable Anytrust Data Availability mode | None
-`node.data-availability.ipfs-storage.enable` | enable storage/retrieval of sequencer batch data from IPFS | None
-`node.data-availability.ipfs-storage.peers` | strings                                                      list of IPFS peers to connect to, eg /ip4/1.2.3.4/tcp/12345/p2p/abc...xyz | None
-`node.data-availability.ipfs-storage.pin-after-get` | pin sequencer batch data in IPFS | `true`
-`node.data-availability.ipfs-storage.pin-percentage` | float                                               percent of sequencer batch data to pin, as a floating point number in the range 0.0 to 100.0 | `100`
-`node.data-availability.ipfs-storage.profiles` | string                                                    comma separated list of IPFS profiles to use, see https://docs.ipfs.tech/how-to/default-profile | None
-`node.data-availability.ipfs-storage.read-timeout` | duration                                              timeout for IPFS reads, since by default it will wait forever. Treat timeout as not found | `1m0s`
-`node.data-availability.ipfs-storage.repo-dir` | string                                                    directory to use to store the local IPFS repo | None
+`node.data-availability.ipfs-storage.enable` | legacy option - not supported | None
 `node.data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
 `node.data-availability.parent-chain-connection-attempts` | int                                            parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
 `node.data-availability.parent-chain-node-url` | string                                                    URL for parent chain node, only used in standalone daserver; when running as part of a node that node's L1 configuration is used | None
@@ -578,6 +578,7 @@ Option | Description | Default
 `node.staker.data-poster.external-signer.address` | string                                                 external signer address | None
 `node.staker.data-poster.external-signer.client-cert` | string                                             rpc client cert | None
 `node.staker.data-poster.external-signer.client-private-key` | string                                      rpc client private key | None
+`node.staker.data-poster.external-signer.insecure-skip-verify` | skip TLS certificate verification | None
 `node.staker.data-poster.external-signer.method` | string                                                  external signer method | `eth_signTransaction`
 `node.staker.data-poster.external-signer.root-ca` | string                                                 external signer root CA | None
 `node.staker.data-poster.external-signer.url` | string                                                     external signer url | None
@@ -643,6 +644,7 @@ Option | Description | Default
 `parent-chain.connection.retry-errors` | string                                                            Errors matching this regular expression are automatically retried | None
 `parent-chain.connection.timeout` | duration                                                               per-response timeout (0-disabled) | `1m0s`
 `parent-chain.connection.url` | string                                                                     url of server, use self for loopback websocket, self-auth for loopback with authentication | None
+`parent-chain.connection.websocket-message-size-limit` | int                                               websocket message size limit used by the RPC client. 0 means no limit | `268435456`
 `parent-chain.id` | uint                                                                                   if set other than 0, will be used to validate database and L1 connection | None
 `parent-chain.wallet.account` | string                                                                     account to use | `is first account in keystore`
 `parent-chain.wallet.only-create-key` | if true, creates new key then exits | None
@@ -655,6 +657,28 @@ Option | Description | Default
 `persistent.global-config` | string                                                                        directory to store global config | `.arbitrum`
 `persistent.handles` | int                                                                                 number of file descriptor handles to use for the database | `512`
 `persistent.log-dir` | string                                                                              directory to store log file | None
+`persistent.pebble.experimental.block-size` | int                                                          target uncompressed size in bytes of each table block | `4096`
+`persistent.pebble.experimental.bytes-per-sync` | int                                                      number of bytes to write to a SSTable before calling Sync on it in the background | `524288`
+`persistent.pebble.experimental.compaction-debt-concurrency` | uint                                        controls the threshold of compaction debt at which additional compaction concurrency slots are added. For every multiple of this value in compaction debt bytes, an additional concurrent compaction is added. This works "on top" of l0-compaction-concurrency, so the higher of the count of compaction concurrency slots as determined by the two options is chosen. | `1073741824`
+`persistent.pebble.experimental.disable-automatic-compactions` | disables automatic compactions | None
+`persistent.pebble.experimental.force-writer-parallelism` | force parallelism in the sstable Writer for the metamorphic tests. Even with the MaxWriterConcurrency option set, pebble only enables parallelism in the sstable Writer if there is enough CPU available, and this option bypasses that. | None
+`persistent.pebble.experimental.index-block-size` | int                                                    target uncompressed size in bytes of each index block. When the index block size is larger than this target, two-level indexes are automatically enabled. Setting this option to a large value (such as 2147483647) disables the automatic creation of two-level indexes. | `4096`
+`persistent.pebble.experimental.l-base-max-bytes` | int                                                    The maximum number of bytes for LBase. The base level is the level which L0 is compacted into. The base level is determined dynamically based on the existing data in the LSM. The maximum number of bytes for other levels is computed dynamically based on the base level's maximum size. When the maximum number of bytes for a level is exceeded, compaction is requested. | `67108864`
+`persistent.pebble.experimental.l0-compaction-concurrency` | int                                           threshold of L0 read-amplification at which compaction concurrency is enabled (if compaction-debt-concurrency was not already exceeded). Every multiple of this value enables another concurrent compaction up to max-concurrent-compactions. | `10`
+`persistent.pebble.experimental.l0-compaction-file-threshold` | int                                        count of L0 files necessary to trigger an L0 compaction | `500`
+`persistent.pebble.experimental.l0-compaction-threshold` | int                                             amount of L0 read-amplification necessary to trigger an L0 compaction | `4`
+`persistent.pebble.experimental.l0-stop-writes-threshold` | int                                            hard limit on L0 read-amplification, computed as the number of L0 sublevels. Writes are stopped when this threshold is reached | `12`
+`persistent.pebble.experimental.max-writer-concurrency` | int                                              maximum number of compression workers the compression queue is allowed to use. If max-writer-concurrency > 0, then the Writer will use parallelism, to compress and write blocks to disk. Otherwise, the writer will compress and write blocks to disk synchronously. | None
+`persistent.pebble.experimental.mem-table-stop-writes-threshold` | int                                     hard limit on the number of queued of MemTables | `2`
+`persistent.pebble.experimental.read-compaction-rate` | AllowedSeeks                                       controls the frequency of read triggered compactions by adjusting AllowedSeeks in manifest.FileMetadata: AllowedSeeks = FileSize / ReadCompactionRate | `16000`
+`persistent.pebble.experimental.read-sampling-multiplier` | int                                            a multiplier for the readSamplingPeriod in iterator.maybeSampleRead() to control the frequency of read sampling to trigger a read triggered compaction. A value of -1 prevents sampling and disables read triggered compactions. Geth default is -1. The pebble default is 1 << 4. which gets multiplied with a constant of 1 << 16 to yield 1 << 20 (1MB). | `-1`
+`persistent.pebble.experimental.target-byte-deletion-rate` | int                                           rate (in bytes per second) at which sstable file deletions are limited to (under normal circumstances). | None
+`persistent.pebble.experimental.target-file-size` | int                                                    target file size for the level 0 | `2097152`
+`persistent.pebble.experimental.target-file-size-equal-levels` | if true same target-file-size will be uses for all levels, otherwise target size for layer n = 2 * target size for layer n - 1 | `true`
+`persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | None
+`persistent.pebble.experimental.wal-dir` | string                                                          absolute path of directory to store write-ahead logs (WALs) in. If empty, WALs will be stored in the same directory as sstables | None
+`persistent.pebble.experimental.wal-min-sync-interval` | int                                               minimum duration in microseconds between syncs of the WAL. If WAL syncs are requested faster than this interval, they will be artificially delayed. | None
+`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `12`
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                                  pprof server address | `127.0.0.1`
 `pprof-cfg.port` | int                                                                                     pprof server port | `6071`
@@ -669,12 +693,13 @@ Option | Description | Default
 `validation.arbitrator.redis-validation-server-config.consumer-config.keepalive-timeout` | duration        timeout after which consumer is considered inactive if heartbeat wasn't performed | `5m0s`
 `validation.arbitrator.redis-validation-server-config.consumer-config.response-entry-timeout` | duration   timeout for response entry | `1h0m0s`
 `validation.arbitrator.redis-validation-server-config.module-roots` | strings                              Supported module root hashes | None
+`validation.arbitrator.redis-validation-server-config.stream-timeout` | duration                           Timeout on polling for existence of redis streams | `10m0s`
 `validation.arbitrator.workers` | int                                                                      number of concurrent validation threads | None
 `validation.jit.cranelift` | use Cranelift instead of LLVM when validating blocks using the jit-accelerated block validator | `true`
 `validation.jit.wasm-memory-usage-limit` | int                                                             if memory used by a jit wasm exceeds this limit, a warning is logged | `4294967296`
 `validation.jit.workers` | int                                                                             number of concurrent validation threads | None
 `validation.use-jit` | use jit for validation | `true`
-`validation.wasm.allowed-wasm-module-roots` | strings                                                      list of WASM module roots to check if the on-chain WASM module root belongs to on node startup | None
+`validation.wasm.allowed-wasm-module-roots` | strings                                                      list of WASM module roots or mahcine base paths to match against on-chain WasmModuleRoot | None
 `validation.wasm.enable-wasmroots-check` | enable check for compatibility of on-chain WASM module root with node | `true`
 `validation.wasm.root-path` | string                                                                       path to machine folders, each containing wasm files (machine.wavm.br, replay.wasm) | None
 `ws.addr` | string                                                                                         WS-RPC server listening interface | None
