@@ -232,7 +232,7 @@ extraEnv:
 | `configmap.data`                                                                           | Data for the configmap. See Configuration Options for the full list of available options |           |
 | `configmap.data.conf.env-prefix`                                                           | Environment variable prefix                                                              | `NITRO`   |
 | `configmap.data.log-type`                                                                  | Log type                                                                                 | `json`    |
-| `configmap.data.log-level`                                                                 | Log level                                                                                | `3`       |
+| `configmap.data.log-level`                                                                 | Log level                                                                                | `warn`       |
 | `configmap.data.enable-rest`                                                               | Enable rest api                                                                          | `true`    |
 | `configmap.data.rest-addr`                                                                 | Rest api address                                                                         | `0.0.0.0` |
 | `configmap.data.rest-port`                                                                 | Rest api port                                                                            | `9877`    |
