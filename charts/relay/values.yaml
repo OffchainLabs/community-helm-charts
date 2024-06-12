@@ -199,10 +199,3 @@ configmap:
         output:
           addr: 0.0.0.0
           port: 9642
-
-    ## @param configmap.data.validation.wasm.allowed-wasm-module-roots Default flags as of v3.0.0
-    validation:
-      wasm:
-        allowed-wasm-module-roots:
-          - "/home/user/nitro-legacy/machines"
-          - "/home/user/target/machines"

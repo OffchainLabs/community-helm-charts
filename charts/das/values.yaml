@@ -268,13 +268,6 @@ configmap:
       port: 6070
       update-interval: "5s"
 
-    ## @param configmap.data.validation.wasm.allowed-wasm-module-roots Default flags as of v3.0.0
-    validation:
-      wasm:
-        allowed-wasm-module-roots:
-          - "/home/user/nitro-legacy/machines"
-          - "/home/user/target/machines"
-
 ## @skip ci
 ci:
   secretManifest:
