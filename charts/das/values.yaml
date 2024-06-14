@@ -27,7 +27,6 @@ diagnosticMode: false
 ## @param commandOverride Command override for the das container
 commandOverride: {}
 
-
 ## @param customArgs Extra args to pass to the das container command
 customArgs: []
 
@@ -185,7 +184,7 @@ configmap:
     log-type: "json"
 
     ## @param configmap.data.log-level Log level
-    log-level: 3
+    log-level: warn
 
     ## @param configmap.data.enable-rest Enable rest api
     enable-rest: true
@@ -240,14 +239,6 @@ configmap:
         object-prefix: ""
         region: ""
         secret-key: ""
-
-      ## @param configmap.data.data-availability.ipfs-storage.enable Enable ipfs storage
-      ## @param configmap.data.data-availability.ipfs-storage.profiles ipfs profiles
-      ## @param configmap.data.data-availability.ipfs-storage.read-timeout ipfs read timeout
-      ipfs-storage:
-        enable: false
-        profiles: ""
-        read-timeout: 1m0s
 
       ## @param configmap.data.data-availability.local-cache.enable Enable local cache
       ## @param configmap.data.data-availability.local-cache.capacity Maximum number of entries (up to 64KB each) to store in the cache.
