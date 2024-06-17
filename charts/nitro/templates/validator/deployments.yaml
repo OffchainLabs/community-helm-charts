@@ -54,7 +54,7 @@ spec:
             matchLabels:
               {{- include "nitro.selectorLabels" $ | nindent 14 }}
               validator: {{ .name | quote }}
-              function: arb-validator
+              function: split-validator
           {{- end }}
         {{- end }}
         {{- end }}
