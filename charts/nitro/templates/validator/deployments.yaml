@@ -25,7 +25,7 @@ spec:
         {{- with $mergedValues.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/validator/configmap.yaml") $ | sha256sum }}
       labels:
         {{- include "nitro.selectorLabels" $ | nindent 8 }}
         validator: {{ .name | quote }}
