@@ -178,6 +178,9 @@ wallet:
   mountPath: "/wallet/"
   files: {} # sequencer-wallet1.json: '{"address": "0x...", "encryptedData": "..." }'
 
+## @param enableAutoConfigProcessing Enable intelligent automatic configuration processing
+enableAutoConfigProcessing: true
+
 configmap:
   ## @param configmap.enabled Enable a configmap for the nitro container
   enabled: true
@@ -245,114 +248,172 @@ configmap:
           - "/home/user/target/machines"
 
 ## @section Stateless Validator
-
 validator:
-  image:
-    ## @param validator.image.repository Docker image repository
-    repository: ""
-    ## @param validator.image.tag Docker image tag
-    tag: ""
   ## @param validator.enabled Enable the stateless validator
   enabled: false
-  ## @param validator.defaultNodeSelector.kubernetes.io/arch Architecture to schedule the pods to enure both the stateless validator and nitro node are scheduled on the same architecture.
+  ## @param validator.defaultNodeSelector.kubernetes.io/arch Architecture to schedule the pods to ensure both the stateless validator and nitro node are scheduled on the same architecture.
   defaultNodeSelector:
     kubernetes.io/arch: amd64
-  configmap:
-    data:
-      ## @param validator.configmap.data.auth.addr Address to bind auth service to
-      ## @param validator.configmap.data.auth.port Port to bind auth service to
-      ## @param validator.configmap.data.auth.origins Origins to allow to access auth service
-      ## @param validator.configmap.data.auth.jwtsecret Path to jwt secret for auth service
-      auth:
-        addr: "0.0.0.0"
-        port: 8549
-        origins: "*"
-        jwtsecret: "/secrets/jwtsecret"
 
-      ## @param validator.configmap.data.metrics Enable metrics
-      ## @param validator.configmap.data.metrics-server.addr Address to bind metrics server to
-      ## @param validator.configmap.data.metrics-server.port Port to bind metrics server to
-      metrics: false
-      metrics-server:
-        addr: "0.0.0.0"
+  splitvalidator:
+    ## @param validator.splitvalidator.deployments List of deployments for the split validator. Each deploymeny can have its own image, config, etc.
+    deployments: []
+
+    global:
+      ## @param validator.splitvalidator.global.replicaCount Number of replicas for the split validator
+      replicaCount: 1
+
+      image:
+        ## @param validator.splitvalidator.global.image.repository Docker image repository for the split validator
+        repository: ""
+        ## @param validator.splitvalidator.global.image.tag Docker image tag for the split validator
+        tag: ""
+
+      ## @param validator.splitvalidator.global.useConfigmap Use the configmap for the validator container
+      useConfigmap: true
+
+      configmap:
+        data:
+          auth:
+            ## @param validator.splitvalidator.global.configmap.data.auth.addr Address to bind auth service to
+            addr: "0.0.0.0"
+            ## @param validator.splitvalidator.global.configmap.data.auth.port Port to bind auth service to
+            port: 8549
+            ## @param validator.splitvalidator.global.configmap.data.auth.origins Origins to allow to access auth service
+            origins: "*"
+            ## @param validator.splitvalidator.global.configmap.data.auth.jwtsecret Path to jwt secret for auth service
+            jwtsecret: "/secrets/jwtsecret"
+
+          ## @param validator.splitvalidator.global.configmap.data.metrics Enable metrics
+          metrics: false
+          metrics-server:
+            ## @param validator.splitvalidator.global.configmap.data.metrics-server.addr Address to bind metrics server to
+            addr: "0.0.0.0"
+            ## @param validator.splitvalidator.global.configmap.data.metrics-server.port Port to bind metrics server to
+            port: 6070
+
+      ## @param validator.splitvalidator.global.extraArgs Extra arguments for the validator container
+      extraArgs: []
+
+      auth:
+        ## @param validator.splitvalidator.global.auth.enabled Enable the auth service for the validator statefulset
+        enabled: true
+        ## @param validator.splitvalidator.global.auth.port Port to bind auth service to
+        port: 8549
+
+      metrics:
+        ## @param validator.splitvalidator.global.metrics.enabled Enable metrics for the validator statefulset
+        enabled: false
+        ## @param validator.splitvalidator.global.metrics.port Port to bind metrics server to
         port: 6070
 
-  ## @param validator.extraArgs Extra arguments for the validator container
-  extraArgs: []
+      ## @param validator.splitvalidator.global.extraLabels Extra labels for the validator statefulset
+      extraLabels: {}
 
-  ## @param validator.serviceMonitor.enabled Enable service monitor CRD for prometheus operator
-  ## @param validator.serviceMonitor.portName Name of the port to monitor
-  ## @param validator.serviceMonitor.path Path to monitor
-  ## @param validator.serviceMonitor.interval Interval to monitor
-  ## @param validator.serviceMonitor.relabelings Add relabelings for the metrics being scraped
-  serviceMonitor:
-    enabled: false
-    portName: metrics
-    path: /debug/metrics/prometheus
-    interval: 5s
-    relabelings: {}
+      serviceMonitor:
+        ## @param validator.splitvalidator.global.serviceMonitor.enabled Enable service monitor CRD for prometheus operator
+        enabled: false
+        ## @param validator.splitvalidator.global.serviceMonitor.portName Name of the port to monitor
+        portName: metrics
+        ## @param validator.splitvalidator.global.serviceMonitor.path Path to monitor
+        path: /debug/metrics/prometheus
+        ## @param validator.splitvalidator.global.serviceMonitor.interval Interval to monitor
+        interval: 5s
+        ## @param validator.splitvalidator.global.serviceMonitor.relabelings Add relabelings for the metrics being scraped
+        relabelings: {}
 
-  statefulset:
-    ## @param validator.statefulset.useConfigmap Use the configmap for the validator container
-    useConfigmap: true
+      livenessProbe:
+        ## @param validator.splitvalidator.global.livenessProbe.enabled Enable the liveness probe for the validator statefulset
+        enabled: true
+        tcpSocket:
+          ## @param validator.splitvalidator.global.livenessProbe.tcpSocket.port Port to probe
+          port: auth
+        ## @param validator.splitvalidator.global.livenessProbe.initialDelaySeconds Initial delay for the liveness probe
+        initialDelaySeconds: 30
+        ## @param validator.splitvalidator.global.livenessProbe.periodSeconds Period for the liveness probe
+        periodSeconds: 10
 
-    ## @param validator.statefulset.auth.enabled Enable the auth service for the validator statefulset
-    ## @param validator.statefulset.auth.port Port to bind auth service to
-    auth:
-      enabled: true
-      port: 8549
+      pdb:
+        ## @param validator.splitvalidator.global.pdb.enabled Enable pod disruption budget
+        enabled: true
+        ## @param validator.splitvalidator.global.pdb.minAvailable Minimum number of pods available
+        minAvailable: "75%"
+        ## @param validator.splitvalidator.global.pdb.maxUnavailable Maximum number of pods unavailable
+        maxUnavailable: ""
 
-    ## @param validator.statefulset.extraLabels Extra labels for the liveness probe
-    extraLabels: {}
+      hpa:
+        ## @param validator.splitvalidator.global.hpa.enabled Enable horizontal pod autoscaler
+        enabled: false
+        ## @param validator.splitvalidator.global.hpa.minReplicas Minimum number of replicas
+        minReplicas: 1
+        ## @param validator.splitvalidator.global.hpa.maxReplicas Maximum number of replicas
+        maxReplicas: 10
+        metrics:
+          ## @param validator.splitvalidator.global.hpa.metrics[0].type Type of metric to monitor
+          - type: Resource
+            resource:
+              ## @param validator.splitvalidator.global.hpa.metrics[0].resource.name Name of the resource to monitor (cpu/memory)
+              name: cpu
+              target:
+                ## @param validator.splitvalidator.global.hpa.metrics[0].resource.target.type Type of target
+                type: Utilization
+                ## @param validator.splitvalidator.global.hpa.metrics[0].resource.target.averageUtilization Target average utilization of the resource
+                averageUtilization: 80
+        behavior:
+          scaleUp:
+            ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.stabilizationWindowSeconds Stabilization window for scaling up
+            stabilizationWindowSeconds: 300
+            ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.selectPolicy Policy to use when scaling up
+            selectPolicy: "Max"
+            policies:
+              ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].type Type of scale up policy
+              - type: Percent
+                ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].value Percentage of pods to scale up
+                value: 50
+                ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].periodSeconds Period for scaling up
+                periodSeconds: 60
+          scaleDown:
+            ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.stabilizationWindowSeconds Stabilization window for scaling down
+            stabilizationWindowSeconds: 300
+            ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.selectPolicy Policy to use when scaling down
+            selectPolicy: "Min"
+            policies:
+              ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].type Type of scale down policy
+              - type: Percent
+                ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].value Percentage of pods to scale down
+                value: 50
+                ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].periodSeconds Period for scaling down
+                periodSeconds: 60
 
-    ## @param validator.statefulset.livenessProbe.enabled Enable the liveness probe for the validator statefulset
-    ## @param validator.statefulset.livenessProbe.tcpSocket.port Port to probe
-    ## @param validator.statefulset.livenessProbe.initialDelaySeconds Initial delay for the liveness probe
-    ## @param validator.statefulset.livenessProbe.periodSeconds Period for the liveness probe
-    livenessProbe:
-      enabled: true
-      tcpSocket:
-        port: auth
-      initialDelaySeconds: 30
-      periodSeconds: 10
+      readinessProbe:
+        ## @param validator.splitvalidator.global.readinessProbe.enabled Enable the readiness probe for the validator statefulset
+        enabled: true
+        tcpSocket:
+          ## @param validator.splitvalidator.global.readinessProbe.tcpSocket.port Port to probe
+          port: auth
+        ## @param validator.splitvalidator.global.readinessProbe.initialDelaySeconds Initial delay for the readiness probe
+        initialDelaySeconds: 3
+        ## @param validator.splitvalidator.global.readinessProbe.periodSeconds Period for the readiness probe
+        periodSeconds: 3
 
-    ## @param validator.statefulset.pdb.enabled Enable pod disruption budget
-    ## @param validator.statefulset.pdb.minAvailable Minimum number of pods available
-    ## @param validator.statefulset.pdb.maxUnavailable Maximum number of pods unavailable
-    pdb:
-      enabled: false
-      minAvailable: "75%"
-      maxUnavailable: ""
+      ## @param validator.splitvalidator.global.startupProbe.enabled Enable the startup probe for the validator statefulset
+      startupProbe:
+        enabled: false
 
-    ## @param validator.statefulset.readinessProbe.enabled Enable the readiness probe for the validator statefulset
-    ## @param validator.statefulset.readinessProbe.tcpSocket.port Port to probe
-    ## @param validator.statefulset.readinessProbe.initialDelaySeconds Initial delay for the readiness probe
-    ## @param validator.statefulset.readinessProbe.periodSeconds Period for the readiness probe
-    readinessProbe:
-      enabled: true
-      tcpSocket:
-        port: auth
-      initialDelaySeconds: 3
-      periodSeconds: 3
+      ## @param validator.splitvalidator.global.resources Resources for the validator container
+      resources: {}
 
-    ## @param validator.statefulset.startupProbe.enabled Enable the startup probe for the validator statefulset
-    startupProbe:
-      enabled: false
+      ## @param validator.splitvalidator.global.extraEnv Extra environment variables for the validator container
+      extraEnv: {}
 
-    ## @param validator.statefulset.resources Resources for the validator container
-    resources: {}
+      ## @param validator.splitvalidator.global.extraPorts Additional ports for the stateless validator pod
+      extraPorts: []
 
-    ## @param validator.statefulset.extraEnv Extra environment variables for the validator container
-    extraEnv: {}
+      ## @param validator.splitvalidator.global.podAnnotations Annotations for the stateless validator pod
+      podAnnotations: {}
 
-    ## @param validator.statefulset.extraPorts Additional ports for the stateless validator pod
-    extraPorts: []
-
-    ## @param validator.statefulset.podAnnotations Annotations for the stateless validator pod
-    podAnnotations: {}
-
-    ## @param validator.statefulset.priorityClassName Priority class name for the stateless validator pod
-    priorityClassName: ""
+      ## @param validator.splitvalidator.global.priorityClassName Priority class name for the stateless validator pod
+      priorityClassName: ""
 
 ## @skip ci
 ci:

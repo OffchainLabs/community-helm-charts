@@ -10,8 +10,28 @@ readinessProbe:
   initialDelaySeconds: 10
   periodSeconds: 3
 
+jwtSecret:
+  enabled: true
+  value: "9911e3404a316d61ddbda18b1d23479002535efebb7a4c8dbc3408a1d9ac6b06"
+
 blobPersistence:
   enabled: true
+
+validator:
+  enabled: true
+
+  splitvalidator:
+    deployments:
+      - name: "1"
+      - name: "2"
+
+    global:
+      configmap:
+        data:
+          metrics: true
+
+      metrics:
+        enabled: true
 
 configmap:
   data:
@@ -19,6 +39,9 @@ configmap:
       env-prefix: "NITROCI"
     chain:
       id: 421614
+    node:
+      staker:
+        enable: true
     parent-chain:
       id: 11155111
       blob-client:
@@ -26,10 +49,11 @@ configmap:
       wallet:
         account: "44a2864f7e5fc6ac1704ffae163730ad66d02fc1"
         password: "test123"
+    metrics: true
 
 wallet:
   files:
-    key1.json: "{\"address\":\"44a2864f7e5fc6ac1704ffae163730ad66d02fc1\",\"id\":\"0410ec05-04c1-47fa-bb1f-e14a8fa7c54b\",\"version\":3,\"Crypto\":{\"cipher\":\"aes-128-ctr\",\"cipherparams\":{\"iv\":\"6cceaacd065a07ae7cc6cf9856f4e5fe\"},\"ciphertext\":\"33549ecaa70a3f31c9fbd16ecd93a9ddfcd5bbfde87420e3843312509d16002d\",\"kdf\":\"scrypt\",\"kdfparams\":{\"salt\":\"25a8b71f4fa6593753783746ed6a072b43713a8226b39855e35c8855690e3226\",\"n\":131072,\"dklen\":32,\"p\":1,\"r\":8},\"mac\":\"56a7de08e50295f976bbfb71a4125379cf7d00ee0171c7fb43dd3aafdf770649\"},\"x-ethers\":{\"client\":\"ethers/6.12.1\",\"gethFilename\":\"UTC--2024-05-07T05-35-58.0Z--44a2864f7e5fc6ac1704ffae163730ad66d02fc1\",\"path\":\"m/44'/60'/0'/0/0\",\"locale\":\"en\",\"mnemonicCounter\":\"9810530864bddf04b8fee8b9e535fcdc\",\"mnemonicCiphertext\":\"9f46a31391cca84a2dc361255e5ff467\",\"version\":\"0.1\"}}"
+    key1.json: '{"address":"44a2864f7e5fc6ac1704ffae163730ad66d02fc1","id":"0410ec05-04c1-47fa-bb1f-e14a8fa7c54b","version":3,"Crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6cceaacd065a07ae7cc6cf9856f4e5fe"},"ciphertext":"33549ecaa70a3f31c9fbd16ecd93a9ddfcd5bbfde87420e3843312509d16002d","kdf":"scrypt","kdfparams":{"salt":"25a8b71f4fa6593753783746ed6a072b43713a8226b39855e35c8855690e3226","n":131072,"dklen":32,"p":1,"r":8},"mac":"56a7de08e50295f976bbfb71a4125379cf7d00ee0171c7fb43dd3aafdf770649"},"x-ethers":{"client":"ethers/6.12.1","gethFilename":"UTC--2024-05-07T05-35-58.0Z--44a2864f7e5fc6ac1704ffae163730ad66d02fc1","path":"m/44''/60''/0''/0/0","locale":"en","mnemonicCounter":"9810530864bddf04b8fee8b9e535fcdc","mnemonicCiphertext":"9f46a31391cca84a2dc361255e5ff467","version":"0.1"}}'
 
 extraEnv:
   - name: NITROCI_PARENT__CHAIN_CONNECTION_URL

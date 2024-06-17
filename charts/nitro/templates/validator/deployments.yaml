@@ -1,0 +1,166 @@
+{{- if .Values.validator.enabled }}
+{{- range .Values.validator.splitvalidator.deployments }}
+{{- $global := deepCopy $.Values.validator.splitvalidator.global }}
+{{- $deployment := . }}
+{{- $mergedValues := merge $global $deployment }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nitro.fullname" $ }}-val-{{ .name }}
+  labels:
+    {{- include "nitro.labels" $ | nindent 4 }}
+    {{- with $mergedValues.extraLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .replicas | default $mergedValues.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "nitro.selectorLabels" $ | nindent 6 }}
+      validator: {{ .name | quote }}
+  template:
+    metadata:
+      annotations:
+        {{- with $mergedValues.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/validator/configmap.yaml") $ | sha256sum }}
+      labels:
+        {{- include "nitro.selectorLabels" $ | nindent 8 }}
+        validator: {{ .name | quote }}
+        function: split-validator
+    spec:
+      serviceAccountName: {{ include "nitro.serviceAccountName" $ }}
+      nodeSelector:
+        {{- with $mergedValues.nodeSelector }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      terminationGracePeriodSeconds: {{ $mergedValues.terminationGracePeriodSeconds | default 60 }}
+      affinity:
+        {{- with $mergedValues.affinity }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      tolerations:
+        {{- with $mergedValues.tolerations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      topologySpreadConstraints:
+        {{- if $mergedValues.topologySpreadConstraints }}
+        {{- range $constraint := $mergedValues.topologySpreadConstraints }}
+        - {{ toYaml $constraint | nindent 10 | trim }}
+          {{- if not $constraint.labelSelector }}
+          labelSelector:
+            matchLabels:
+              {{- include "nitro.selectorLabels" $ | nindent 14 }}
+              validator: {{ .name | quote }}
+              function: split-validator
+          {{- end }}
+        {{- end }}
+        {{- end }}
+      securityContext:
+        {{- with $mergedValues.podSecurityContext }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- if $mergedValues.priorityClassName }}
+      priorityClassName: {{ $mergedValues.priorityClassName }}
+      {{- end }}
+      initContainers:
+        {{- with $mergedValues.extraInitContainers }}
+        {{- toYaml . | nindent 6 }}
+        {{- end }}
+      containers:
+      - name: {{ $.Chart.Name }}-stateless
+        image: "{{ $mergedValues.image.repository | default $.Values.image.repository }}:{{ $mergedValues.image.tag | default $.Values.image.tag | default $.Chart.AppVersion }}"
+        command: ["/usr/local/bin/nitro-val"]
+        args:
+          {{- if $mergedValues.configmap.data.metrics }}
+          - --metrics
+          {{- end }}
+          {{- if $mergedValues.useConfigmap }}
+          - --conf.file=/config/config.json
+          {{- end }}
+          {{- with $mergedValues.extraArgs }}
+          {{- range . }}
+          - {{ . }}
+          {{- end }}
+          {{- end }}
+        ports:
+          {{- if $mergedValues.auth.enabled }}
+          - name: auth
+            containerPort: {{ $mergedValues.auth.port }}
+          {{- end }}
+          {{- if $mergedValues.metrics }}
+          - name: metrics
+            containerPort: {{ index $mergedValues "metrics" "port" }}
+            protocol: TCP
+          {{- end }}
+          {{- if $mergedValues.pprof }}
+          - name: pprof
+            containerPort: {{ index $mergedValues "pprof" "port" }}
+            protocol: TCP
+          {{- end }}
+          {{- with $mergedValues.extraPorts }}
+          {{- range . }}
+          - name: {{ .name }}
+            containerPort: {{ .port }}
+            protocol: {{ .protocol | default "TCP" }}
+          {{- end }}
+          {{- end }}
+        volumeMounts:
+          {{- if $.Values.jwtSecret.enabled }}
+          - name: jwt-secret
+            mountPath: /secrets/jwtsecret
+            subPath: jwtSecret
+            readOnly: true
+          {{- end }}
+          {{- if $mergedValues.useConfigmap }}
+          - name: config-validator-{{ .name }}
+            mountPath: /config/
+          {{- end }}
+          {{- with $mergedValues.extraVolumeMounts }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        livenessProbe:
+          {{- if $mergedValues.livenessProbe.enabled }}
+          {{- if and $mergedValues.livenessProbe.exec (kindIs "string" $mergedValues.livenessProbe.exec.command) }}
+          {{- toYaml (omit $mergedValues.livenessProbe "enabled" "exec") | nindent 10 }}
+          exec:
+            command:
+              {{- tpl $mergedValues.livenessProbe.exec.command $ | nindent 14 }}
+          {{- else }}
+          {{- toYaml (omit $mergedValues.livenessProbe "enabled") | nindent 10 }}
+          {{- end }}
+          {{- end }}
+        readinessProbe:
+          {{- if $mergedValues.readinessProbe.enabled }}
+          {{- toYaml (omit $mergedValues.readinessProbe "enabled") | nindent 10 }}
+          {{- end }}
+        startupProbe:
+          {{- if $mergedValues.startupProbe.enabled }}
+          {{- toYaml (omit $mergedValues.startupProbe "enabled") | nindent 10 }}
+          {{- end }}
+        env:
+          {{- with $mergedValues.extraEnv }}
+          {{- toYaml . | nindent 8 }}
+          {{- end }}
+        resources:
+          {{- with $mergedValues.resources }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+      volumes:
+        {{- if $.Values.jwtSecret.enabled }}
+        - name: jwt-secret
+          secret:
+            secretName: {{ include "nitro.fullname" $ }}-jwt
+        {{- end }}
+        {{- if $mergedValues.useConfigmap }}
+        - name: config-validator-{{ .name }}
+          configMap:
+            name: config-validator-{{ .name }}
+        {{- end }}
+        {{- with $mergedValues.extraVolumes }}
+        {{- toYaml . | nindent 6 }}
+        {{- end }}
+{{- end }}
+{{- end }}

@@ -1,31 +1,35 @@
 {{- if .Values.validator.enabled }}
-{{- $fullName := include "nitro.fullname" . }}
-{{- $labels := include "nitro.labels" . }}
-{{- $selectorLabels := include "nitro.selectorLabels" .}}
+{{- range .Values.validator.splitvalidator.deployments }}
+{{- $global := deepCopy $.Values.validator.splitvalidator.global }}
+{{- $deployment := . }}
+{{- $mergedValues := merge $global $deployment }}
+{{- $labels := include "nitro.labels" $ }}
+{{- $selectorLabels := include "nitro.selectorLabels" $ }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $fullName }}-validator
+  name: {{ include "nitro.fullname" $ }}-val-{{ .name }}
   labels:
     {{- $labels | nindent 4 }}
-    function: arb-validator
+    validator: {{ .name | quote }}
+    function: split-validator
 spec:
   type: ClusterIP
   ports:
-  {{- if $.Values.validator.statefulset.auth.enabled }}
-    - port: {{ $.Values.validator.statefulset.auth.port }}
-      targetPort: {{ $.Values.validator.statefulset.auth.port }}
+  {{- if $mergedValues.auth.enabled }}
+    - port: {{ $mergedValues.auth.port }}
+      targetPort: {{ $mergedValues.auth.port }}
       protocol: TCP
       name: auth
   {{- end }}
-  {{- if .Values.validator.configmap.data.metrics }}
-    - port: {{ index .Values "validator" "configmap" "data" "metrics-server" "port" }}
+  {{- if $mergedValues.configmap.data.metrics }}
+    - port: {{ index $mergedValues "configmap" "data" "metrics-server" "port" }}
       targetPort: metrics
       protocol: TCP
       name: metrics
   {{- end }}
-  {{- range .Values.validator.statefulset.extraPorts }}
+  {{- range $mergedValues.extraPorts }}
   {{- if .serviceEnabled | default true }}
   - name: {{ .name }}
     port: {{ .port }}
@@ -35,5 +39,7 @@ spec:
   {{- end }}
   selector:
     {{- $selectorLabels | nindent 4 }}
-    function: arb-validator
+    validator: {{ .name | quote }}
+    function: split-validator
+{{- end }}
 {{- end }}

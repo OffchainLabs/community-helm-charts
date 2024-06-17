@@ -1,19 +1,31 @@
-{{- if .Values.validator.statefulset.pdb.enabled }}
+{{- if .Values.validator.enabled }}
+{{- range .Values.validator.splitvalidator.deployments }}
+{{- $global := deepCopy $.Values.validator.splitvalidator.global }}
+{{- $deployment := . }}
+{{- $mergedValues := merge $global $deployment }}
+{{- $pdbEnabled := $mergedValues.pdb.enabled | default $.Values.validator.splitvalidator.global.pdb.enabled }}
+{{- if $pdbEnabled }}
+{{- $labels := include "nitro.labels" $ }}
+{{- $selectorLabels := include "nitro.selectorLabels" $ }}
+---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "nitro.fullname" . }}
+  name: {{ include "nitro.fullname" $ }}-val-{{ .name }}
   labels:
-    {{- include "nitro.labels" . | nindent 4 }}
+    {{- $labels | nindent 4 }}
 spec:
-  {{- if and (.Values.validator.statefulset.pdb.minAvailable) (not .Values.validator.statefulset.pdb.maxUnavailable) }}
-  minAvailable: {{ .Values.validator.statefulset.pdb.minAvailable }}
+  {{- if and ($mergedValues.pdb.minAvailable) (not $mergedValues.pdb.maxUnavailable) }}
+  minAvailable: {{ $mergedValues.pdb.minAvailable }}
   {{- end }}
-  {{- if and (.Values.validator.statefulset.pdb.maxUnavailable) (not .Values.validator.statefulset.pdb.minAvailable) }}
-  maxUnavailable: {{ .Values.validator.statefulset.pdb.maxUnavailable }}
+  {{- if and ($mergedValues.pdb.maxUnavailable) (not $mergedValues.pdb.minAvailable) }}
+  maxUnavailable: {{ $mergedValues.pdb.maxUnavailable }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "nitro.selectorLabels" . | nindent 6 }}
-      function: arb-validator
+      {{- $selectorLabels | nindent 6 }}
+      validator: {{ .name | quote }}
+      function: split-validator
+{{- end }}
+{{- end }}
 {{- end }}

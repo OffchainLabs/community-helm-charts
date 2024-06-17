@@ -1,14 +1,25 @@
 {{- if .Values.validator.enabled  }}
+{{- range .Values.validator.splitvalidator.deployments }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "nitro.fullname" . }}-validator
+  name: config-validator-{{ .name }}
   labels:
-    {{- include "nitro.labels" . | nindent 4 }}
+    {{- include "nitro.labels" $ | nindent 4 }}
 data:
   config.json: |
-  {{- if  and .Values.validator.configmap  .Values.validator.configmap.data }}
-    {{- .Values.validator.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" | nindent 4 }}
-  {{- end }} 
-  
+    {{- $global := dict }}
+    {{- if hasKey $.Values.validator.splitvalidator.global "configmap" }}
+      {{- $global = deepCopy $.Values.validator.splitvalidator.global.configmap.data }}
+    {{- end }}
+    {{- $deployment := dict }}
+    {{- if hasKey . "configmap" }}
+      {{- if hasKey .configmap "data" }}
+        {{- $deployment = .configmap.data }}
+      {{- end }}
+    {{- end }}
+    {{- $mergedValues := merge $global $deployment }}
+    {{- toPrettyJson $mergedValues | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" | nindent 4 }}
+{{- end }}
 {{- end }}
