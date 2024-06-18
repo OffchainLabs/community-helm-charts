@@ -115,7 +115,7 @@ spec:
             readOnly: true
           {{- end }}
           {{- if $mergedValues.useConfigmap }}
-          - name: config-validator-{{ .name }}
+          - name: {{ include "nitro.fullname" $ }}-val-{{ .name }}
             mountPath: /config/
           {{- end }}
           {{- with $mergedValues.extraVolumeMounts }}
@@ -155,9 +155,9 @@ spec:
             secretName: {{ include "nitro.fullname" $ }}-jwt
         {{- end }}
         {{- if $mergedValues.useConfigmap }}
-        - name: config-validator-{{ .name }}
+        - name: {{ include "nitro.fullname" $ }}-val-{{ .name }}
           configMap:
-            name: config-validator-{{ .name }}
+            name: {{ include "nitro.fullname" $ }}-val-{{ .name }}
         {{- end }}
         {{- with $mergedValues.extraVolumes }}
         {{- toYaml . | nindent 6 }}
