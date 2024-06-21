@@ -251,9 +251,6 @@ configmap:
 validator:
   ## @param validator.enabled Enable the stateless validator
   enabled: false
-  ## @param validator.defaultNodeSelector.kubernetes.io/arch Architecture to schedule the pods to ensure both the stateless validator and nitro node are scheduled on the same architecture.
-  defaultNodeSelector:
-    kubernetes.io/arch: amd64
 
   splitvalidator:
     ## @param validator.splitvalidator.deployments List of deployments for the split validator. Each deploymeny can have its own image, config, etc.
@@ -262,6 +259,10 @@ validator:
     global:
       ## @param validator.splitvalidator.global.replicaCount Number of replicas for the split validator
       replicaCount: 1
+
+      ## @param validator.splitvalidator.global.nodeSelector Node selector for the validator statefulset
+      nodeSelector:
+        kubernetes.io/arch: amd64
 
       image:
         ## @param validator.splitvalidator.global.image.repository Docker image repository for the split validator
