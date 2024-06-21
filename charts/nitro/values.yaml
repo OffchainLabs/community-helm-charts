@@ -260,8 +260,8 @@ validator:
       ## @param validator.splitvalidator.global.replicaCount Number of replicas for the split validator
       replicaCount: 1
 
-      ## @param validator.splitvalidator.global.nodeSelector Node selector for the validator statefulset
       nodeSelector:
+        ## @param validator.splitvalidator.global.nodeSelector.kubernetes.io/arch Architecture to deploy the validator to
         kubernetes.io/arch: amd64
 
       image:
