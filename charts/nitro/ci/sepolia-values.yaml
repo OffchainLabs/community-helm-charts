@@ -46,9 +46,6 @@ configmap:
       id: 11155111
       blob-client:
         blob-directory: /home/user/blobdata/
-      wallet:
-        account: "44a2864f7e5fc6ac1704ffae163730ad66d02fc1"
-        password: "test123"
     metrics: true
 
 wallet:
