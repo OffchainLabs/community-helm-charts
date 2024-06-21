@@ -260,8 +260,9 @@ validator:
       ## @param validator.splitvalidator.global.replicaCount Number of replicas for the split validator
       replicaCount: 1
 
+      ## @param validator.splitvalidator.global.nodeSelector [object, default: DEFAULT_VALUE]
       nodeSelector:
-        ## @param validator.splitvalidator.global.nodeSelector.kubernetes.io/arch architecture
+        ## @skip validator.splitvalidator.global.nodeSelector.kubernetes.io/arch
         kubernetes.io/arch: amd64
 
       image:
