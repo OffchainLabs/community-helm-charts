@@ -261,7 +261,7 @@ validator:
       replicaCount: 1
 
       nodeSelector:
-        ## @param validator.splitvalidator.global.nodeSelector.kubernetes.io/arch Architecture to deploy the validator to
+        ## @param validator.splitvalidator.global.nodeSelector.kubernetes.io/arch rchitecture to schedule the pods to ensure both the stateless validator and nitro node are scheduled on the same architecture.
         kubernetes.io/arch: amd64
 
       image:
