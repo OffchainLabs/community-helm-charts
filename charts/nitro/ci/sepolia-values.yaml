@@ -30,6 +30,9 @@ validator:
         data:
           metrics: true
 
+      nodeSelector:
+        kubernetes.io/arch: arm64
+
       metrics:
         enabled: true
 
