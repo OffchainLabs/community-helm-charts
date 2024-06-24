@@ -282,7 +282,6 @@ Option | Description | Default
 `data-availability.disable-signature-checking` | disables signature checking on Data Availability Store requests (DANGEROUS, FOR TESTING ONLY) | None
 `data-availability.enable` | enable Anytrust Data Availability mode | `true`
 `data-availability.extra-signature-checking-public-key` | string                               public key to use to validate Data Availability Store requests in addition to the Sequencer's public key determined using sequencer-inbox-address, can be a file or the hex-encoded public key beginning with 0x; useful for testing | None
-`data-availability.ipfs-storage.enable` | legacy option - not supported | None
 `data-availability.key.key-dir` | string                                                       the directory to read the bls keypair ('das_bls.pub' and 'das_bls') from; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
 `data-availability.key.priv-key` | string                                                      the base64 BLS private key to use for signing DAS certificates; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
 `data-availability.local-cache.capacity` | int                                                 Maximum number of entries (up to 64KB each) to store in the cache. | `20000`
@@ -295,24 +294,16 @@ Option | Description | Default
 `data-availability.local-db-storage.num-level-zero-tables` | int                               BadgerDB option: sets the maximum number of Level 0 tables before compaction starts | `5`
 `data-availability.local-db-storage.num-level-zero-tables-stall` | int                         BadgerDB option: sets the number of Level 0 tables that once reached causes the DB to stall until compaction succeeds | `15`
 `data-availability.local-db-storage.num-memtables` | int                                       BadgerDB option: sets the maximum number of tables to keep in memory before stalling | `5`
-`data-availability.local-db-storage.sync-from-storage-service` | enable db storage to be used as a source for regular sync storage | None
-`data-availability.local-db-storage.sync-to-storage-service` | enable db storage to be used as a sink for regular sync storage | None
 `data-availability.local-db-storage.value-log-file-size` | int                                 BadgerDB option: sets the maximum size of a single log file | `1073741823`
 `data-availability.local-file-storage.data-dir` | string                                       local data directory | None
 `data-availability.local-file-storage.enable` | enable storage/retrieval of sequencer batch data from a directory of files, one per batch | None
-`data-availability.local-file-storage.sync-from-storage-service` | enable local storage to be used as a source for regular sync storage | None
-`data-availability.local-file-storage.sync-to-storage-service` | enable local storage to be used as a sink for regular sync storage | None
 `data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
 `data-availability.parent-chain-connection-attempts` | int                                     parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
 `data-availability.parent-chain-node-url` | string                                             URL for parent chain node, only used in standalone daserver; when running as part of a node that node's L1 configuration is used | None
 `data-availability.redis-cache.enable` | enable Redis caching of sequencer batch data | None
 `data-availability.redis-cache.expiration` | duration                                          Redis expiration | `1h0m0s`
 `data-availability.redis-cache.key-config` | string                                            Redis key config | None
-`data-availability.redis-cache.sync-from-storage-service` | enable Redis to be used as a source for regular sync storage | None
-`data-availability.redis-cache.sync-to-storage-service` | enable Redis to be used as a sink for regular sync storage | None
 `data-availability.redis-cache.url` | string                                                   Redis url | None
-`data-availability.regular-sync-storage.enable` | enable regular storage syncing | None
-`data-availability.regular-sync-storage.sync-interval` | duration                              interval for running regular storage sync | `5m0s`
 `data-availability.rest-aggregator.enable` | enable retrieval of sequencer batch data from a list of remote REST endpoints; if other DAS storage types are enabled, this mode is used as a fallback | None
 `data-availability.rest-aggregator.max-per-endpoint-stats` | int                               number of stats entries (latency and success rate) to keep for each REST endpoint; controls whether strategy is faster or slower to respond to changing conditions | `20`
 `data-availability.rest-aggregator.online-url-list` | string                                   a URL to a list of URLs of REST das endpoints that is checked at startup; additive with the url option | None
@@ -321,7 +312,6 @@ Option | Description | Default
 `data-availability.rest-aggregator.simple-explore-exploit-strategy.explore-iterations` | int   number of consecutive GetByHash calls to the aggregator where each call will cause it to randomly select from REST endpoints until one returns successfully, before switching to exploit mode | `20`
 `data-availability.rest-aggregator.strategy` | string                                          strategy to use to determine order and parallelism of calling REST endpoint URLs; valid options are 'simple-explore-exploit' | `simple-explore-exploit`
 `data-availability.rest-aggregator.strategy-update-interval` | duration                        how frequently to update the strategy with endpoint latency and error rate data | `10s`
-`data-availability.rest-aggregator.sync-to-storage.check-already-exists` | check if the data already exists in this DAS's storage. Must be disabled for fast sync with an IPFS backend | `true`
 `data-availability.rest-aggregator.sync-to-storage.delay-on-error` | duration                  time to wait if encountered an error before retrying | `1s`
 `data-availability.rest-aggregator.sync-to-storage.eager` | eagerly sync batch data to this DAS's storage from the rest endpoints, using L1 as the index of batch data hashes; otherwise only sync lazily | None
 `data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block` | uint             when eagerly syncing, start indexing forward from this L1 block. Only used if there is no sync state | None
@@ -338,8 +328,6 @@ Option | Description | Default
 `data-availability.s3-storage.object-prefix` | string                                          prefix to add to S3 objects | None
 `data-availability.s3-storage.region` | string                                                 S3 region | None
 `data-availability.s3-storage.secret-key` | string                                             S3 secret key | None
-`data-availability.s3-storage.sync-from-storage-service` | enable s3 to be used as a source for regular sync storage | None
-`data-availability.s3-storage.sync-to-storage-service` | enable s3 to be used as a sink for regular sync storage | None
 `data-availability.sequencer-inbox-address` | string                                           parent chain address of SequencerInbox contract | None
 `enable-rest` | enable the REST server listening on rest-addr and rest-port | None
 `enable-rpc` | enable the HTTP-RPC server listening on rpc-addr and rpc-port | None
