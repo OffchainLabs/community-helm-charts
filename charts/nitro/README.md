@@ -240,7 +240,7 @@ Option | Description | Default
 `blocks-reexecutor.enable` | enables re-execution of a range of blocks against historic state | None
 `blocks-reexecutor.end-block` | uint                                                                       last block number of the block range for re-execution | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
-`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `6`
+`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `12`
 `blocks-reexecutor.start-block` | uint                                                                     first block number of the block range for re-execution | None
 `chain.dev-wallet.account` | string                                                                        account to use | `is first account in keystore`
 `chain.dev-wallet.only-create-key` | if true, creates new key then exits | None
@@ -370,7 +370,7 @@ Option | Description | Default
 `init.latest-base` | string                                                                                base url used when searching for the latest | `https://snapshot.arbitrum.foundation/`
 `init.prune` | string                                                                                      pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                             the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
-`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `6`
+`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `12`
 `init.prune-trie-clean-cache` | int                                                                        amount of memory in megabytes to cache unchanged state trie nodes with when traversing state database during pruning | `600`
 `init.rebuild-local-wasm` | rebuild local wasm database on boot if needed (otherwise-will be done lazily) | `true`
 `init.recreate-missing-state-from` | uint                                                                  block number to start recreating missing states from (0 = disabled) | None
@@ -389,6 +389,7 @@ Option | Description | Default
 `node.batch-poster.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
 `node.batch-poster.data-poster.blob-tx-replacement-times` | string                                         comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `5m,10m,30m,1h,4h,8h,16h,22h`
 `node.batch-poster.data-poster.dangerous.clear-dbstorage` | clear database storage | None
+`node.batch-poster.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.batch-poster.data-poster.elapsed-time-base` | duration                                               unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
 `node.batch-poster.data-poster.elapsed-time-importance` | float                                            weight given to the units of time elapsed used for maximum fee cap calculation | `10`
 `node.batch-poster.data-poster.external-signer.address` | string                                           external signer address | None
@@ -453,7 +454,7 @@ Option | Description | Default
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (small footprint) | `1024`
 `node.block-validator.memory-free-limit` | string                                                          minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                                pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
-`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `12`
+`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `24`
 `node.block-validator.redis-validation-client-config.create-streams` | create redis streams if it does not exist | `true`
 `node.block-validator.redis-validation-client-config.name` | string                                        validation client name | `redis validation client`
 `node.block-validator.redis-validation-client-config.producer-config.check-pending-interval` | duration    interval in which producer checks pending messages whether consumer processing them is inactive | `1s`
@@ -600,6 +601,7 @@ Option | Description | Default
 `node.staker.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
 `node.staker.data-poster.blob-tx-replacement-times` | string                                               comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `5m,10m,30m,1h,4h,8h,16h,22h`
 `node.staker.data-poster.dangerous.clear-dbstorage` | clear database storage | None
+`node.staker.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.staker.data-poster.elapsed-time-base` | duration                                                     unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
 `node.staker.data-poster.elapsed-time-importance` | float                                                  weight given to the units of time elapsed used for maximum fee cap calculation | `10`
 `node.staker.data-poster.external-signer.address` | string                                                 external signer address | None
@@ -700,7 +702,7 @@ Option | Description | Default
 `persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | None
 `persistent.pebble.experimental.wal-dir` | string                                                          absolute path of directory to store write-ahead logs (WALs) in. If empty, WALs will be stored in the same directory as sstables | None
 `persistent.pebble.experimental.wal-min-sync-interval` | int                                               minimum duration in microseconds between syncs of the WAL. If WAL syncs are requested faster than this interval, they will be artificially delayed. | None
-`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `6`
+`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `12`
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                                  pprof server address | `127.0.0.1`
 `pprof-cfg.port` | int                                                                                     pprof server port | `6071`
