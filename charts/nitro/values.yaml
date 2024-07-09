@@ -253,6 +253,9 @@ validator:
   enabled: false
 
   splitvalidator:
+    ## @param validator.splitvalidator.mode Mode of the split validator (websocket or streams)
+    mode: "websocket"
+
     ## @param validator.splitvalidator.deployments List of deployments for the split validator. Each deploymeny can have its own image, config, etc.
     deployments: []
 

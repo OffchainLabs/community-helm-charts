@@ -107,33 +107,38 @@ Currently primarily used for stateless validator configuration
   {{- /* Check if the validator is enabled */ -}}
   {{- if .Values.validator.enabled -}}
     
-    {{- /* Initialize an empty list to hold deployment configurations */ -}}
-    {{- $deployments := list -}}
+    {{- /* Check if the mode is not streams */ -}}
+    {{- if ne .Values.validator.splitvalidator.mode "streams" -}}
     
-    {{- /* Get the full name for the deployment using the included nitro.fullname template */ -}}
-    {{- $fullName := include "nitro.fullname" . -}}
-    
-    {{- /* Retrieve the port number from the validator's configuration */ -}}
-    {{- $port := int .Values.validator.splitvalidator.global.configmap.data.auth.port -}}
-    
-    {{- /* Iterate over each deployment in the validator splitvalidator deployments */ -}}
-    {{- range .Values.validator.splitvalidator.deployments -}}
+      {{- /* Initialize an empty list to hold deployment configurations */ -}}
+      {{- $deployments := list -}}
       
-      {{- /* Construct the URL for the websocket connection */ -}}
-      {{- $url := printf "ws://%s-val-%s:%d" $fullName .name $port -}}
+      {{- /* Get the full name for the deployment using the included nitro.fullname template */ -}}
+      {{- $fullName := include "nitro.fullname" . -}}
       
-      {{- /* Create a deployment configuration dictionary with jwtsecret and URL */ -}}
-      {{- $deployment := dict "jwtsecret" "/secrets/jwtsecret" "url" $url -}}
+      {{- /* Retrieve the port number from the validator's configuration */ -}}
+      {{- $port := int .Values.validator.splitvalidator.global.configmap.data.auth.port -}}
       
-      {{- /* Append the deployment configuration to the deployments list */ -}}
-      {{- $deployments = append $deployments $deployment -}}
-    {{- end -}}
+      {{- /* Iterate over each deployment in the validator splitvalidator deployments */ -}}
+      {{- range .Values.validator.splitvalidator.deployments -}}
+        
+        {{- /* Construct the URL for the websocket connection */ -}}
+        {{- $url := printf "ws://%s-val-%s:%d" $fullName .name $port -}}
+        
+        {{- /* Create a deployment configuration dictionary with jwtsecret and URL */ -}}
+        {{- $deployment := dict "jwtsecret" "/secrets/jwtsecret" "url" $url -}}
+        
+        {{- /* Append the deployment configuration to the deployments list */ -}}
+        {{- $deployments = append $deployments $deployment -}}
+      {{- end -}}
 
-    {{- /* Create the validation server config list in the configmap */ -}}
-    {{- $valconfig := dict "configmap" (dict "data" (dict "node" (dict "block-validator" (dict "validation-server-configs-list" (toJson $deployments | replace "\\" "")))) ) -}}
+      {{- /* Create the validation server config list in the configmap */ -}}
+      {{- $valconfig := dict "configmap" (dict "data" (dict "node" (dict "block-validator" (dict "validation-server-configs-list" (toJson $deployments | replace "\\" "")))) ) -}}
+      
+      {{- /* Merge the new validation config into the original values */ -}}
+      {{- $values = merge $values $valconfig -}}
     
-    {{- /* Merge the new validation config into the original values */ -}}
-    {{- $values = merge $values $valconfig -}}
+    {{- end -}}
   {{- end -}}
 {{- end -}}
 
@@ -144,5 +149,3 @@ Currently primarily used for stateless validator configuration
 {{- $processed -}}
 
 {{- end -}}
-
-
