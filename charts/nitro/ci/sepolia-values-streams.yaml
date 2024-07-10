@@ -11,7 +11,8 @@ readinessProbe:
   periodSeconds: 3
 
 jwtSecret:
-  enabled: false
+  enabled: true
+  value: "9911e3404a316d61ddbda18b1d23479002535efebb7a4c8dbc3408a1d9ac6b06"
 
 blobPersistence:
   enabled: true
