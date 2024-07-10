@@ -86,7 +86,7 @@ spec:
           {{- end }}
           {{- end }}
         ports:
-          {{- if and $mergedValues.auth.enabled (ne $.Values.validator.splitvalidator.mode "streams") }}
+          {{- if $mergedValues.auth.enabled }}
           - name: auth
             containerPort: {{ $mergedValues.auth.port }}
           {{- end }}
@@ -108,7 +108,7 @@ spec:
           {{- end }}
           {{- end }}
         volumeMounts:
-          {{- if and $.Values.jwtSecret.enabled (ne $.Values.validator.splitvalidator.mode "streams") }}
+          {{- and $.Values.jwtSecret.enabled }}
           - name: jwt-secret
             mountPath: /secrets/jwtsecret
             subPath: jwtSecret
@@ -149,7 +149,7 @@ spec:
           {{- toYaml . | nindent 10 }}
           {{- end }}
       volumes:
-        {{- if and $.Values.jwtSecret.enabled (ne $.Values.validator.splitvalidator.mode "streams") }}
+        {{- if and $.Values.jwtSecret.enabled }}
         - name: jwt-secret
           secret:
             secretName: {{ include "nitro.fullname" $ }}-jwt

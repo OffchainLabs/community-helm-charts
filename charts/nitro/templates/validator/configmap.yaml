@@ -12,9 +12,6 @@ data:
     {{- $global := dict }}
     {{- if hasKey $.Values.validator.splitvalidator.global "configmap" }}
       {{- $global = deepCopy $.Values.validator.splitvalidator.global.configmap.data }}
-      {{- if eq $.Values.validator.splitvalidator.mode "streams" }}
-        {{- $_ := unset $global "auth"  }}
-      {{- end }}
     {{- end }}
     {{- $deployment := dict }}
     {{- if hasKey . "configmap" }}
