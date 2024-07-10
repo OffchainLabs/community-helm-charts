@@ -134,8 +134,6 @@ Currently primarily used for stateless validator configuration
     
     {{- /* Merge the new validation config into the original values */ -}}
     {{- $values = merge $values $valconfig -}}
-    
-
   {{- end -}}
 {{- end -}}
 
