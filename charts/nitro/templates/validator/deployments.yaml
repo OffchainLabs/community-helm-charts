@@ -149,7 +149,7 @@ spec:
           {{- toYaml . | nindent 10 }}
           {{- end }}
       volumes:
-        {{- if and $.Values.jwtSecret.enabled }}
+        {{- if $.Values.jwtSecret.enabled }}
         - name: jwt-secret
           secret:
             secretName: {{ include "nitro.fullname" $ }}-jwt
