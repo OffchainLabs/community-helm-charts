@@ -108,7 +108,7 @@ spec:
           {{- end }}
           {{- end }}
         volumeMounts:
-          {{- and $.Values.jwtSecret.enabled }}
+          {{- if $.Values.jwtSecret.enabled }}
           - name: jwt-secret
             mountPath: /secrets/jwtsecret
             subPath: jwtSecret
