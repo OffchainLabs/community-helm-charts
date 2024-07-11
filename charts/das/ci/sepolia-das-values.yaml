@@ -6,7 +6,7 @@ configmap:
       sequencer-inbox-address: "0x6c97864CE4bEf387dE0b3310A44230f7E3F1be0D"
       local-file-storage:
         enable: true
-        data-dir: "/data"
+        data-dir: "/data/das-storage"
       rest-aggregator:
         enable: true
         online-url-list: https://nova.arbitrum.io/das-servers
