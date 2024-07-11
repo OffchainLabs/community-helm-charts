@@ -47,7 +47,7 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-          - mountPath: /data/das-storage
+          - mountPath: /data
             name: localfilestorage
       {{- end }}
       {{- if .Values.initContainers }}
