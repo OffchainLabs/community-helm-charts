@@ -289,7 +289,7 @@ Option | Description | Default
 `data-availability.local-db-storage.base-table-size` | int                                     BadgerDB option: sets the maximum size in bytes for LSM table or file in the base level | `2097152`
 `data-availability.local-db-storage.data-dir` | string                                         directory in which to store the database | None
 `data-availability.local-db-storage.discard-after-timeout` | discard data after its expiry timeout | None
-`data-availability.local-db-storage.enable` | enable storage/retrieval of sequencer batch data from a database on the local filesystem | None
+`data-availability.local-db-storage.enable` | !!!DEPRECATED, USE local-file-storage!!! enable storage/retrieval of sequencer batch data from a database on the local filesystem | None
 `data-availability.local-db-storage.num-compactors` | int                                      BadgerDB option: Sets the number of compaction workers to run concurrently | `4`
 `data-availability.local-db-storage.num-level-zero-tables` | int                               BadgerDB option: sets the maximum number of Level 0 tables before compaction starts | `5`
 `data-availability.local-db-storage.num-level-zero-tables-stall` | int                         BadgerDB option: sets the number of Level 0 tables that once reached causes the DB to stall until compaction succeeds | `15`
@@ -297,6 +297,9 @@ Option | Description | Default
 `data-availability.local-db-storage.value-log-file-size` | int                                 BadgerDB option: sets the maximum size of a single log file | `1073741823`
 `data-availability.local-file-storage.data-dir` | string                                       local data directory | None
 `data-availability.local-file-storage.enable` | enable storage/retrieval of sequencer batch data from a directory of files, one per batch | None
+`data-availability.local-file-storage.enable-expiry` | enable expiry of batches | None
+`data-availability.local-file-storage.max-retention` | duration                                store requests with expiry times farther in the future than max-retention will be rejected | `504h0m0s`
+`data-availability.migrate-local-db-to-file-storage` | daserver will migrate all data on startup from local-db-storage to local-file-storage, then mark local-db-storage as unusable | None
 `data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
 `data-availability.parent-chain-connection-attempts` | int                                     parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
 `data-availability.parent-chain-node-url` | string                                             URL for parent chain node, only used in standalone daserver; when running as part of a node that node's L1 configuration is used | None
@@ -317,8 +320,9 @@ Option | Description | Default
 `data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block` | uint             when eagerly syncing, start indexing forward from this L1 block. Only used if there is no sync state | None
 `data-availability.rest-aggregator.sync-to-storage.ignore-write-errors` | log only on failures to write when syncing; otherwise treat it as an error | `true`
 `data-availability.rest-aggregator.sync-to-storage.parent-chain-blocks-per-read` | uint        when eagerly syncing, max l1 blocks to read per poll | `100`
-`data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                period to retain synced data (defaults to forever) | `2562047h47m16.854775807s`
+`data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                period to request storage to retain synced data | `504h0m0s`
 `data-availability.rest-aggregator.sync-to-storage.state-dir` | string                         directory to store the sync state in, ie the block number currently synced up to, so that we don't sync from scratch each time | None
+`data-availability.rest-aggregator.sync-to-storage.sync-expired-data` | sync even data that is expired; needed for mirror configuration | `true`
 `data-availability.rest-aggregator.urls` | strings                                             list of URLs including 'http://' or 'https://' prefixes and port numbers to REST DAS endpoints; additive with the online-url-list option | None
 `data-availability.rest-aggregator.wait-before-try-next` | duration                            time to wait until trying the next set of REST endpoints while waiting for a response; the next set of REST endpoints is determined by the strategy selected | `2s`
 `data-availability.s3-storage.access-key` | string                                             S3 access key | None

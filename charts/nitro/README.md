@@ -377,6 +377,7 @@ Option | Description | Default
 `init.reset-to-message` | int                                                                              forces a reset to an old message height. Also set max-reorg-resequence-depth=0 to force re-reading messages | `-1`
 `init.then-quit` | quit after init is done | None
 `init.url` | string                                                                                        url to download initialization data - will poll if download fails | None
+`init.validate-checksum` | if true: validate the checksum after downloading the snapshot | `true`
 `ipc.path` | string                                                                                        Requested location to place the IPC endpoint. An empty path disables IPC. | None
 `log-level` | string                                                                                       log level, valid values are CRIT, ERROR, WARN, INFO, DEBUG, TRACE | `INFO`
 `log-type` | string                                                                                        log type (plaintext or json) | `plaintext`
@@ -445,6 +446,7 @@ Option | Description | Default
 `node.batch-poster.redis-lock.my-id` | string                                                              this node's id prefix when acquiring the lock (optional) | None
 `node.batch-poster.redis-lock.refresh-duration` | duration                                                 how long between consecutive calls to redis | `10s`
 `node.batch-poster.redis-url` | string                                                                     if non-empty, the Redis URL to store queued transactions in | None
+`node.batch-poster.reorg-resistance-margin` | duration                                                     do not post batch if its within this duration from layer 1 minimum bounds. Requires l1-block-bound option not be set to "ignore" | `10m0s`
 `node.batch-poster.use-access-lists` | post batches with access lists to reduce gas usage (disabled for L3s) | `true`
 `node.batch-poster.wait-for-max-delay` | wait for the max batch delay, even if the batch is full | None
 `node.block-validator.current-module-root` | string                                                        current wasm module root ('current' read from chain, 'latest' from machines/latest dir, or provide hash) | `current`
@@ -495,12 +497,13 @@ Option | Description | Default
 `node.data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block` | uint                    when eagerly syncing, start indexing forward from this L1 block. Only used if there is no sync state | None
 `node.data-availability.rest-aggregator.sync-to-storage.ignore-write-errors` | log only on failures to write when syncing; otherwise treat it as an error | `true`
 `node.data-availability.rest-aggregator.sync-to-storage.parent-chain-blocks-per-read` | uint               when eagerly syncing, max l1 blocks to read per poll | `100`
-`node.data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                       period to retain synced data (defaults to forever) | `2562047h47m16.854775807s`
+`node.data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                       period to request storage to retain synced data | `504h0m0s`
 `node.data-availability.rest-aggregator.sync-to-storage.state-dir` | string                                directory to store the sync state in, ie the block number currently synced up to, so that we don't sync from scratch each time | None
+`node.data-availability.rest-aggregator.sync-to-storage.sync-expired-data` | sync even data that is expired; needed for mirror configuration | `true`
 `node.data-availability.rest-aggregator.urls` | strings                                                    list of URLs including 'http://' or 'https://' prefixes and port numbers to REST DAS endpoints; additive with the online-url-list option | None
 `node.data-availability.rest-aggregator.wait-before-try-next` | duration                                   time to wait until trying the next set of REST endpoints while waiting for a response; the next set of REST endpoints is determined by the strategy selected | `2s`
 `node.data-availability.rpc-aggregator.assumed-honest` | int                                               Number of assumed honest backends (H). If there are N backends, K=N+1-H valid responses are required to consider an Store request to be successful. | None
-`node.data-availability.rpc-aggregator.backends` | string                                                  JSON RPC backend configuration | None
+`node.data-availability.rpc-aggregator.backends` | backendConfigList                                       JSON RPC backend configuration. This can be specified on the command line as a JSON array, eg: [{"url": "...", "pubkey": "..."},...], or as a JSON array in the config file. | `null`
 `node.data-availability.rpc-aggregator.enable` | enable storage of sequencer batch data from a list of RPC endpoints; this should only be used by the batch poster and not in combination with other DAS storage types | None
 `node.data-availability.rpc-aggregator.max-store-chunk-body-size` | int                                    maximum HTTP POST body size to use for individual batch chunks, including JSON RPC overhead and an estimated overhead of 512B of headers | `524288`
 `node.data-availability.sequencer-inbox-address` | string                                                  parent chain address of SequencerInbox contract | None
@@ -635,6 +638,7 @@ Option | Description | Default
 `node.staker.enable` | enable validator | `true`
 `node.staker.extra-gas` | uint                                                                             use this much more gas than estimation says is necessary to post transactions | `50000`
 `node.staker.gas-refunder-address` | string                                                                The gas refunder contract address (optional) | None
+`node.staker.log-query-batch-size` | uint                                                                  range ro query from eth_getLogs | None
 `node.staker.make-assertion-interval` | duration                                                           if configured with the makeNodes strategy, how often to create new assertions (bypassed in case of a dispute) | `1h0m0s`
 `node.staker.only-create-wallet-contract` | only create smart wallet contract and exit | None
 `node.staker.parent-chain-wallet.account` | string                                                         account to use | `is first account in keystore`
@@ -653,14 +657,6 @@ Option | Description | Default
 `node.transaction-streamer.execute-message-loop-delay` | duration                                          delay when polling calls to execute messages | `100ms`
 `node.transaction-streamer.max-broadcaster-queue-size` | int                                               maximum cache of pending broadcaster messages | `50000`
 `node.transaction-streamer.max-reorg-resequence-depth` | int                                               maximum number of messages to attempt to resequence on reorg (0 = never resequence, -1 = always resequence) | `1024`
-`p2p.bootnodes` | strings                                                                                  P2P bootnodes | None
-`p2p.bootnodes-v5` | strings                                                                               P2P bootnodes v5 | None
-`p2p.discovery-v4` | P2P discovery v4 | None
-`p2p.discovery-v5` | P2P discovery v5 | None
-`p2p.listen-addr` | string                                                                                 P2P listen address | None
-`p2p.max-peers` | int                                                                                      P2P max peers | `50`
-`p2p.no-dial` | P2P no dial | `true`
-`p2p.no-discovery` | P2P no discovery | `true`
 `parent-chain.blob-client.authorization` | string                                                          Value to send with the HTTP Authorization: header for Beacon REST requests, must include both scheme and scheme parameters | None
 `parent-chain.blob-client.beacon-url` | string                                                             Beacon Chain RPC URL to use for fetching blobs (normally on port 3500) | None
 `parent-chain.blob-client.blob-directory` | string                                                         Full path of the directory to save fetched blobs | None
@@ -677,7 +673,7 @@ Option | Description | Default
 `parent-chain.id` | uint                                                                                   if set other than 0, will be used to validate database and L1 connection | None
 `persistent.ancient` | string                                                                              directory of ancient where the chain freezer can be opened | None
 `persistent.chain` | string                                                                                directory to store chain state | None
-`persistent.db-engine` | string                                                                            backing database implementation to use ('leveldb' or 'pebble') | `leveldb`
+`persistent.db-engine` | string                                                                            backing database implementation to use. If set to empty string the database type will be autodetected and if no pre-existing database is found it will default to creating new pebble database ('leveldb', 'pebble' or '' = auto-detect) | None
 `persistent.global-config` | string                                                                        directory to store global config | `.arbitrum`
 `persistent.handles` | int                                                                                 number of file descriptor handles to use for the database | `512`
 `persistent.log-dir` | string                                                                              directory to store log file | None
@@ -717,6 +713,7 @@ Option | Description | Default
 `validation.arbitrator.redis-validation-server-config.consumer-config.keepalive-timeout` | duration        timeout after which consumer is considered inactive if heartbeat wasn't performed | `5m0s`
 `validation.arbitrator.redis-validation-server-config.consumer-config.response-entry-timeout` | duration   timeout for response entry | `1h0m0s`
 `validation.arbitrator.redis-validation-server-config.module-roots` | strings                              Supported module root hashes | None
+`validation.arbitrator.redis-validation-server-config.redis-url` | string                                  url of redis server | None
 `validation.arbitrator.redis-validation-server-config.stream-timeout` | duration                           Timeout on polling for existence of redis streams | `10m0s`
 `validation.arbitrator.workers` | int                                                                      number of concurrent validation threads | None
 `validation.jit.cranelift` | use Cranelift instead of LLVM when validating blocks using the jit-accelerated block validator | `true`
