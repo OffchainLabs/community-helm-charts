@@ -140,6 +140,7 @@ spec:
           {{- end }}
           {{- end }}
           env:
+          {{- include "nitro.env" . | nindent 12 }}
           {{- with .Values.extraEnv }}
           {{- toYaml . | nindent 12 }}
           {{- end }}

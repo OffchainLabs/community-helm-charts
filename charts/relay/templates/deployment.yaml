@@ -97,6 +97,7 @@ spec:
             {{- omit .Values.startupProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
           env:
+          {{- include "relay.env" . | nindent 8 }}
           {{- with .Values.extraEnv }}
           {{- toYaml . | nindent 8 }}
           {{- end }}

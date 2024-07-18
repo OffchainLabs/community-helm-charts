@@ -184,6 +184,7 @@ spec:
             {{- end }}
           {{- end }}
           env:
+          {{- include "das.env" . | nindent 10 }}
           {{- with .Values.extraEnv }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
