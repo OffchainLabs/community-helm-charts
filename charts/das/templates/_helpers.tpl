@@ -79,7 +79,7 @@ curl "http://localhost:{{ index .Values.configmap.data "rpc-port" }}" -X POST \
       -d '{"jsonrpc":"2.0","id":0,"method":"das_healthCheck","params":[]}'   
 {{- end -}}
 
-{{- define "relay.env" -}}
+{{- define "das.env" -}}
 {{- end -}}
 
 
