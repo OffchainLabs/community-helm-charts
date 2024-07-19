@@ -141,6 +141,7 @@ spec:
           {{- toYaml (omit $mergedValues.startupProbe "enabled") | nindent 10 }}
           {{- end }}
         env:
+          {{- include "nitro.splitvalidator.env" $ | nindent 8 }}
           {{- with $mergedValues.extraEnv }}
           {{- toYaml . | nindent 8 }}
           {{- end }}

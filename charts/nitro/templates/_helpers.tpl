@@ -92,6 +92,12 @@ nitro args
 {{- define "nitro.sidecars" -}}
 {{- end }}
 
+{{- define "nitro.env" -}}
+{{- end -}}
+
+{{- define "nitro.splitvalidator.env" -}}
+{{- end -}}
+
 {{/*
 Process config data automatically depending on values that are set.
 Currently primarily used for stateless validator configuration
