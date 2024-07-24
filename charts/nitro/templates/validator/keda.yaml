@@ -23,7 +23,7 @@ metadata:
     {{- include "nitro.labels" $ | nindent 4 }}
 spec:
   scaleTargetRef:
-    deploymentName: {{ include "nitro.fullname" $ }}-val-{{ $deployment.name }}
+    name: {{ include "nitro.fullname" $ }}-val-{{ $deployment.name }}
   {{- $scaledObject | toYaml | nindent 2 }}
 {{- end }}
 {{- end }}
