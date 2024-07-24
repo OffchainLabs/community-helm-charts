@@ -4,7 +4,16 @@
 {{- $deployment := . }}
 {{- $mergedValues := merge $global $deployment }}
 {{- if $mergedValues.keda.enabled }}
-{{- with $mergedValues.keda.scaledObject }}
+{{- $scaledObject := deepCopy $mergedValues.keda.scaledObject }}
+{{- range $index, $trigger := $scaledObject.triggers }}
+{{- if eq $trigger.type "prometheus" }}
+{{- $trigger := set $trigger "metadata" (deepCopy $trigger.metadata) }}
+{{- if $trigger.metadata.queryTemplate }}
+{{- $_ := set $trigger.metadata "query" (tpl $trigger.metadata.queryTemplate $) }}
+{{- $_ := unset $trigger.metadata "queryTemplate" }}
+{{- end }}
+{{- end }}
+{{- end }}
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -15,8 +24,7 @@ metadata:
 spec:
   scaleTargetRef:
     deploymentName: {{ include "nitro.fullname" $ }}-val-{{ $deployment.name }}
-  {{- . | toYaml | nindent 2 }}
-{{- end }}
+  {{- $scaledObject | toYaml | nindent 2 }}
 {{- end }}
 {{- end }}
 {{- end }}
