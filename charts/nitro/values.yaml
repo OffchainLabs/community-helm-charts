@@ -345,13 +345,9 @@ validator:
 
       keda:
         ## @param validator.splitvalidator.global.keda.enabled Enable keda
-        enabled: false
-        ## @param validator.splitvalidator.global.keda.minReplicas Minimum number of replicas
-        minReplicas: 1
-        ## @param validator.splitvalidator.global.keda.maxReplicas Maximum number of replicas
-        maxReplicas: 10
-        ## @param validator.splitvalidator.global.keda.triggers List of triggers for keda
-        triggers: []
+        enabled: true
+        ## @param validator.splitvalidator.global.keda.scaledObject Scaled object for keda
+        scaledObject: {}
 
       hpa:
         ## @param validator.splitvalidator.global.hpa.enabled Enable horizontal pod autoscaler

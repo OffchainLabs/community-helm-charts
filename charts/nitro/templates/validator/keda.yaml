@@ -3,70 +3,20 @@
 {{- $global := deepCopy $.Values.validator.splitvalidator.global }}
 {{- $deployment := . }}
 {{- $mergedValues := merge $global $deployment }}
-{{- $kedaEnabled := $mergedValues.keda.enabled | default $.Values.validator.splitvalidator.global.keda.enabled }}
-{{- if $kedaEnabled }}
-{{- $labels := include "nitro.labels" $ }}
-{{- $selectorLabels := include "nitro.selectorLabels" $ }}
+{{- if $mergedValues.keda.enabled }}
+{{- with $mergedValues.keda.scaledObject }}
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: {{ include "nitro.fullname" . }}-val-{{ .name }}
+  name: {{ include "nitro.fullname" $ }}-val-{{ $deployment.name }}
   labels:
-    {{- $labels | nindent 4 }}
+    {{- include "nitro.labels" $ | nindent 4 }}
 spec:
   scaleTargetRef:
-    deploymentName: {{ include "nitro.fullname" . }}-val-{{ .name }}
-  pollingInterval: {{ $mergedValues.keda.pollingInterval | default 30 }}
-  cooldownPeriod: {{ $mergedValues.keda.cooldownPeriod | default 300 }}
-  minReplicaCount: {{ $mergedValues.keda.minReplicaCount | default 1 }}
-  maxReplicaCount: {{ $mergedValues.keda.maxReplicaCount | default 10 }}
-  triggers:
-  {{- range $trigger := $mergedValues.keda.triggers }}
-    - type: {{ $trigger.type }}
-      {{- if eq $trigger.type "cpu" }}
-      metadata:
-        type: Utilization
-        value: "{{ $trigger.metadata.value }}"
-      {{- end }}
-      {{- if eq $trigger.type "memory" }}
-      metadata:
-        type: Utilization
-        value: "{{ $trigger.metadata.value }}"
-      {{- end }}
-      {{- if eq $trigger.type "prometheus" }}
-      metadata:
-        serverAddress: {{ $trigger.metadata.serverAddress }}
-        metricName: {{ $trigger.metadata.metricName }}
-        threshold: "{{ $trigger.metadata.threshold }}"
-        query: {{ $trigger.metadata.query }}
-      {{- end }}
-      {{- if eq $trigger.type "external" }}
-      metadata:
-        scalerAddress: {{ $trigger.metadata.scalerAddress }}
-      {{- end }}
-  {{- end }}
-  advanced:
-    horizontalPodAutoscalerConfig:
-      behavior:
-        scaleUp:
-          stabilizationWindowSeconds: {{ $mergedValues.keda.behavior.scaleUp.stabilizationWindowSeconds | default 0 }}
-          selectPolicy: {{ $mergedValues.keda.behavior.scaleUp.selectPolicy | default "Max" }}
-          policies:
-          {{- range $policy := $mergedValues.keda.behavior.scaleUp.policies }}
-            - type: {{ $policy.type }}
-              value: {{ $policy.value }}
-              periodSeconds: {{ $policy.periodSeconds }}
-          {{- end }}
-        scaleDown:
-          stabilizationWindowSeconds: {{ $mergedValues.keda.behavior.scaleDown.stabilizationWindowSeconds | default 0 }}
-          selectPolicy: {{ $mergedValues.keda.behavior.scaleDown.selectPolicy | default "Max" }}
-          policies:
-          {{- range $policy := $mergedValues.keda.behavior.scaleDown.policies }}
-            - type: {{ $policy.type }}
-              value: {{ $policy.value }}
-              periodSeconds: {{ $policy.periodSeconds }}
-          {{- end }}
+    deploymentName: {{ include "nitro.fullname" $ }}-val-{{ $deployment.name }}
+  {{- . | toYaml | nindent 2 }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
