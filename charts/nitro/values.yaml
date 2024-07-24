@@ -345,7 +345,7 @@ validator:
 
       keda:
         ## @param validator.splitvalidator.global.keda.enabled Enable keda
-        enabled: true
+        enabled: false
         ## @param validator.splitvalidator.global.keda.scaledObject Scaled object for keda
         scaledObject: {}
 
