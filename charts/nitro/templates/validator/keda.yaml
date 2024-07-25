@@ -5,11 +5,15 @@
 {{- $mergedValues := merge $global $deployment }}
 {{- if $mergedValues.keda.enabled }}
 {{- $scaledObject := deepCopy $mergedValues.keda.scaledObject }}
+{{- $top := $ }}
 {{- range $index, $trigger := $scaledObject.triggers }}
 {{- if eq $trigger.type "prometheus" }}
 {{- $trigger := set $trigger "metadata" (deepCopy $trigger.metadata) }}
 {{- if $trigger.metadata.queryTemplate }}
-{{- $_ := set $trigger.metadata "query" (tpl $trigger.metadata.queryTemplate $) }}
+{{- $queryContext := dict "Release" $top.Release "Chart" $top.Chart "Values" $top.Values "Template" $top.Template }}
+{{- $_ := set $queryContext "deployment" $deployment }}
+{{- $query := tpl $trigger.metadata.queryTemplate $queryContext }}
+{{- $_ := set $trigger.metadata "query" $query }}
 {{- $_ := unset $trigger.metadata "queryTemplate" }}
 {{- end }}
 {{- end }}
