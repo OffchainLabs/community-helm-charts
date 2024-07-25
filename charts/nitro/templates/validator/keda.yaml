@@ -9,7 +9,8 @@
 {{- if eq $trigger.type "prometheus" }}
 {{- $trigger := set $trigger "metadata" (deepCopy $trigger.metadata) }}
 {{- if $trigger.metadata.queryTemplate }}
-{{- $_ := set $trigger.metadata "query" (tpl $trigger.metadata.queryTemplate $) }}
+{{- $query := tpl $trigger.metadata.queryTemplate (dict "Values" $.Values "Release" $.Release "Chart" $.Chart "Template" $.Template "deployment" $deployment) }}
+{{- $_ := set $trigger.metadata "query" $query }}
 {{- $_ := unset $trigger.metadata "queryTemplate" }}
 {{- end }}
 {{- end }}
