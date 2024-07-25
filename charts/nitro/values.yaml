@@ -343,6 +343,12 @@ validator:
         ## @param validator.splitvalidator.global.pdb.maxUnavailable Maximum number of pods unavailable
         maxUnavailable: ""
 
+      keda:
+        ## @param validator.splitvalidator.global.keda.enabled Enable keda
+        enabled: false
+        ## @param validator.splitvalidator.global.keda.scaledObject Scaled object for keda
+        scaledObject: {}
+
       hpa:
         ## @param validator.splitvalidator.global.hpa.enabled Enable horizontal pod autoscaler
         enabled: false
