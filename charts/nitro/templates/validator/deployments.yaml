@@ -14,7 +14,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
+  {{- if not (or $mergedValues.keda.enabled $mergedValues.hpa.enabled) }}
   replicas: {{ .replicas | default $mergedValues.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "nitro.selectorLabels" $ | nindent 6 }}
