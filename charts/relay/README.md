@@ -69,7 +69,7 @@ helm install <my-release> offchainlabs/relay \
 | `serviceMonitor.portName`                         | Port name for prometheus service monitor         | `metrics`                   |
 | `serviceMonitor.path`                             | Path for prometheus service monitor              | `/debug/metrics/prometheus` |
 | `serviceMonitor.interval`                         | Interval for prometheus service monitor          | `5s`                        |
-| `serviceMonitor.relabelings`                      | Add relabelings for the metrics being scraped    | `{}`                        |
+| `serviceMonitor.relabelings`                      | Add relabelings for the metrics being scraped    | `[]`                        |
 | `perReplicaService.enabled`                       | Enable per replica service                       | `false`                     |
 | `perReplicaService.publishNotReadyAddresses`      | Publish not ready addresses                      | `false`                     |
 | `headlessservice.enabled`                         | Enable headless service                          | `true`                      |
@@ -97,23 +97,22 @@ helm install <my-release> offchainlabs/relay \
 
 ### Relay Configmap
 
-| Name                                                       | Description                                            | Value                                                               |
-| ---------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------- |
-| `configmap.enabled`                                        | Enable configmap                                       | `true`                                                              |
-| `configmap.data`                                           | See Configuration Options for the full list of options |                                                                     |
-| `configmap.data.chain.id`                                  | Chain id                                               | `42161`                                                             |
-| `configmap.data.conf.env-prefix`                           | Environment variable prefix                            | `NITRO`                                                             |
-| `configmap.data.log-type`                                  | Log type                                               | `json`                                                              |
-| `configmap.data.metrics`                                   | Enable metrics                                         | `false`                                                             |
-| `configmap.data.metrics-server.addr`                       | Metrics server address                                 | `0.0.0.0`                                                           |
-| `configmap.data.metrics-server.port`                       | Metrics server port                                    | `6070`                                                              |
-| `configmap.data.node.feed.input.url`                       | Feed input url                                         | `""`                                                                |
-| `configmap.data.node.feed.input.reconnect-initial-backoff` | Feed input reconnect initial backoff                   | `50ms`                                                              |
-| `configmap.data.node.feed.input.reconnect-maximum-backoff` | Feed input reconnect maximum backoff                   | `800ms`                                                             |
-| `configmap.data.node.feed.input.timeout`                   | Feed input timeout                                     | `10s`                                                               |
-| `configmap.data.node.feed.output.addr`                     | Feed output address                                    | `0.0.0.0`                                                           |
-| `configmap.data.node.feed.output.port`                     | Feed output port                                       | `9642`                                                              |
-| `configmap.data.validation.wasm.allowed-wasm-module-roots` | Default flags as of v3.0.0                             | `["/home/user/nitro-legacy/machines","/home/user/target/machines"]` |
+| Name                                                       | Description                                            | Value     |
+| ---------------------------------------------------------- | ------------------------------------------------------ | --------- |
+| `configmap.enabled`                                        | Enable configmap                                       | `true`    |
+| `configmap.data`                                           | See Configuration Options for the full list of options |           |
+| `configmap.data.chain.id`                                  | Chain id                                               | `42161`   |
+| `configmap.data.conf.env-prefix`                           | Environment variable prefix                            | `NITRO`   |
+| `configmap.data.log-type`                                  | Log type                                               | `json`    |
+| `configmap.data.metrics`                                   | Enable metrics                                         | `false`   |
+| `configmap.data.metrics-server.addr`                       | Metrics server address                                 | `0.0.0.0` |
+| `configmap.data.metrics-server.port`                       | Metrics server port                                    | `6070`    |
+| `configmap.data.node.feed.input.url`                       | Feed input url                                         | `""`      |
+| `configmap.data.node.feed.input.reconnect-initial-backoff` | Feed input reconnect initial backoff                   | `50ms`    |
+| `configmap.data.node.feed.input.reconnect-maximum-backoff` | Feed input reconnect maximum backoff                   | `800ms`   |
+| `configmap.data.node.feed.input.timeout`                   | Feed input timeout                                     | `10s`     |
+| `configmap.data.node.feed.output.addr`                     | Feed output address                                    | `0.0.0.0` |
+| `configmap.data.node.feed.output.port`                     | Feed output port                                       | `9642`    |
 
 ## Configuration Options
 The following table lists the exhaustive configurable parameters that can be applied as part of the configmap (nested under `configmap.data`) or as standalone cli flags.

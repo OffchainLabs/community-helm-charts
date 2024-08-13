@@ -197,7 +197,7 @@ extraEnv:
 | `serviceMonitor.portName`                       | Name of the port to monitor                                                 | `metrics`                   |
 | `serviceMonitor.path`                           | Path to monitor                                                             | `/debug/metrics/prometheus` |
 | `serviceMonitor.interval`                       | Interval to monitor                                                         | `5s`                        |
-| `serviceMonitor.relabelings`                    | Add relabelings for the metrics being scraped                               | `{}`                        |
+| `serviceMonitor.relabelings`                    | Add relabelings for the metrics being scraped                               | `[]`                        |
 | `perReplicaService.enabled`                     | Enable per replica service                                                  | `false`                     |
 | `headlessservice.enabled`                       | Enable headless service                                                     | `false`                     |
 | `headlessservice.publishNotReadyAddresses`      | Publish not ready addresses                                                 | `true`                      |
