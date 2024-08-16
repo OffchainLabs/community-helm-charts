@@ -95,7 +95,7 @@ serviceMonitor:
   portName: metrics
   path: /debug/metrics/prometheus
   interval: 5s
-  relabelings: {}
+  relabelings: []
 
 ## @param perReplicaService.enabled Enable per replica service
 perReplicaService:

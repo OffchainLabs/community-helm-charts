@@ -78,7 +78,7 @@ serviceMonitor:
   portName: metrics
   path: /debug/metrics/prometheus
   interval: 5s
-  relabelings: {}
+  relabelings: []
 
 ## @param perReplicaService.enabled Enable a service for each sts replica
 ## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
@@ -322,7 +322,7 @@ validator:
         ## @param validator.splitvalidator.global.serviceMonitor.interval Interval to monitor
         interval: 5s
         ## @param validator.splitvalidator.global.serviceMonitor.relabelings Add relabelings for the metrics being scraped
-        relabelings: {}
+        relabelings: []
 
       livenessProbe:
         ## @param validator.splitvalidator.global.livenessProbe.enabled Enable the liveness probe for the validator statefulset
