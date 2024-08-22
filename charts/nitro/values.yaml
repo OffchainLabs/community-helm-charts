@@ -294,6 +294,9 @@ validator:
             ## @param validator.splitvalidator.global.configmap.data.metrics-server.port Port to bind metrics server to
             port: 6070
 
+          ## @param validator.splitvalidator.global.configmap.data.log-type Type of logs
+          log-type: "json"
+
       ## @param validator.splitvalidator.global.extraArgs Extra arguments for the validator container
       extraArgs: []
 
