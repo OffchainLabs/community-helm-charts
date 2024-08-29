@@ -72,12 +72,14 @@ blobPersistence:
 ## @param serviceMonitor.portName Name of the port to monitor
 ## @param serviceMonitor.path Path to monitor
 ## @param serviceMonitor.interval Interval to monitor
+## @param serviceMonitor.additionalLabels Additional labels for the service monitor
 ## @param serviceMonitor.relabelings Add relabelings for the metrics being scraped
 serviceMonitor:
   enabled: false
   portName: metrics
   path: /debug/metrics/prometheus
   interval: 5s
+  additionalLabels: {}
   relabelings: []
 
 ## @param perReplicaService.enabled Enable a service for each sts replica
@@ -324,6 +326,8 @@ validator:
         path: /debug/metrics/prometheus
         ## @param validator.splitvalidator.global.serviceMonitor.interval Interval to monitor
         interval: 5s
+        ## @param validator.splitvalidator.global.serviceMonitor.additionalLabels Additional labels for the service monitor
+        additionalLabels: {}
         ## @param validator.splitvalidator.global.serviceMonitor.relabelings Add relabelings for the metrics being scraped
         relabelings: []
 
