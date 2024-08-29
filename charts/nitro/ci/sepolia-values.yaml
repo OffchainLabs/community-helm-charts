@@ -50,6 +50,9 @@ configmap:
       blob-client:
         blob-directory: /home/user/blobdata/
     metrics: true
+    execution:
+      tx-pre-checker:
+        strictness: 0
 
 wallet:
   files:
