@@ -245,7 +245,7 @@ Option | Description | Default
 `blocks-reexecutor.enable` | enables re-execution of a range of blocks against historic state | None
 `blocks-reexecutor.end-block` | uint                                                                       last block number of the block range for re-execution | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
-`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `12`
+`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `10`
 `blocks-reexecutor.start-block` | uint                                                                     first block number of the block range for re-execution | None
 `chain.dev-wallet.account` | string                                                                        account to use | `is first account in keystore`
 `chain.dev-wallet.only-create-key` | if true, creates new key then exits | None
@@ -276,11 +276,12 @@ Option | Description | Default
 `execution.caching.max-number-of-blocks-to-skip-state-saving` | uint32                                     maximum number of blocks to skip state saving to persistent storage (archive node only) -- warning: this option seems to cause issues | None
 `execution.caching.snapshot-cache` | int                                                                   amount of memory in megabytes to cache state snapshots with | `400`
 `execution.caching.snapshot-restore-gas-limit` | uint                                                      maximum gas rolled back to recover snapshot | `300000000000`
+`execution.caching.state-history` | uint                                                                   number of recent blocks to retain state history for (path state-scheme only) | `345600`
+`execution.caching.state-scheme` | string                                                                  scheme to use for state trie storage (hash, path) | `hash`
 `execution.caching.stylus-lru-cache` | uint32                                                              initialized stylus programs to keep in LRU cache | `256`
 `execution.caching.trie-clean-cache` | int                                                                 amount of memory in megabytes to cache unchanged state trie nodes with | `600`
 `execution.caching.trie-dirty-cache` | int                                                                 amount of memory in megabytes to cache state diffs against disk with (larger cache lowers database growth) | `1024`
 `execution.caching.trie-time-limit` | duration                                                             maximum block processing time before trie is written to hard-disk | `1h0m0s`
-`execution.dangerous.reorg-to-block` | int                                                                 DANGEROUS! forces a reorg to an old block height. To be used for testing only. -1 to disable | `-1`
 `execution.enable-prefetch-block` | enable prefetching of blocks | `true`
 `execution.forwarder.connection-timeout` | duration                                                        total time to wait before cancelling connection | `30s`
 `execution.forwarder.idle-connection-timeout` | duration                                                   time until idle connections are closed | `15s`
@@ -294,6 +295,7 @@ Option | Description | Default
 `execution.parent-chain-reader.old-header-timeout` | duration                                              warns if the latest l1 block is at least this old | `5m0s`
 `execution.parent-chain-reader.poll-interval` | duration                                                   interval when polling endpoint | `15s`
 `execution.parent-chain-reader.poll-only` | do not attempt to subscribe to header events | None
+`execution.parent-chain-reader.poll-timeout` | duration                                                    timeout when polling endpoint | `5s`
 `execution.parent-chain-reader.subscribe-err-interval` | duration                                          interval for subscribe error | `5m0s`
 `execution.parent-chain-reader.tx-timeout` | duration                                                      timeout when waiting for a transaction | `5m0s`
 `execution.parent-chain-reader.use-finality-data` | use l1 data about finalized/safe blocks | `true`
@@ -334,13 +336,16 @@ Option | Description | Default
 `execution.sequencer.nonce-failure-cache-size` | int                                                       number of transactions with too high of a nonce to keep in memory while waiting for their predecessor | `1024`
 `execution.sequencer.queue-size` | int                                                                     size of the pending tx queue | `1024`
 `execution.sequencer.queue-timeout` | duration                                                             maximum amount of time transaction can wait in queue | `12s`
-`execution.sequencer.sender-whitelist` | string                                                            comma separated whitelist of authorized senders (if empty, everyone is allowed) | None
+`execution.sequencer.sender-whitelist` | strings                                                           comma separated whitelist of authorized senders (if empty, everyone is allowed) | None
+`execution.stylus-target.amd64` | string                                                                   stylus programs compilation target for amd64 linux | `x86_64-linux-unknown+sse4.2`
+`execution.stylus-target.arm64` | string                                                                   stylus programs compilation target for arm64 linux | `arm64-linux-unknown+neon`
+`execution.stylus-target.host` | string                                                                    stylus programs compilation target for system other than 64-bit ARM or 64-bit x86 | None
 `execution.sync-monitor.finalized-block-wait-for-block-validator` | wait for block validator to complete before returning finalized block number | None
 `execution.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
 `execution.tx-lookup-limit` | uint                                                                         retain the ability to lookup transactions by hash for the past N blocks (0 = all blocks) | `126230400`
 `execution.tx-pre-checker.required-state-age` | int                                                        how long ago should the storage conditions from eth_SendRawTransactionConditional be true, 0 = don't check old state | `2`
 `execution.tx-pre-checker.required-state-max-blocks` | uint                                                maximum number of blocks to look back while looking for the <required-state-age> seconds old state, 0 = don't limit the search | `4`
-`execution.tx-pre-checker.strictness` | uint                                                               how strict to be when checking txs before forwarding them. 0 = accept anything, 10 = should never reject anything that'd succeed, 20 = likely won't reject anything that'd succeed, 30 = full validation which may reject txs that would succeed | None
+`execution.tx-pre-checker.strictness` | uint                                                               how strict to be when checking txs before forwarding them. 0 = accept anything, 10 = should never reject anything that'd succeed, 20 = likely won't reject anything that'd succeed, 30 = full validation which may reject txs that would succeed | `20`
 `file-logging.buf-size` | int                                                                              size of intermediate log records buffer | `512`
 `file-logging.compress` | enable compression of old log files | `true`
 `file-logging.enable` | enable logging to file | `true`
@@ -375,11 +380,13 @@ Option | Description | Default
 `init.latest-base` | string                                                                                base url used when searching for the latest | `https://snapshot.arbitrum.foundation/`
 `init.prune` | string                                                                                      pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                             the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
-`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `12`
+`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `10`
 `init.prune-trie-clean-cache` | int                                                                        amount of memory in megabytes to cache unchanged state trie nodes with when traversing state database during pruning | `600`
 `init.rebuild-local-wasm` | rebuild local wasm database on boot if needed (otherwise-will be done lazily) | `true`
 `init.recreate-missing-state-from` | uint                                                                  block number to start recreating missing states from (0 = disabled) | None
-`init.reset-to-message` | int                                                                              forces a reset to an old message height. Also set max-reorg-resequence-depth=0 to force re-reading messages | `-1`
+`init.reorg-to-batch` | int                                                                                rolls back the blockchain to a specified batch number | `-1`
+`init.reorg-to-block-batch` | int                                                                          rolls back the blockchain to the first batch at or before a given block number | `-1`
+`init.reorg-to-message-batch` | int                                                                        rolls back the blockchain to the first batch at or before a given message index | `-1`
 `init.then-quit` | quit after init is done | None
 `init.url` | string                                                                                        url to download initialization data - will poll if download fails | None
 `init.validate-checksum` | if true: validate the checksum after downloading the snapshot | `true`
@@ -390,10 +397,11 @@ Option | Description | Default
 `metrics-server.addr` | string                                                                             metrics server address | `127.0.0.1`
 `metrics-server.port` | int                                                                                metrics server port | `6070`
 `metrics-server.update-interval` | duration                                                                metrics server update interval | `3s`
+`node.batch-poster.check-batch-correctness` | setting this to true will run the batch against an inbox multiplexer and verifies that it produces the correct set of messages | `true`
 `node.batch-poster.compression-level` | int                                                                batch compression level | `11`
 `node.batch-poster.das-retention-period` | duration                                                        In AnyTrust mode, the period which DASes are requested to retain the stored batches. | `360h0m0s`
 `node.batch-poster.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
-`node.batch-poster.data-poster.blob-tx-replacement-times` | string                                         comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `5m,10m,30m,1h,4h,8h,16h,22h`
+`node.batch-poster.data-poster.blob-tx-replacement-times` | durationSlice                                  comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `[5m0s,10m0s,30m0s,1h0m0s,4h0m0s,8h0m0s,16h0m0s,22h0m0s]`
 `node.batch-poster.data-poster.dangerous.clear-dbstorage` | clear database storage | None
 `node.batch-poster.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.batch-poster.data-poster.elapsed-time-base` | duration                                               unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
@@ -412,14 +420,14 @@ Option | Description | Default
 `node.batch-poster.data-poster.max-mempool-transactions` | uint                                            the maximum number of transactions to have queued in the mempool at once (0 = unlimited) | `18`
 `node.batch-poster.data-poster.max-mempool-weight` | uint                                                  the maximum number of weight (weight = min(1, tx.blobs)) to have queued in the mempool at once (0 = unlimited) | `18`
 `node.batch-poster.data-poster.max-queued-transactions` | int                                              the maximum number of unconfirmed transactions to track at once (0 = unlimited) | None
-`node.batch-poster.data-poster.max-tip-cap-gwei` | float                                                   the maximum tip cap to post transactions at | `5`
+`node.batch-poster.data-poster.max-tip-cap-gwei` | float                                                   the maximum tip cap to post transactions at | `1.2`
 `node.batch-poster.data-poster.min-blob-tx-tip-cap-gwei` | float                                           the minimum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.batch-poster.data-poster.min-tip-cap-gwei` | float                                                   the minimum tip cap to post transactions at | `0.05`
 `node.batch-poster.data-poster.nonce-rbf-soft-confs` | uint                                                the maximum probable reorg depth, used to determine when a transaction will no longer likely need replaced-by-fee | `1`
 `node.batch-poster.data-poster.redis-signer.dangerous.disable-signature-verification` | disable message signature verification | None
 `node.batch-poster.data-poster.redis-signer.fallback-verification-key` | string                            a fallback key used for message verification | None
 `node.batch-poster.data-poster.redis-signer.signing-key` | string                                          a 32-byte (64-character) hex string used to sign messages, or a path to a file containing it | None
-`node.batch-poster.data-poster.replacement-times` | string                                                 comma-separated list of durations since first posting to attempt a replace-by-fee | `5m,10m,20m,30m,1h,2h,4h,6h,8h,12h,16h,18h,20h,22h`
+`node.batch-poster.data-poster.replacement-times` | durationSlice                                          comma-separated list of durations since first posting to attempt a replace-by-fee | `[5m0s,10m0s,20m0s,30m0s,1h0m0s,2h0m0s,4h0m0s,6h0m0s,8h0m0s,12h0m0s,16h0m0s,18h0m0s,20h0m0s,22h0m0s]`
 `node.batch-poster.data-poster.target-price-gwei` | float                                                  the target price to use for maximum fee cap calculation | `60`
 `node.batch-poster.data-poster.urgency-gwei` | float                                                       the urgency to use for maximum fee cap calculation | `2`
 `node.batch-poster.data-poster.use-db-storage` | uses database storage when enabled | `true`
@@ -461,15 +469,18 @@ Option | Description | Default
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (small footprint) | `1024`
 `node.block-validator.memory-free-limit` | string                                                          minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                                pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
-`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `24`
+`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `20`
 `node.block-validator.redis-validation-client-config.create-streams` | create redis streams if it does not exist | `true`
 `node.block-validator.redis-validation-client-config.name` | string                                        validation client name | `redis validation client`
 `node.block-validator.redis-validation-client-config.producer-config.check-pending-interval` | duration    interval in which producer checks pending messages whether consumer processing them is inactive | `1s`
+`node.block-validator.redis-validation-client-config.producer-config.check-pending-items` | int            items to screen during check-pending | `256`
 `node.block-validator.redis-validation-client-config.producer-config.check-result-interval` | duration     interval in which producer checks pending messages whether consumer processing them is inactive | `5s`
 `node.block-validator.redis-validation-client-config.producer-config.enable-reproduce` | when enabled, messages with dead consumer will be re-inserted into the stream | `true`
 `node.block-validator.redis-validation-client-config.producer-config.keepalive-timeout` | duration         timeout after which consumer is considered inactive if heartbeat wasn't performed | `5m0s`
 `node.block-validator.redis-validation-client-config.redis-url` | string                                   redis url | None
 `node.block-validator.redis-validation-client-config.room` | int32                                         validation client room | `2`
+`node.block-validator.redis-validation-client-config.stream-prefix` | string                               prefix for stream name | None
+`node.block-validator.redis-validation-client-config.stylus-archs` | strings                               archs required for stylus workers | `[wavm]`
 `node.block-validator.validation-poll` | duration                                                          poll time to check validations | `1s`
 `node.block-validator.validation-server-configs-list` | string                                             array of execution rpc configs given as a json string. time duration should be supplied in number indicating nanoseconds | `default`
 `node.block-validator.validation-server.arg-log-limit` | uint                                              limit size of arguments in log entries | `2048`
@@ -502,7 +513,7 @@ Option | Description | Default
 `node.data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block` | uint                    when eagerly syncing, start indexing forward from this L1 block. Only used if there is no sync state | None
 `node.data-availability.rest-aggregator.sync-to-storage.ignore-write-errors` | log only on failures to write when syncing; otherwise treat it as an error | `true`
 `node.data-availability.rest-aggregator.sync-to-storage.parent-chain-blocks-per-read` | uint               when eagerly syncing, max l1 blocks to read per poll | `100`
-`node.data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                       period to request storage to retain synced data | `504h0m0s`
+`node.data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                       period to request storage to retain synced data | `360h0m0s`
 `node.data-availability.rest-aggregator.sync-to-storage.state-dir` | string                                directory to store the sync state in, ie the block number currently synced up to, so that we don't sync from scratch each time | None
 `node.data-availability.rest-aggregator.sync-to-storage.sync-expired-data` | sync even data that is expired; needed for mirror configuration | `true`
 `node.data-availability.rest-aggregator.urls` | strings                                                    list of URLs including 'http://' or 'https://' prefixes and port numbers to REST DAS endpoints; additive with the online-url-list option | None
@@ -577,10 +588,12 @@ Option | Description | Default
 `node.parent-chain-reader.old-header-timeout` | duration                                                   warns if the latest l1 block is at least this old | `5m0s`
 `node.parent-chain-reader.poll-interval` | duration                                                        interval when polling endpoint | `15s`
 `node.parent-chain-reader.poll-only` | do not attempt to subscribe to header events | None
+`node.parent-chain-reader.poll-timeout` | duration                                                         timeout when polling endpoint | `5s`
 `node.parent-chain-reader.subscribe-err-interval` | duration                                               interval for subscribe error | `5m0s`
 `node.parent-chain-reader.tx-timeout` | duration                                                           timeout when waiting for a transaction | `5m0s`
 `node.parent-chain-reader.use-finality-data` | use l1 data about finalized/safe blocks | `true`
 `node.seq-coordinator.chosen-healthcheck-addr` | string                                                    if non-empty, launch an HTTP service binding to this address that returns status code 200 when chosen and 503 otherwise | None
+`node.seq-coordinator.delete-finalized-msgs` | enable deleting of finalized messages from redis | `true`
 `node.seq-coordinator.enable` | enable sequence coordinator | None
 `node.seq-coordinator.handoff-timeout` | duration                                                          the maximum amount of time to spend waiting for another sequencer to accept the lockout when handing it off on shutdown or db compaction | `30s`
 `node.seq-coordinator.lockout-duration` | duration | `1m0s`
@@ -591,7 +604,7 @@ Option | Description | Default
 `node.seq-coordinator.release-retries` | int                                                               the number of times to retry releasing the wants lockout and chosen one status on shutdown | `4`
 `node.seq-coordinator.retry-interval` | duration | `50ms`
 `node.seq-coordinator.safe-shutdown-delay` | duration                                                      if non-zero will add delay after transferring control | `5s`
-`node.seq-coordinator.seq-num-duration` | duration | `24h0m0s`
+`node.seq-coordinator.seq-num-duration` | duration | `240h0m0s`
 `node.seq-coordinator.signer.ecdsa.accept-sequencer` | accept verified message from sequencer | `true`
 `node.seq-coordinator.signer.ecdsa.allowed-addresses` | strings                                            a list of allowed addresses | None
 `node.seq-coordinator.signer.ecdsa.dangerous.accept-missing` | accept empty as valid signature | `true`
@@ -607,7 +620,7 @@ Option | Description | Default
 `node.staker.dangerous.ignore-rollup-wasm-module-root` | DANGEROUS! make assertions even when the wasm module root is wrong | None
 `node.staker.dangerous.without-block-validator` | DANGEROUS! allows running an L1 validator without a block validator | None
 `node.staker.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
-`node.staker.data-poster.blob-tx-replacement-times` | string                                               comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `5m,10m,30m,1h,4h,8h,16h,22h`
+`node.staker.data-poster.blob-tx-replacement-times` | durationSlice                                        comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `[5m0s,10m0s,30m0s,1h0m0s,4h0m0s,8h0m0s,16h0m0s,22h0m0s]`
 `node.staker.data-poster.dangerous.clear-dbstorage` | clear database storage | None
 `node.staker.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.staker.data-poster.elapsed-time-base` | duration                                                     unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
@@ -626,14 +639,14 @@ Option | Description | Default
 `node.staker.data-poster.max-mempool-transactions` | uint                                                  the maximum number of transactions to have queued in the mempool at once (0 = unlimited) | `1`
 `node.staker.data-poster.max-mempool-weight` | uint                                                        the maximum number of weight (weight = min(1, tx.blobs)) to have queued in the mempool at once (0 = unlimited) | `1`
 `node.staker.data-poster.max-queued-transactions` | int                                                    the maximum number of unconfirmed transactions to track at once (0 = unlimited) | None
-`node.staker.data-poster.max-tip-cap-gwei` | float                                                         the maximum tip cap to post transactions at | `5`
+`node.staker.data-poster.max-tip-cap-gwei` | float                                                         the maximum tip cap to post transactions at | `1.2`
 `node.staker.data-poster.min-blob-tx-tip-cap-gwei` | float                                                 the minimum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.staker.data-poster.min-tip-cap-gwei` | float                                                         the minimum tip cap to post transactions at | `0.05`
 `node.staker.data-poster.nonce-rbf-soft-confs` | uint                                                      the maximum probable reorg depth, used to determine when a transaction will no longer likely need replaced-by-fee | `1`
 `node.staker.data-poster.redis-signer.dangerous.disable-signature-verification` | disable message signature verification | None
 `node.staker.data-poster.redis-signer.fallback-verification-key` | string                                  a fallback key used for message verification | None
 `node.staker.data-poster.redis-signer.signing-key` | string                                                a 32-byte (64-character) hex string used to sign messages, or a path to a file containing it | None
-`node.staker.data-poster.replacement-times` | string                                                       comma-separated list of durations since first posting to attempt a replace-by-fee | `5m,10m,20m,30m,1h,2h,4h,6h,8h,12h,16h,18h,20h,22h`
+`node.staker.data-poster.replacement-times` | durationSlice                                                comma-separated list of durations since first posting to attempt a replace-by-fee | `[5m0s,10m0s,20m0s,30m0s,1h0m0s,2h0m0s,4h0m0s,6h0m0s,8h0m0s,12h0m0s,16h0m0s,18h0m0s,20h0m0s,22h0m0s]`
 `node.staker.data-poster.target-price-gwei` | float                                                        the target price to use for maximum fee cap calculation | `60`
 `node.staker.data-poster.urgency-gwei` | float                                                             the urgency to use for maximum fee cap calculation | `2`
 `node.staker.data-poster.use-db-storage` | uses database storage when enabled | `true`
@@ -641,6 +654,7 @@ Option | Description | Default
 `node.staker.data-poster.wait-for-l1-finality` | only treat a transaction as confirmed after L1 finality has been achieved (recommended) | `true`
 `node.staker.disable-challenge` | disable validator challenge | None
 `node.staker.enable` | enable validator | `true`
+`node.staker.enable-fast-confirmation` | enable fast confirmation | None
 `node.staker.extra-gas` | uint                                                                             use this much more gas than estimation says is necessary to post transactions | `50000`
 `node.staker.gas-refunder-address` | string                                                                The gas refunder contract address (optional) | None
 `node.staker.log-query-batch-size` | uint                                                                  range ro query from eth_getLogs | None
@@ -703,7 +717,7 @@ Option | Description | Default
 `persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | None
 `persistent.pebble.experimental.wal-dir` | string                                                          absolute path of directory to store write-ahead logs (WALs) in. If empty, WALs will be stored in the same directory as sstables | None
 `persistent.pebble.experimental.wal-min-sync-interval` | int                                               minimum duration in microseconds between syncs of the WAL. If WAL syncs are requested faster than this interval, they will be artificially delayed. | None
-`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `12`
+`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `10`
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                                  pprof server address | `127.0.0.1`
 `pprof-cfg.port` | int                                                                                     pprof server port | `6071`
@@ -719,6 +733,7 @@ Option | Description | Default
 `validation.arbitrator.redis-validation-server-config.consumer-config.response-entry-timeout` | duration   timeout for response entry | `1h0m0s`
 `validation.arbitrator.redis-validation-server-config.module-roots` | strings                              Supported module root hashes | None
 `validation.arbitrator.redis-validation-server-config.redis-url` | string                                  url of redis server | None
+`validation.arbitrator.redis-validation-server-config.stream-prefix` | string                              prefix for stream name | None
 `validation.arbitrator.redis-validation-server-config.stream-timeout` | duration                           Timeout on polling for existence of redis streams | `10m0s`
 `validation.arbitrator.workers` | int                                                                      number of concurrent validation threads | None
 `validation.jit.cranelift` | use Cranelift instead of LLVM when validating blocks using the jit-accelerated block validator | `true`

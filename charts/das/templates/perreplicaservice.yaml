@@ -1,19 +1,32 @@
 {{- if .Values.perReplicaService.enabled }}
-{{- $replicas := .Values.statefulset.replicas }}
-{{- range until $replicas }}
+{{- range $i := until ($.Values.replicaCount | int) }}
+{{- $iStr := ($i | print)}}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "das.fullname" $ }}-{{ . }}
+  name: {{ include "das.fullname" $ }}-{{ $i }}
   labels:
     {{- include "das.labels" $ | nindent 4 }}
 spec:
   ports:
-    {{- range .Values.service.ports }}
-    - port: {{ .port }}
-      targetPort: {{ .targetPort }}
-      protocol: {{ .protocol | default "TCP" }}
-      name: {{ .name }}
+    {{- if index $.Values.configmap.data "enable-rpc" }}
+    - port: {{ index $.Values.configmap.data "rpc-port" }}
+      targetPort: http-rpc
+      protocol: TCP
+      name: http-rpc
+    {{- end }}
+    {{- if index $.Values.configmap.data "enable-rest" }}
+    - port: {{ index $.Values.configmap.data "rest-port" }}
+      targetPort: http-rest
+      protocol: TCP
+      name: http-rest
+    {{- end }}
+    {{- if index $.Values.configmap.data "metrics" }}
+    - port: {{ index $.Values.configmap.data "metrics-server" "port" }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
     {{- end }}
   selector:
     statefulset.kubernetes.io/pod-name: {{ include "das.fullname" $ }}-{{ . }}
