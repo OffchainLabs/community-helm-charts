@@ -40,11 +40,8 @@ startupProbe:
   command: ""
 
 ## @param updateStrategy.type Update strategy type
-## @param updateStrategy.rollingUpdate.partition Partition to update
 updateStrategy:
   type: RollingUpdate
-  rollingUpdate:
-    partition: 0
 
 ## @param persistence.enabled Enable persistence
 ## @param persistence.size Size of the persistent volume claim
