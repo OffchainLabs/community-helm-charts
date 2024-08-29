@@ -73,7 +73,7 @@ extraEnv:
 ci:
   nitro-secret:
     enabled: true
-  logLevel: DEBUG
+  logLevel: INFO
 
   rpc:
     baselineUrl: https://sepolia-rollup.arbitrum.io/rpc/$BASELINE_RPC_KEY_SEPOLIA
