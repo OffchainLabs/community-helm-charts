@@ -14,6 +14,9 @@ metadata:
   name: {{ include "nitro.fullname" $ }}-val-{{ .name }}
   labels:
     {{- $labels | nindent 4 }}
+    {{- if $mergedValues.serviceMonitor.additionalLabels }}
+    {{- toYaml $mergedValues.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- end }}
 spec:
   selector:
     matchLabels:
