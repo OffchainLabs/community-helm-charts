@@ -90,7 +90,6 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `startupProbe.periodSeconds`                               | Number of seconds between startup probes                                        | `1`                                                                 |
 | `startupProbe.command`                                     | Command to run for the startup probe. If empty, the built in probe will be used | `""`                                                                |
 | `updateStrategy.type`                                      | Update strategy type                                                            | `RollingUpdate`                                                     |
-| `updateStrategy.rollingUpdate.partition`                   | Partition to update                                                             | `0`                                                                 |
 | `persistence.enabled`                                      | Enable persistence                                                              | `true`                                                              |
 | `persistence.size`                                         | Size of the persistent volume claim                                             | `500Gi`                                                             |
 | `persistence.storageClassName`                             | Storage class of the persistent volume claim                                    | `nil`                                                               |
