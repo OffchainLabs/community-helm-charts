@@ -31,10 +31,10 @@ spec:
   {{- end }}
   {{- range $mergedValues.extraPorts }}
   {{- if .serviceEnabled | default true }}
-  - name: {{ .name }}
-    port: {{ .port }}
-    targetPort: {{ .port }}
-    protocol: {{ .protocol | default "TCP" }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .port }}
+      protocol: {{ .protocol | default "TCP" }}
   {{- end }}
   {{- end }}
   selector:
