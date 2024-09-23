@@ -298,6 +298,7 @@ Option | Description | Default
 `execution.parent-chain-reader.subscribe-err-interval` | duration                                          interval for subscribe error | `5m0s`
 `execution.parent-chain-reader.tx-timeout` | duration                                                      timeout when waiting for a transaction | `5m0s`
 `execution.parent-chain-reader.use-finality-data` | use l1 data about finalized/safe blocks | `true`
+`execution.recording-database.max-prepared` | int                                                          max references to store in the recording database | `1000`
 `execution.recording-database.trie-clean-cache` | int                                                      like trie-clean-cache for the separate, recording database (used for validation) | `16`
 `execution.recording-database.trie-dirty-cache` | int                                                      like trie-dirty-cache for the separate, recording database (used for validation) | `1024`
 `execution.rpc.allow-method` | strings                                                                     list of whitelisted rpc methods | None
@@ -336,8 +337,9 @@ Option | Description | Default
 `execution.sequencer.queue-size` | int                                                                     size of the pending tx queue | `1024`
 `execution.sequencer.queue-timeout` | duration                                                             maximum amount of time transaction can wait in queue | `12s`
 `execution.sequencer.sender-whitelist` | strings                                                           comma separated whitelist of authorized senders (if empty, everyone is allowed) | None
-`execution.stylus-target.amd64` | string                                                                   stylus programs compilation target for amd64 linux | `x86_64-linux-unknown+sse4.2`
+`execution.stylus-target.amd64` | string                                                                   stylus programs compilation target for amd64 linux | `x86_64-linux-unknown+sse4.2+lzcnt+bmi`
 `execution.stylus-target.arm64` | string                                                                   stylus programs compilation target for arm64 linux | `arm64-linux-unknown+neon`
+`execution.stylus-target.extra-archs` | strings                                                            Comma separated list of extra architectures to cross-compile stylus program to and cache in wasm store (additionally to local target). Currently must include at least wavm. (supported targets: wavm, arm64, amd64, host) | `[wavm]`
 `execution.stylus-target.host` | string                                                                    stylus programs compilation target for system other than 64-bit ARM or 64-bit x86 | None
 `execution.sync-monitor.finalized-block-wait-for-block-validator` | wait for block validator to complete before returning finalized block number | None
 `execution.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
@@ -375,13 +377,14 @@ Option | Description | Default
 `init.empty` | init with empty state | None
 `init.force` | if true: in case database exists init code will be reexecuted and genesis block compared to database | None
 `init.import-file` | string                                                                                path for json data to import | None
+`init.import-wasm` | if set, import the wasm directory when downloading a database (contains executable code - only use with highly trusted source) | None
 `init.latest` | string                                                                                     if set, searches for the latest snapshot of the given kind (accepted values: "archive" | "pruned" | "genesis") | None
 `init.latest-base` | string                                                                                base url used when searching for the latest | `https://snapshot.arbitrum.foundation/`
 `init.prune` | string                                                                                      pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                             the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
 `init.prune-threads` | int                                                                                 the number of threads to use when pruning | `10`
 `init.prune-trie-clean-cache` | int                                                                        amount of memory in megabytes to cache unchanged state trie nodes with when traversing state database during pruning | `600`
-`init.rebuild-local-wasm` | rebuild local wasm database on boot if needed (otherwise-will be done lazily) | `true`
+`init.rebuild-local-wasm` | string                                                                         rebuild local wasm database on boot if needed (otherwise-will be done lazily). Three modes are supported  "auto"- (enabled by default) if any previous rebuilding attempt was successful then rebuilding is disabled else continues to rebuild, "force"- force rebuilding which would commence rebuilding despite the status of previous attempts, "false"- do not rebuild on startup (default "auto") | None
 `init.recreate-missing-state-from` | uint                                                                  block number to start recreating missing states from (0 = disabled) | None
 `init.reorg-to-batch` | int                                                                                rolls back the blockchain to a specified batch number | `-1`
 `init.reorg-to-block-batch` | int                                                                          rolls back the blockchain to the first batch at or before a given block number | `-1`
@@ -461,14 +464,16 @@ Option | Description | Default
 `node.batch-poster.reorg-resistance-margin` | duration                                                     do not post batch if its within this duration from layer 1 minimum bounds. Requires l1-block-bound option not be set to "ignore" | `10m0s`
 `node.batch-poster.use-access-lists` | post batches with access lists to reduce gas usage (disabled for L3s) | `true`
 `node.batch-poster.wait-for-max-delay` | wait for the max batch delay, even if the batch is full | None
+`node.block-validator.batch-cache-limit` | uint32                                                          limit number of old batches to keep in block-validator | `20`
 `node.block-validator.current-module-root` | string                                                        current wasm module root ('current' read from chain, 'latest' from machines/latest dir, or provide hash) | `current`
 `node.block-validator.dangerous.reset-block-validation` | resets block-by-block validation, starting again at genesis | None
 `node.block-validator.enable` | enable block-by-block validation | None
 `node.block-validator.failure-is-fatal` | failing a validation is treated as a fatal error | `true`
-`node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (small footprint) | `1024`
+`node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (stores batch-copy per block) | `128`
 `node.block-validator.memory-free-limit` | string                                                          minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                                pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
 `node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `20`
+`node.block-validator.recording-iter-limit` | uint                                                         limit on block recordings sent per iteration | `20`
 `node.block-validator.redis-validation-client-config.create-streams` | create redis streams if it does not exist | `true`
 `node.block-validator.redis-validation-client-config.name` | string                                        validation client name | `redis validation client`
 `node.block-validator.redis-validation-client-config.producer-config.check-pending-interval` | duration    interval in which producer checks pending messages whether consumer processing them is inactive | `1s`
@@ -503,8 +508,8 @@ Option | Description | Default
 `node.data-availability.rest-aggregator.max-per-endpoint-stats` | int                                      number of stats entries (latency and success rate) to keep for each REST endpoint; controls whether strategy is faster or slower to respond to changing conditions | `20`
 `node.data-availability.rest-aggregator.online-url-list` | string                                          a URL to a list of URLs of REST das endpoints that is checked at startup; additive with the url option | None
 `node.data-availability.rest-aggregator.online-url-list-fetch-interval` | duration                         time interval to periodically fetch url list from online-url-list | `1h0m0s`
-`node.data-availability.rest-aggregator.simple-explore-exploit-strategy.exploit-iterations` | int          number of consecutive GetByHash calls to the aggregator where each call will cause it to select from REST endpoints in order of best latency and success rate, before switching to explore mode | `1000`
-`node.data-availability.rest-aggregator.simple-explore-exploit-strategy.explore-iterations` | int          number of consecutive GetByHash calls to the aggregator where each call will cause it to randomly select from REST endpoints until one returns successfully, before switching to exploit mode | `20`
+`node.data-availability.rest-aggregator.simple-explore-exploit-strategy.exploit-iterations` | uint32       number of consecutive GetByHash calls to the aggregator where each call will cause it to select from REST endpoints in order of best latency and success rate, before switching to explore mode | `1000`
+`node.data-availability.rest-aggregator.simple-explore-exploit-strategy.explore-iterations` | uint32       number of consecutive GetByHash calls to the aggregator where each call will cause it to randomly select from REST endpoints until one returns successfully, before switching to exploit mode | `20`
 `node.data-availability.rest-aggregator.strategy` | string                                                 strategy to use to determine order and parallelism of calling REST endpoint URLs; valid options are 'simple-explore-exploit' | `simple-explore-exploit`
 `node.data-availability.rest-aggregator.strategy-update-interval` | duration                               how frequently to update the strategy with endpoint latency and error rate data | `10s`
 `node.data-availability.rest-aggregator.sync-to-storage.delay-on-error` | duration                         time to wait if encountered an error before retrying | `1s`
@@ -725,15 +730,17 @@ Option | Description | Default
 `validation.api-auth` | validate is an authenticated API | `true`
 `validation.api-public` | validate is a public API | None
 `validation.arbitrator.execution-run-timeout` | duration                                                   timeout before discarding execution run | `15m0s`
-`validation.arbitrator.execution.cached-challenge-machines` | int                                          how many machines to store in cache while working on a challenge (should be even) | `4`
+`validation.arbitrator.execution.cached-challenge-machines` | uint                                         how many machines to store in cache while working on a challenge (should be even) | `4`
 `validation.arbitrator.execution.initial-steps` | uint                                                     initial steps between machines | `100000`
 `validation.arbitrator.output-path` | string                                                               path to write machines to | `./target/output`
+`validation.arbitrator.redis-validation-server-config.buffer-reads` | buffer reads (read next while working) | `true`
 `validation.arbitrator.redis-validation-server-config.consumer-config.keepalive-timeout` | duration        timeout after which consumer is considered inactive if heartbeat wasn't performed | `5m0s`
 `validation.arbitrator.redis-validation-server-config.consumer-config.response-entry-timeout` | duration   timeout for response entry | `1h0m0s`
 `validation.arbitrator.redis-validation-server-config.module-roots` | strings                              Supported module root hashes | None
 `validation.arbitrator.redis-validation-server-config.redis-url` | string                                  url of redis server | None
 `validation.arbitrator.redis-validation-server-config.stream-prefix` | string                              prefix for stream name | None
 `validation.arbitrator.redis-validation-server-config.stream-timeout` | duration                           Timeout on polling for existence of redis streams | `10m0s`
+`validation.arbitrator.redis-validation-server-config.workers` | int                                       number of validation threads (0 to use number of CPUs) | None
 `validation.arbitrator.workers` | int                                                                      number of concurrent validation threads | None
 `validation.jit.cranelift` | use Cranelift instead of LLVM when validating blocks using the jit-accelerated block validator | `true`
 `validation.jit.wasm-memory-usage-limit` | int                                                             if memory used by a jit wasm exceeds this limit, a warning is logged | `4294967296`
