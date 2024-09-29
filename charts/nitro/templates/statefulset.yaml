@@ -246,7 +246,7 @@ spec:
         name: nitrodata
         {{- with .Values.storageAnnotations }}
         annotations:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 10 }}
         {{- end }}
         labels:
           app: {{ template "nitro.name" . }}
@@ -270,7 +270,7 @@ spec:
         name: nitroblobdata
         {{- with .Values.storageAnnotations }}
         annotations:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 10 }}
         {{- end }}
         labels:
           app: {{ template "nitro.name" . }}
