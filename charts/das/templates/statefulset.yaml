@@ -251,7 +251,7 @@ spec:
         name: localdbstorage
         {{- with .Values.storageAnnotations }}
         annotations:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 10 }}
       {{- end }}
         labels:
           app: {{ template "das.name" . }}
@@ -272,7 +272,7 @@ spec:
         name: localfilestorage
         {{- with .Values.storageAnnotations }}
         annotations:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 10 }}
       {{- end }}
         labels:
           app: {{ template "das.name" . }}
