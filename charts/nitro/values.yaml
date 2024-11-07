@@ -43,8 +43,8 @@ startupProbe:
 updateStrategy:
   type: RollingUpdate
 
-## @param env.goMemLimit.goMemLimit Enable setting the garbage cleanup limit in Go
-## @param env.goMemLimit.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
+## @param env.goMemLimit.enabled Enable setting the garbage cleanup limit in Go
+## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
 env:
   goMemLimit:
     enabled: true
