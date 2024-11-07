@@ -43,6 +43,14 @@ startupProbe:
 updateStrategy:
   type: RollingUpdate
 
+## @param env.goMemLimit.goMemLimit Enable setting the garbage cleanup limit in Go
+## @param env.goMemLimit.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
+env:
+  goMemLimit:
+    enabled: true
+  resourceMgmtMemFreeLimit:
+    enabled: true
+
 ## @param persistence.enabled Enable persistence
 ## @param persistence.size Size of the persistent volume claim
 ## @param persistence.storageClassName [string, nullable] Storage class of the persistent volume claim
