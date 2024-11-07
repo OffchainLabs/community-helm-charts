@@ -185,6 +185,7 @@ extraEnv:
 | `readinessProbe.successThreshold`               | Success threshold for the readiness probe                                   | `1`                         |
 | `startupProbe`                                  | startupProbe                                                                |                             |
 | `startupProbe.enabled`                          | Enable startup probe                                                        | `false`                     |
+| `updateStrategy.type`                           | Update strategy type                                                        | `RollingUpdate`             |
 | `persistence.localdbstorage`                    | This will only be created if local db storage is enabled in the configmap   |                             |
 | `persistence.localdbstorage.size`               | Size of the persistent volume claim                                         | `100Gi`                     |
 | `persistence.localdbstorage.storageClassName`   | Storage class of the persistent volume claim                                | `nil`                       |
