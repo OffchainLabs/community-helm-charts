@@ -65,6 +65,10 @@ readinessProbe:
 startupProbe:
   enabled: false
 
+## @param updateStrategy.type Update strategy type
+updateStrategy:
+  type: RollingUpdate
+
 persistence:
   ## @extra persistence.localdbstorage This will only be created if local db storage is enabled in the configmap
   ## @param persistence.localdbstorage.size Size of the persistent volume claim

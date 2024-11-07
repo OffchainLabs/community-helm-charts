@@ -11,6 +11,12 @@ spec:
     matchLabels:
       {{- include "das.selectorLabels" . | nindent 6 }}
   podManagementPolicy: Parallel
+  {{- if .Values.updateStrategy }}
+  {{- with .Values.updateStrategy }}
+  updateStrategy: 
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
   template:
     metadata:
       annotations:
