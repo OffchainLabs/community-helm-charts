@@ -44,12 +44,16 @@ updateStrategy:
   type: RollingUpdate
 
 ## @param env.goMemLimit.enabled Enable setting the garbage cleanup limit in Go
+## @param env.goMemLimit.multiplier The multiplier of available memory to use
 ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
+## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
 env:
   goMemLimit:
     enabled: true
+    multiplier: 0.9
   resourceMgmtMemFreeLimit:
     enabled: true
+    multiplier: 0.75
 
 ## @param persistence.enabled Enable persistence
 ## @param persistence.size Size of the persistent volume claim

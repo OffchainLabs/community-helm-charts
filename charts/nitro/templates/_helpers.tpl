@@ -161,7 +161,7 @@ Currently primarily used for stateless validator configuration
 {{- end }}
 {{- if $.Values.env.goMemLimit.enabled }}
 - name: GOMEMLIMIT
-  value: {{ printf "%dMiB" (int (mulf $valueMi 0.75)) }}
+  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.goMemLimit.multiplier | default 0.75))) }}
 {{- end }}
 {{- end -}}
 
@@ -181,11 +181,12 @@ Currently primarily used for stateless validator configuration
 {{- end }}
 {{- if $.Values.env.goMemLimit.enabled }}
 - name: GOMEMLIMIT
-  value: {{ printf "%dMiB" (int (mulf $valueMi 0.9)) }}
+  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.goMemLimit.multiplier | default 0.9))) }}
 {{- end }}
 {{- if $.Values.env.resourceMgmtMemFreeLimit.enabled }}
 - name: NITRO_NODE_RESOURCE__MGMT_MEM__FREE__LIMIT
-  value: {{ printf "%dB" (int (mulf $valueMi 0.05 1048576)) }}
+  value: {{ printf "%dB" (int (mulf $valueMi ($.Values.env.resourceMgmtMemFreeLimit.multiplier | default 0.05) 1048576)) }}
 {{- end }}
 {{- end -}}
 {{- end -}}
+
