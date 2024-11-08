@@ -93,9 +93,43 @@ nitro args
 {{- end }}
 
 {{- define "nitro.env" -}}
+{{- if and .Values.resources .Values.resources.limits .Values.resources.limits.memory -}}
+{{- $memory := .Values.resources.limits.memory -}}
+{{- $value := regexFind "^\\d*\\.?\\d+" $memory | float64 -}}
+{{- $unit := regexFind "[A-Za-z]+" $memory -}}
+{{- $valueMi := 0.0 -}}
+{{- if eq $unit "Gi" -}}
+  {{- $valueMi = mulf $value 1024 -}}
+{{- else if eq $unit "Mi" -}}
+  {{- $valueMi = $value -}}
+{{- end }}
+{{- if $.Values.env.goMemLimit.enabled }}
+- name: GOMEMLIMIT
+  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.goMemLimit.multiplier | default 0.9))) }}
+{{- end }}
+{{- if $.Values.env.resourceMgmtMemFreeLimit.enabled }}
+- name: NITRO_NODE_RESOURCE__MGMT_MEM__FREE__LIMIT
+  value: {{ printf "%dB" (int (mulf $valueMi ($.Values.env.resourceMgmtMemFreeLimit.multiplier | default 0.05) 1048576)) }}
+{{- end }}
+{{- end -}}
 {{- end -}}
 
 {{- define "nitro.splitvalidator.env" -}}
+{{- if and .Values.validator .Values.validator.splitvalidator .Values.validator.splitvalidator.global .Values.validator.splitvalidator.global.resources .Values.validator.splitvalidator.global.resources.limits .Values.validator.splitvalidator.global.resources.limits.memory -}}
+{{- $memory := .Values.validator.splitvalidator.global.resources.limits.memory -}}
+{{- $value := regexFind "^\\d*\\.?\\d+" $memory | float64 -}}
+{{- $unit := regexFind "[A-Za-z]+" $memory -}}
+{{- $valueMi := 0.0 -}}
+{{- if eq $unit "Gi" -}}
+  {{- $valueMi = mulf $value 1024 -}}
+{{- else if eq $unit "Mi" -}}
+  {{- $valueMi = $value -}}
+{{- end }}
+{{- if $.Values.env.goMemLimit.enabled }}
+- name: GOMEMLIMIT
+  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.goMemLimit.multiplier | default 0.75))) }}
+{{- end }}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -149,44 +183,4 @@ Currently primarily used for stateless validator configuration
 {{- /* Return the processed JSON data */ -}}
 {{- $processed -}}
 
-{{- if and .Values.validator .Values.validator.splitvalidator .Values.validator.splitvalidator.global .Values.validator.splitvalidator.global.resources .Values.validator.splitvalidator.global.resources.limits .Values.validator.splitvalidator.global.resources.limits.memory -}}
-{{- $memory := .Values.validator.splitvalidator.global.resources.limits.memory -}}
-{{- $value := regexFind "^\\d*\\.?\\d+" $memory | float64 -}}
-{{- $unit := regexFind "[A-Za-z]+" $memory -}}
-{{- $valueMi := 0.0 -}}
-{{- if eq $unit "Gi" -}}
-  {{- $valueMi = mulf $value 1024 -}}
-{{- else if eq $unit "Mi" -}}
-  {{- $valueMi = $value -}}
-{{- end }}
-{{- if $.Values.env.goMemLimit.enabled }}
-- name: GOMEMLIMIT
-  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.goMemLimit.multiplier | default 0.75))) }}
-{{- end }}
 {{- end -}}
-
-{{- end -}}
-
-
-{{- define "nitro.env" -}}
-{{- if and .Values.resources .Values.resources.limits .Values.resources.limits.memory -}}
-{{- $memory := .Values.resources.limits.memory -}}
-{{- $value := regexFind "^\\d*\\.?\\d+" $memory | float64 -}}
-{{- $unit := regexFind "[A-Za-z]+" $memory -}}
-{{- $valueMi := 0.0 -}}
-{{- if eq $unit "Gi" -}}
-  {{- $valueMi = mulf $value 1024 -}}
-{{- else if eq $unit "Mi" -}}
-  {{- $valueMi = $value -}}
-{{- end }}
-{{- if $.Values.env.goMemLimit.enabled }}
-- name: GOMEMLIMIT
-  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.goMemLimit.multiplier | default 0.9))) }}
-{{- end }}
-{{- if $.Values.env.resourceMgmtMemFreeLimit.enabled }}
-- name: NITRO_NODE_RESOURCE__MGMT_MEM__FREE__LIMIT
-  value: {{ printf "%dB" (int (mulf $valueMi ($.Values.env.resourceMgmtMemFreeLimit.multiplier | default 0.05) 1048576)) }}
-{{- end }}
-{{- end -}}
-{{- end -}}
-
