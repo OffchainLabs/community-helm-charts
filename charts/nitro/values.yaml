@@ -44,13 +44,15 @@ updateStrategy:
   type: RollingUpdate
 
 ## @param env.goMemLimit.enabled Enable setting the garbage cleanup limit in Go
-## @param env.goMemLimit.multiplier The multiplier of available memory to use
+## @param env.goMemLimit.multiplier The multiplier of available memory to use for nitro
+## @param env.goMemLimit.validatorMultiplier The multiplier of available memory to use for validators
 ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
 ## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
 env:
   goMemLimit:
     enabled: true
     multiplier: 0.9
+    validatorMultiplier: 0.75
   resourceMgmtMemFreeLimit:
     enabled: true
     multiplier: 0.75
