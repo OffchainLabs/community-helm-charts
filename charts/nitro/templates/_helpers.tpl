@@ -125,9 +125,9 @@ nitro args
 {{- else if eq $unit "Mi" -}}
   {{- $valueMi = $value -}}
 {{- end }}
-{{- if $.Values.env.goMemLimit.enabled }}
+{{- if $.Values.env.splitvalidator.goMemLimit.enabled }}
 - name: GOMEMLIMIT
-  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.goMemLimit.validatorMultiplier | default 0.75))) }}
+  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.splitvalidator.goMemLimit.multiplier | default 0.75))) }}
 {{- end }}
 {{- end -}}
 {{- end -}}

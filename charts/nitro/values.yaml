@@ -49,13 +49,17 @@ updateStrategy:
 ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
 ## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
 env:
-  goMemLimit:
-    enabled: true
-    multiplier: 0.9
-    validatorMultiplier: 0.75
+  splitvalidator:
+    goMemLimit:
+      enabled: true
+      multiplier: 0.75
+  nitro:
+    goMemLimit:
+      enabled: true
+      multiplier: 0.9
   resourceMgmtMemFreeLimit:
-    enabled: true
-    multiplier: 0.75
+    enabled: false
+    multiplier: 0.05
 
 ## @param persistence.enabled Enable persistence
 ## @param persistence.size Size of the persistent volume claim
