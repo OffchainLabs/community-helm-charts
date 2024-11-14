@@ -93,6 +93,10 @@ nitro args
 {{- end }}
 
 {{- define "nitro.env" -}}
+{{- $envPrefix := index .Values.configmap.data.conf "env-prefix" -}}
+{{- if and .Values.env.nitro.goMemLimit.enabled (not $envPrefix) -}}
+{{- fail "configmap.data.conf.env-prefix must be set when goMemLimit is enabled" -}}
+{{- end -}}
 {{- if and .Values.resources .Values.resources.limits .Values.resources.limits.memory -}}
 {{- $memory := .Values.resources.limits.memory -}}
 {{- $value := regexFind "^\\d*\\.?\\d+" $memory | float64 -}}
@@ -103,12 +107,12 @@ nitro args
 {{- else if eq $unit "Mi" -}}
   {{- $valueMi = $value -}}
 {{- end }}
-{{- if $.Values.env.goMemLimit.enabled }}
-- name: GOMEMLIMIT
-  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.goMemLimit.multiplier | default 0.9))) }}
+{{- if $.Values.env.nitro.goMemLimit.enabled }}
+- name: {{ $envPrefix }}_GOMEMLIMIT
+  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.nitro.goMemLimit.multiplier | default 0.9))) }}
 {{- end }}
 {{- if $.Values.env.resourceMgmtMemFreeLimit.enabled }}
-- name: NITRO_NODE_RESOURCE__MGMT_MEM__FREE__LIMIT
+- name: {{ $envPrefix }}_NITRO_NODE_RESOURCE__MGMT_MEM__FREE__LIMIT
   value: {{ printf "%dB" (int (mulf $valueMi ($.Values.env.resourceMgmtMemFreeLimit.multiplier | default 0.05) 1048576)) }}
 {{- end }}
 {{- end -}}
