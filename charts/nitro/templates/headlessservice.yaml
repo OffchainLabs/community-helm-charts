@@ -5,7 +5,7 @@ metadata:
   name: {{ include "nitro.fullname" . }}-headless
   {{- if .Values.headlessservice.annotations }}
   annotations:
-    {{- .Values.headlessservice.annotations | nindent 4 }}
+    {{- toYaml .Values.headlessservice.annotations | nindent 4 }}
   {{- end }}
   labels:
     {{- include "nitro.labels" . | nindent 4 }}
