@@ -94,7 +94,7 @@ nitro args
 
 {{- define "nitro.env" -}}
 {{- $envPrefix := index .Values.configmap.data.conf "env-prefix" -}}
-{{- if and .Values.env.nitro.goMemLimit.enabled (not $envPrefix) -}}
+{{- if and (get .Values.env.nitro.goMemLimit "enabled" | default false) (not $envPrefix) -}}
 {{- fail "configmap.data.conf.env-prefix must be set when goMemLimit is enabled" -}}
 {{- end -}}
 {{- if and .Values.resources .Values.resources.limits .Values.resources.limits.memory -}}
