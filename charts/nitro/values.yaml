@@ -43,9 +43,10 @@ startupProbe:
 updateStrategy:
   type: RollingUpdate
 
-## @param env.goMemLimit.enabled Enable setting the garbage cleanup limit in Go
-## @param env.goMemLimit.multiplier The multiplier of available memory to use for nitro
-## @param env.goMemLimit.validatorMultiplier The multiplier of available memory to use for validators
+## @param env.splitvalidator.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for the split validator
+## @param env.splitvalidator.goMemLimit.multiplier The multiplier of available memory to use for the split validator
+## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
+## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
 ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
 ## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
 env:
