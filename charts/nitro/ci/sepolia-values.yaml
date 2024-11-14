@@ -32,9 +32,6 @@ validator:
       resources:
         limits:
           memory: 8Gi
-        requests:
-          cpu: 100m
-          memory: 2Gi
 
       metrics:
         enabled: true
@@ -42,9 +39,6 @@ validator:
 resources:
   limits:
     memory: 8Gi
-  requests:
-    cpu: 100m
-    memory: 2Gi
 
 env:
   resourceMgmtMemFreeLimit:
