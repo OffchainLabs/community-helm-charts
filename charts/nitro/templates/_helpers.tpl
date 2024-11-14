@@ -108,11 +108,11 @@ nitro args
   {{- $valueMi = $value -}}
 {{- end }}
 {{- if $.Values.env.nitro.goMemLimit.enabled }}
-- name: {{ $envPrefix }}_GOMEMLIMIT
+- name: GOMEMLIMIT
   value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.nitro.goMemLimit.multiplier | default 0.9))) }}
 {{- end }}
 {{- if $.Values.env.resourceMgmtMemFreeLimit.enabled }}
-- name: {{ $envPrefix }}_NITRO_NODE_RESOURCE__MGMT_MEM__FREE__LIMIT
+- name: {{ $envPrefix }}_NODE_RESOURCE__MGMT_MEM__FREE__LIMIT
   value: {{ printf "%dB" (int (mulf $valueMi ($.Values.env.resourceMgmtMemFreeLimit.multiplier | default 0.05) 1048576)) }}
 {{- end }}
 {{- end -}}
