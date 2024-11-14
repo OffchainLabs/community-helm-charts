@@ -90,6 +90,7 @@ perReplicaService:
 headlessservice:
   enabled: true
   publishNotReadyAddresses: true
+  annotations: {}
 
 ## @param jwtSecret.enabled Enable a jwt secret for use with the stateless validator
 ## @param jwtSecret.value Value of the jwt secret for use with the stateless validator
