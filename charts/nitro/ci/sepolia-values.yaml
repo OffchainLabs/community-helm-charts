@@ -29,9 +29,20 @@ validator:
       configmap:
         data:
           metrics: true
+      resources:
+        limits:
+          memory: 8Gi
 
       metrics:
         enabled: true
+
+resources:
+  limits:
+    memory: 8Gi
+
+env:
+  resourceMgmtMemFreeLimit:
+    enabled: true
 
 configmap:
   data:

@@ -43,6 +43,25 @@ startupProbe:
 updateStrategy:
   type: RollingUpdate
 
+## @param env.splitvalidator.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for the split validator
+## @param env.splitvalidator.goMemLimit.multiplier The multiplier of available memory to use for the split validator
+## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
+## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
+## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
+## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
+env:
+  splitvalidator:
+    goMemLimit:
+      enabled: true
+      multiplier: 0.75
+  nitro:
+    goMemLimit:
+      enabled: true
+      multiplier: 0.9
+  resourceMgmtMemFreeLimit:
+    enabled: false
+    multiplier: 0.05
+
 ## @param persistence.enabled Enable persistence
 ## @param persistence.size Size of the persistent volume claim
 ## @param persistence.storageClassName [string, nullable] Storage class of the persistent volume claim
