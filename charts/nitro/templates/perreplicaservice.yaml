@@ -8,6 +8,10 @@ metadata:
   name: {{ include "nitro.fullname" $ }}-{{ $i }}
   labels:
     {{- include "nitro.labels" $ | nindent 4 }}
+  annotations:
+    {{- if $.Values.perReplicaService.annotations }}
+    {{- toYaml $.Values.perReplicaService.annotations | nindent 4 }}
+    {{- end }}
 spec:
   ports:
     {{- if and $.Values.configmap.data.http $.Values.configmap.data.http.port }}
