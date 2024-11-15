@@ -100,9 +100,19 @@ serviceMonitor:
 
 ## @param perReplicaService.enabled Enable a service for each sts replica
 ## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
+## @param perReplicaService.annotations Annotations for the service
 perReplicaService:
   enabled: false
   publishNotReadyAddresses: true
+  annotations: {}
+
+## @param perReplicaHeadlessService.enabled Enable a headless service for each sts replica
+## @param perReplicaHeadlessService.publishNotReadyAddresses Publish not ready addresses
+## @param perReplicaHeadlessService.annotations Annotations for the headless service
+perReplicaHeadlessService:
+  enabled: false
+  publishNotReadyAddresses: true
+  annotations: {}
 
 ## @param headlessservice.enabled Enable headless service
 ## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
