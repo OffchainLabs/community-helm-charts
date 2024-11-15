@@ -1,18 +1,20 @@
-{{- if .Values.perReplicaService.enabled }}
+{{- if .Values.perReplicaHeadlessService.enabled }}
 {{- range $i := until ($.Values.replicaCount | int) }}
 {{- $iStr := ($i | print)}}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "nitro.fullname" $ }}-{{ $i }}
+  name: {{ include "nitro.fullname" $ }}-{{ $i }}-headless
   labels:
     {{- include "nitro.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: headless
   annotations:
-    {{- if $.Values.perReplicaService.annotations }}
-    {{- toYaml $.Values.perReplicaService.annotations | nindent 4 }}
+    {{- if $.Values.perReplicaHeadlessService.annotations }}
+    {{- toYaml $.Values.perReplicaHeadlessService.annotations | nindent 4 }}
     {{- end }}
 spec:
+  clusterIP: None  # This makes the service headless
   ports:
     {{- if and $.Values.configmap.data.http $.Values.configmap.data.http.port }}
     - port: {{ index $.Values.configmap.data.http.port }}
@@ -40,7 +42,6 @@ spec:
     {{- end }}
   selector:
     statefulset.kubernetes.io/pod-name: {{ include "nitro.fullname" $ }}-{{ . }}
-  type: {{ $.Values.service.type }}
-  publishNotReadyAddresses: {{ $.Values.perReplicaService.publishNotReadyAddresses }}
+  publishNotReadyAddresses: {{ $.Values.perReplicaHeadlessService.publishNotReadyAddresses }}
 {{- end }}
 {{- end }}
