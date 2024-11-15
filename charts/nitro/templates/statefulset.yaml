@@ -7,7 +7,7 @@ metadata:
   annotations:
     nitro.arbitrum.io/desiredReplicas: {{ $.Values.replicaCount | quote }}
 spec:
-  serviceName: "{{ include "nitro.fullname" . }}"
+  serviceName: {{ include "nitro.fullname" . }}-headless
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
@@ -15,7 +15,7 @@ spec:
   podManagementPolicy: Parallel
   {{- if .Values.updateStrategy }}
   {{- with .Values.updateStrategy }}
-  updateStrategy: 
+  updateStrategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
@@ -276,7 +276,7 @@ spec:
           app: {{ template "nitro.name" . }}
           release: {{ .Release.Name }}
           heritage: {{ .Release.Service }}
-      spec: 
+      spec:
         accessModes:
         {{- toYaml .Values.blobPersistence.accessModes | nindent 8 }}
         {{- if .Values.blobPersistence.storageClassName }}
