@@ -5,6 +5,10 @@ metadata:
   name: {{ include "nitro.fullname" . }}-headless
   labels:
     {{- include "nitro.labels" . | nindent 4 }}
+  annotations:
+    {{- if $.Values.headless.annotations }}
+    {{- toYaml $.Values.headless.annotations | nindent 4 }}
+    {{- end }}
 spec:
   type: ClusterIP
   clusterIP: None
