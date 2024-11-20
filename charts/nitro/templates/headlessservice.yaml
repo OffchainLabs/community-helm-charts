@@ -6,8 +6,8 @@ metadata:
   labels:
     {{- include "nitro.labels" . | nindent 4 }}
   annotations:
-    {{- if $.Values.headless.annotations }}
-    {{- toYaml $.Values.headless.annotations | nindent 4 }}
+    {{- if $.Values.headlessservice.annotations }}
+    {{- toYaml $.Values.headlessservice.annotations | nindent 4 }}
     {{- end }}
 spec:
   type: ClusterIP
