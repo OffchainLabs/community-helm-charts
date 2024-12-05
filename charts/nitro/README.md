@@ -90,6 +90,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `startupProbe.periodSeconds`                               | Number of seconds between startup probes                                        | `1`                                                                 |
 | `startupProbe.command`                                     | Command to run for the startup probe. If empty, the built in probe will be used | `""`                                                                |
 | `updateStrategy.type`                                      | Update strategy type                                                            | `RollingUpdate`                                                     |
+| `restartPolicy`                                            | Restart policy                                                                  | `Always`                                                            |
 | `env.splitvalidator.goMemLimit.enabled`                    | Enable setting the garbage cleanup limit in Go for the split validator          | `true`                                                              |
 | `env.splitvalidator.goMemLimit.multiplier`                 | The multiplier of available memory to use for the split validator               | `0.75`                                                              |
 | `env.nitro.goMemLimit.enabled`                             | Enable setting the garbage cleanup limit in Go for nitro                        | `true`                                                              |
