@@ -43,6 +43,9 @@ startupProbe:
 updateStrategy:
   type: RollingUpdate
 
+## @param restartPolicy Restart policy
+restartPolicy: Always
+
 ## @param env.splitvalidator.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for the split validator
 ## @param env.splitvalidator.goMemLimit.multiplier The multiplier of available memory to use for the split validator
 ## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
