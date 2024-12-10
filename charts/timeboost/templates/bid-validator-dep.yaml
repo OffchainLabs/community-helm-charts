@@ -5,10 +5,10 @@ metadata:
   labels:
     {{- include "timeboost.labels" . | nindent 4 }}
   annotations:
-    timeboost.arbitrum.io/desiredReplicas: {{ $.Values.auctioneer.replicaCount | quote }}
+    timeboost.arbitrum.io/desiredReplicas: {{ $.Values.bidValidator.replicaCount | quote }}
 spec:
-  {{- if not .Values.auctioneer.autoscaling.enabled }}
-  replicas: {{ .Values.auctioneer.replicaCount }}
+  {{- if not .Values.bidValidator.autoscaling.enabled }}
+  replicas: {{ .Values.bidValidator.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
@@ -17,103 +17,93 @@ spec:
     metadata:
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/bid-validator-cm.yaml") . | sha256sum }}
-        {{- with .Values.auctioneer.podAnnotations }}
+        {{- with .Values.bidValidator.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
         {{- include "timeboost.selectorLabels" . | nindent 8 }}
         function: nitro
-        {{- with .Values.auctioneer.podLabels }}
+        {{- with .Values.bidValidator.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.auctioneer.imagePullSecrets }}
+      {{- with .Values.bidValidator.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "timeboost.serviceAccountName" . }}
       securityContext:
-        {{- with .Values.auctioneer.podSecurityContext }}
+        {{- with .Values.bidValidator.podSecurityContext }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
-      {{- if .Values.auctioneer.priorityClassName }}
-      priorityClassName: {{ .Values.auctioneer.priorityClassName }}
+      {{- if .Values.bidValidator.priorityClassName }}
+      priorityClassName: {{ .Values.bidValidator.priorityClassName }}
       {{- end }}
       initContainers:
-        {{- if .Values.auctioneer.initContainers }}
-        {{- toYaml .Values.auctioneer.initContainers | nindent 8 }}
+        {{- if .Values.bidValidator.initContainers }}
+        {{- toYaml .Values.bidValidator.initContainers | nindent 8 }}
         {{- end }}
         {{- include "timeboost.initContainers" . | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.auctioneer.securityContext | nindent 12 }}
-          image: "{{ .Values.auctioneer.image.repository }}:{{ .Values.auctioneer.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.auctioneer.image.pullPolicy }}
-          {{- if .Values.auctioneer.diagnosticMode }}
+            {{- toYaml .Values.bidValidator.securityContext | nindent 12 }}
+          image: "{{ .Values.bidValidator.image.repository }}:{{ .Values.bidValidator.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.bidValidator.image.pullPolicy }}
+          {{- if .Values.bidValidator.diagnosticMode }}
           command: ["sleep"]
           args: ["infinity"]
-          {{- else if .Values.auctioneer.commandOverride.enabled }}
-          {{- with .Values.auctioneer.commandOverride.command }}
+          {{- else if .Values.bidValidator.commandOverride.enabled }}
+          {{- with .Values.bidValidator.commandOverride.command }}
           command: {{- toYaml . | nindent 8}}
           {{- end }}
-          {{- with .Values.auctioneer.commandOverride.args }}
+          {{- with .Values.bidValidator.commandOverride.args }}
           args: {{- toYaml . | nindent 8 }}
           {{- end }}
           {{- else }}
           command: [/usr/local/bin/nitro]
           args:
-            {{- if .Values.auctioneer.configmap.data.metrics}}
+            {{- if .Values.bidValidator.configmap.data.metrics}}
             - --metrics
             {{- end }}
-            {{- if .Values.auctioneer.configmap.enabled }}
+            {{- if .Values.bidValidator.configmap.enabled }}
             - --conf.file=/config/config.json
             {{- end }}
-            {{- if .Values.auctioneer.customArgs }}
+            {{- if .Values.bidValidator.customArgs }}
             {{- include "timeboost.customArgs" . | nindent 12 }}
             {{- end }}
           ports:
-            {{- if and .Values.auctioneer.configmap.data.http .Values.auctioneer.configmap.data.http.port}}
-            - name: http-rpc
-              containerPort: {{ .Values.auctioneer.configmap.data.http.port }}
+            {{- if and .Values.bidValidator.configmap.data.http .Values.bidValidator.configmap.data.http.port}}
+            - name: http
+              containerPort: {{ .Values.bidValidator.configmap.data.http.port }}
               protocol: TCP
             {{- end }}
-            {{- if and .Values.auctioneer.configmap.data.ws .Values.auctioneer.configmap.data.ws.port }}
-            - name: ws
-              containerPort: {{ .Values.auctioneer.configmap.data.ws.port }}
-              protocol: TCP
-            {{- end }}
-            {{- if .Values.auctioneer.configmap.data.metrics }}
+            {{- if .Values.bidValidator.configmap.data.metrics }}
             - name: metrics
-              containerPort: {{ index .Values.auctioneer."configmap" "data" "metrics-server" "port" }}
+              containerPort: {{ index .Values.bidValidator."configmap" "data" "metrics-server" "port" }}
               protocol: TCP
             {{- end }}
-            {{- if .Values.auctioneer.configmap.data.pprof }}
-            - name: pprof
-              containerPort: {{ index .Values.auctioneer."configmap" "data" "pprof-cfg" "port" }}
-              protocol: TCP
-            {{- end }}
-            {{- range .Values.auctioneer.extraPorts }}
+            {{- range .Values.bidValidator.extraPorts }}
             - name: {{ .name }}
               containerPort: {{ .port }}
               protocol: {{ .protocol | default "TCP" }}
             {{- end }}
-          {{- if .Values.auctioneer.livenessProbe.enabled }}
+          {{- if .Values.bidValidator.livenessProbe.enabled }}
           livenessProbe:
-            {{- if and .Values.auctioneer.livenessProbe.exec (kindIs "string" .Values.auctioneer.livenessProbe.exec.command) }}
-            {{- omit .Values.auctioneer.livenessProbe "enabled" "exec" | toYaml | nindent 12 }}
+            {{- if and .Values.bidValidator.livenessProbe.exec (kindIs "string" .Values.bidValidator.livenessProbe.exec.command) }}
+            {{- omit .Values.bidValidator.livenessProbe "enabled" "exec" | toYaml | nindent 12 }}
             exec:
               command:
-                {{- tpl .Values.auctioneer.livenessProbe.exec.command . | nindent 14 }}
+                {{- tpl .Values.bidValidator.livenessProbe.exec.command . | nindent 14 }}
             {{- else }}
-            {{- omit .Values.auctioneer.livenessProbe "enabled" | toYaml | nindent 12 }}
+            {{- omit .Values.bidValidator.livenessProbe "enabled" | toYaml | nindent 12 }}
             {{- end }}
           {{- end }}
-          {{- if .Values.auctioneer.readinessProbe.enabled }}
+          {{- if .Values.bidValidator.readinessProbe.enabled }}
           readinessProbe:
-            {{- omit .Values.auctioneer.readinessProbe "enabled" | toYaml | nindent 12 }}
+            {{- omit .Values.bidValidator.readinessProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
-          {{- if and .Values.auctioneer.startupProbe.enabled .Values.auctioneer.configmap.data.http .Values.auctioneer.configmap.data.http.port }}
+          {{- if and .Values.bidValidator.startupProbe.enabled .Values.bidValidator.configmap.data.http .Values.bidValidator.configmap.data.http.port }}
           startupProbe:
             exec:
               command:
@@ -121,73 +111,73 @@ spec:
                 - "-c"
                 - |
                   {{- include "startupProbe" . | nindent 18 }}
-            failureThreshold: {{ .Values.auctioneer.startupProbe.failureThreshold }}
-            periodSeconds: {{ .Values.auctioneer.startupProbe.periodSeconds }}
+            failureThreshold: {{ .Values.bidValidator.startupProbe.failureThreshold }}
+            periodSeconds: {{ .Values.bidValidator.startupProbe.periodSeconds }}
           {{- end }}
           {{- end }}
           env:
           {{- include "timeboost.env" . | nindent 12 }}
-          {{- with .Values.auctioneer.extraEnv }}
+          {{- with .Values.bidValidator.extraEnv }}
           {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if .Values.auctioneer.persistence.enabled }}
+          {{- if .Values.bidValidator.persistence.enabled }}
           volumeMounts:
-          {{- if .Values.auctioneer.configmap.enabled }}
+          {{- if .Values.bidValidator.configmap.enabled }}
           - name: config
             mountPath: /config/
           {{- end }}
-          {{- if .Values.auctioneer.extraVolumeMounts }}
-          {{- toYaml .Values.auctioneer.extraVolumeMounts | nindent 10}}
+          {{- if .Values.bidValidator.extraVolumeMounts }}
+          {{- toYaml .Values.bidValidator.extraVolumeMounts | nindent 10}}
           {{- end }}
-          {{- range .Values.auctioneer.additionalVolumeClaims }}
+          {{- range .Values.bidValidator.additionalVolumeClaims }}
           {{- if .enabled }}
           - name: {{ .name }}
             mountPath: {{ .mountPath }}
           {{- end }}
           {{- end }} 
           resources:
-            {{- toYaml .Values.auctioneer.resources | nindent 12 }}
+            {{- toYaml .Values.bidValidator.resources | nindent 12 }}
         {{- include "timeboost.sidecars" . | nindent 8 }}
       volumes:
-      {{- if .Values.auctioneer.jwtSecret.enabled }}
+      {{- if .Values.bidValidator.jwtSecret.enabled }}
       - name: jwt-secret
         secret:
           secretName: {{ include "timeboost.fullname" . }}-jwt
       {{- end }}
-      {{- if .Values.auctioneer.configmap.enabled }}
+      {{- if .Values.bidValidator.configmap.enabled }}
       - name: config
         configMap:
           name: {{ include "timeboost.fullname" . }}
       {{- end }}
-      {{- if .Values.auctioneer.wallet.files }}
+      {{- if .Values.bidValidator.wallet.files }}
       - name: wallet-files
         secret:
           secretName: {{ include "timeboost.fullname" . }}-wallets
       {{- end }}
-      {{- if .Values.auctioneer.extraVolumes }}
-      {{- toYaml .Values.auctioneer.extraVolumes | nindent 6 }}
+      {{- if .Values.bidValidator.extraVolumes }}
+      {{- toYaml .Values.bidValidator.extraVolumes | nindent 6 }}
       {{- end }}
-      {{- range .Values.auctioneer.additionalVolumeClaims }}
+      {{- range .Values.bidValidator.additionalVolumeClaims }}
       {{- if .enabled }}
       - name: {{ .name }}
         persistentVolumeClaim:
           claimName: {{ .name }}
       {{- end }}
       {{- end }}
-      {{- if .Values.auctioneer.nodeSelector }}
+      {{- if .Values.bidValidator.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.auctioneer.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.bidValidator.nodeSelector | nindent 8 }}
       {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.auctioneer.terminationGracePeriodSeconds | default 600 }}
-      {{- with .Values.auctioneer.affinity }}
+      terminationGracePeriodSeconds: {{ .Values.bidValidator.terminationGracePeriodSeconds | default 600 }}
+      {{- with .Values.bidValidator.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.auctioneer.tolerations }}
+      {{- with .Values.bidValidator.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.auctioneer.topologySpreadConstraints }}
+      {{- with .Values.bidValidator.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- range $constraint := . }}
       - {{ toYaml $constraint | nindent 8 | trim }}

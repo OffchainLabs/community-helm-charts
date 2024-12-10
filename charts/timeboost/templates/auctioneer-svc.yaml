@@ -8,24 +8,6 @@ metadata:
 spec:
   type: {{ .Values.auctioneer.service.type }}
   ports:
-    {{- if and .Values.auctioneer.configmap.data.http .Values.auctioneer.configmap.data.http.port }}
-    - port: {{ index .Values.auctioneer.configmap.data.http.port }}
-      targetPort: http-rpc
-      protocol: TCP
-      name: http-rpc
-    {{- end }}
-    {{- if and .Values.auctioneer.configmap.data.ws .Values.auctioneer.configmap.data.ws.port }}
-    - port: {{ index .Values.auctioneer.configmap.data.ws.port }}
-      targetPort: ws
-      protocol: TCP
-      name: ws
-    {{- end }}
-      {{- if .Values.auctioneer.auth.enabled }}
-    - port: {{ .Values.auctioneer.auth.port }}
-      targetPort: {{ .Values.auctioneer.auth.port }}
-      protocol: TCP
-      name: auth
-  {{- end }}
     {{- if .Values.auctioneer.configmap.data.metrics }}
     - port: {{ index .Values "configmap" "data" "metrics-server" "port" }}
       targetPort: metrics
@@ -41,6 +23,6 @@ spec:
     {{- end }}
     {{- end }}
   selector:
-    {{- include "timeboost.selectorLabels" . | nindent 4 }}
+    {{- include "timeboost.auctioneer.selectorLabels" . | nindent 4 }}
     function: nitro
   publishNotReadyAddresses: {{ .Values.auctioneer.service.publishNotReadyAddresses }}

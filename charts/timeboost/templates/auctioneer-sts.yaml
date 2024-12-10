@@ -81,6 +81,17 @@ spec:
             {{- if .Values.auctioneer.customArgs }}
             {{- include "timeboost.customArgs" . | nindent 12 }}
             {{- end }}
+          ports:
+            {{- if .Values.auctioneer.configmap.data.metrics }}
+            - name: metrics
+              containerPort: {{ index .Values.auctioneer."configmap" "data" "metrics-server" "port" }}
+              protocol: TCP
+            {{- end }}
+            {{- range .Values.auctioneer.extraPorts }}
+            - name: {{ .name }}
+              containerPort: {{ .port }}
+              protocol: {{ .protocol | default "TCP" }}
+            {{- end }}
           {{- if .Values.auctioneer.livenessProbe.enabled }}
           livenessProbe:
             {{- if and .Values.auctioneer.livenessProbe.exec (kindIs "string" .Values.auctioneer.livenessProbe.exec.command) }}

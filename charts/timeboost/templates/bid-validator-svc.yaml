@@ -10,22 +10,10 @@ spec:
   ports:
     {{- if and .Values.bidValidator.configmap.data.http .Values.bidValidator.configmap.data.http.port }}
     - port: {{ index .Values.bidValidator.configmap.data.http.port }}
-      targetPort: http-rpc
+      targetPort: http
       protocol: TCP
-      name: http-rpc
+      name: http
     {{- end }}
-    {{- if and .Values.bidValidator.configmap.data.ws .Values.bidValidator.configmap.data.ws.port }}
-    - port: {{ index .Values.bidValidator.configmap.data.ws.port }}
-      targetPort: ws
-      protocol: TCP
-      name: ws
-    {{- end }}
-      {{- if .Values.bidValidator.auth.enabled }}
-    - port: {{ .Values.bidValidator.auth.port }}
-      targetPort: {{ .Values.bidValidator.auth.port }}
-      protocol: TCP
-      name: auth
-  {{- end }}
     {{- if .Values.bidValidator.configmap.data.metrics }}
     - port: {{ index .Values "configmap" "data" "metrics-server" "port" }}
       targetPort: metrics
@@ -41,6 +29,6 @@ spec:
     {{- end }}
     {{- end }}
   selector:
-    {{- include "timeboost.selectorLabels" . | nindent 4 }}
+    {{- include "timeboost.bidValidator.selectorLabels" . | nindent 4 }}
     function: nitro
   publishNotReadyAddresses: {{ .Values.bidValidator.service.publishNotReadyAddresses }}

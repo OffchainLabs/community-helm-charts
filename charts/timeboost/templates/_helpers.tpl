@@ -43,9 +43,18 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Selector labels
+Selector labels Auctioneer
 */}}
-{{- define "timeboost.selectorLabels" -}}
+{{- define "timeboost.auctioneer.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "timeboost.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+
+{{/*
+Selector labels Bid Validator
+*/}}
+{{- define "timeboost.bidValidator.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "timeboost.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
