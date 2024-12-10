@@ -128,39 +128,32 @@ auctioneer:
   ## @param auctioneer.extraPorts Additional ports for the pod
   extraPorts: []
 
+  ## @param auctioneer.wallet.mountPath Path to mount the wallets
+  ## @param auctioneer.wallet.files Key value pair of wallet name and contents (ethers json format)
+  wallet:
+    mountPath: "/wallet/"
+    files: {} # sequencer-wallet1.json: '{"address": "0x...", "encryptedData": "..." }'
+
   configmap:
     ## @param auctioneer.configmap.enabled Enable a configmap for the nitro container
     enabled: true
     ## @extra configmap.data See Configuration Options for the full list of options
     data:
-      ## @param auctioneer.configmap.data.conf.env-prefix Environment variable prefix
-      conf:
-        env-prefix: "NITRO"
+      ## @param bidValidator.configmap.data.auctioneer-server Auctioneer configuration
+      auctioneer-server:
+        auction-contract-address: ''
+        db-directory: "/data"
+        redis-url: redis://redis:6379
+        sequencer-endpoint: ws://sequencer:8549
+        sequencer-jwt-path: "/config/jwt.hex"
+        wallet:
+          account: ''
+          password: ''
+          pathname: ''
 
-      ## @param auctioneer.configmap.data.http.addr Address to bind http service to
-      ## @param auctioneer.configmap.data.http.api List of apis to enable
-      ## @param auctioneer.configmap.data.http.corsdomain CORS domain
-      ## @param auctioneer.configmap.data.http.port Port to bind http service to
-      ## @param auctioneer.configmap.data.http.rpcprefix Prefix for rpc calls
-      ## @param auctioneer.configmap.data.http.vhosts Vhosts to allow
-      http:
-        addr: "0.0.0.0"
-        api: ["arb", "personal", "eth", "net", "web3", "txpool", "arbdebug"]
-        corsdomain: "*"
-        port: 8547
-        rpcprefix: "/rpc"
-        vhosts: "*"
-
-      ## @param auctioneer.configmap.data.parent-chain.id ID of the parent chain
-      ## @param auctioneer.configmap.data.parent-chain.connection.url URL of the parent chain
-      parent-chain:
-        id: 1
-        connection:
-          url: ""
-
-      ## @param auctioneer.configmap.data.chain.id ID of the chain
-      chain:
-        id: 42161
+      ## @param bidValidator.configmap.data.bid-validator Bid Validator configuration
+      bid-validator:
+        enable: false
 
       ## @param auctioneer.configmap.data.log-type Type of log
       log-type: "json"
@@ -299,10 +292,6 @@ bidValidator:
     enabled: true
     ## @extra configmap.data See Configuration Options for the full list of options
     data:
-      ## @param bidValidator.configmap.data.conf.env-prefix Environment variable prefix
-      conf:
-        env-prefix: "NITRO"
-
       ## @param bidValidator.configmap.data.http.addr Address to bind http service to
       ## @param bidValidator.configmap.data.http.api List of apis to enable
       ## @param bidValidator.configmap.data.http.corsdomain CORS domain
@@ -311,22 +300,21 @@ bidValidator:
       ## @param bidValidator.configmap.data.http.vhosts Vhosts to allow
       http:
         addr: "0.0.0.0"
-        api: ["arb", "personal", "eth", "net", "web3", "txpool", "arbdebug"]
+        api: ["auctioneer"]
         corsdomain: "*"
         port: 8547
         rpcprefix: "/rpc"
         vhosts: "*"
 
-      ## @param bidValidator.configmap.data.parent-chain.id ID of the parent chain
-      ## @param bidValidator.configmap.data.parent-chain.connection.url URL of the parent chain
-      parent-chain:
-        id: 1
-        connection:
-          url: ""
+      ## @param bidValidator.configmap.data.auctioneer-server Auctioneer configuration
+      auctioneer-server:
+        enable: false
 
-      ## @param bidValidator.configmap.data.chain.id ID of the chain
-      chain:
-        id: 42161
+      ## @param bidValidator.configmap.data.bid-validator Bid Validator configuration
+      bid-validator:
+        auction-contract-address: ''
+        redis-url: redis://redis:6379
+        sequencer-endpoint: http://sequencer:8547
 
       ## @param bidValidator.configmap.data.log-type Type of log
       log-type: "json"

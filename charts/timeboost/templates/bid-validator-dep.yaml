@@ -135,29 +135,9 @@ spec:
           {{- end }}
           {{- if .Values.auctioneer.persistence.enabled }}
           volumeMounts:
-          {{- if .Values.auctioneer.jwtSecret.enabled }}
-          - name: jwt-secret
-            mountPath: /secrets/jwtsecret
-            subPath: jwtSecret
-            readOnly: true
-          {{- end }}
-          - name: nitrodata
-            mountPath: {{ .Values.auctioneer.configmap.data.persistent.chain }}
-          {{- end }}
-          {{- if .Values.auctioneer.blobPersistence.enabled }}
-          - name: nitroblobdata
-            mountPath: {{ index .Values.auctioneer."configmap" "data" "parent-chain" "blob-client" "blob-directory" }}
-          {{- end }}
           {{- if .Values.auctioneer.configmap.enabled }}
           - name: config
             mountPath: /config/
-          {{- end }}
-          {{- if .Values.auctioneer.wallet.files }}
-          {{ range $filename, $json := .Values.auctioneer.wallet.files }}
-          - name: wallet-files
-            mountPath: {{ $.Values.auctioneer.wallet.mountPath }}{{ $filename }}
-            subPath: {{ $filename }}
-          {{- end }}
           {{- end }}
           {{- if .Values.auctioneer.extraVolumeMounts }}
           {{- toYaml .Values.auctioneer.extraVolumeMounts | nindent 10}}
@@ -167,7 +147,7 @@ spec:
           - name: {{ .name }}
             mountPath: {{ .mountPath }}
           {{- end }}
-          {{- end }}
+          {{- end }} 
           resources:
             {{- toYaml .Values.auctioneer.resources | nindent 12 }}
         {{- include "timeboost.sidecars" . | nindent 8 }}

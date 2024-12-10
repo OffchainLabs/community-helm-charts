@@ -23,6 +23,9 @@ spec:
     metadata:
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/auctioneer-cm.yaml") . | sha256sum }}
+        {{- if .Values.auctioneer.wallet.files }}
+        checksum/wallets: {{ include (print $.Template.BasePath "/wallets.yaml") . | sha256sum }}
+        {{- end }}
         {{- with .Values.auctioneer.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -119,6 +122,13 @@ spec:
           - name: config
             mountPath: /config/
           {{- end }}
+          {{- if .Values.wallet.files }}
+          {{ range $filename, $json := .Values.wallet.files }}
+          - name: wallet-files
+            mountPath: {{ $.Values.wallet.mountPath }}{{ $filename }}
+            subPath: {{ $filename }}
+          {{- end }}
+          {{- end }}
           {{- if .Values.auctioneer.extraVolumeMounts }}
           {{- toYaml .Values.auctioneer.extraVolumeMounts | nindent 10}}
           {{- end }}
@@ -132,10 +142,10 @@ spec:
             {{- toYaml .Values.auctioneer.resources | nindent 12 }}
         {{- include "timeboost.sidecars" . | nindent 8 }}
       volumes:
-      {{- if .Values.auctioneer.jwtSecret.enabled }}
-      - name: jwt-secret
+      {{- if .Values.auctioneer.wallet.files }}
+      - name: wallet-files
         secret:
-          secretName: {{ include "timeboost.fullname" . }}-jwt
+          secretName: {{ include "timeboost.fullname" . }}-wallets
       {{- end }}
       {{- if .Values.auctioneer.configmap.enabled }}
       - name: config
