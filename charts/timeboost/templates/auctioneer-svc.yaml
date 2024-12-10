@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nitro.fullname" . }}
+  labels:
+    {{- include "nitro.labels" . | nindent 4 }}
+    function: nitro-svc
+spec:
+  type: {{ .Values.auctioneer.service.type }}
+  ports:
+    {{- if and .Values.auctioneer.configmap.data.http .Values.auctioneer.configmap.data.http.port }}
+    - port: {{ index .Values.auctioneer.configmap.data.http.port }}
+      targetPort: http-rpc
+      protocol: TCP
+      name: http-rpc
+    {{- end }}
+    {{- if and .Values.auctioneer.configmap.data.ws .Values.auctioneer.configmap.data.ws.port }}
+    - port: {{ index .Values.auctioneer.configmap.data.ws.port }}
+      targetPort: ws
+      protocol: TCP
+      name: ws
+    {{- end }}
+      {{- if .Values.auctioneer.auth.enabled }}
+    - port: {{ .Values.auctioneer.auth.port }}
+      targetPort: {{ .Values.auctioneer.auth.port }}
+      protocol: TCP
+      name: auth
+  {{- end }}
+    {{- if .Values.auctioneer.configmap.data.metrics }}
+    - port: {{ index .Values "configmap" "data" "metrics-server" "port" }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+    {{- end }}
+    {{- range .Values.auctioneer.extraPorts }}
+    {{- if .serviceEnabled | default true }}
+    - name: {{ .name }}
+      port: {{ .servicePort | default .port }}
+      targetPort: {{ .port }}
+      protocol: {{ .protocol | default "TCP" }}
+    {{- end }}
+    {{- end }}
+  selector:
+    {{- include "nitro.selectorLabels" . | nindent 4 }}
+    function: nitro
+  publishNotReadyAddresses: {{ .Values.auctioneer.service.publishNotReadyAddresses }}

@@ -1,0 +1,683 @@
+# Default values for timeboost.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+## @section Auctioneer Deployment Options
+auctioneer:
+  ## @param replicaCount Number of replicas to deploy
+  ##
+  replicaCount: 1
+
+  ## @param image.repository Docker image repository
+  ## @param image.pullPolicy Docker image pull policy
+  ## @param image.tag Docker image tag. Overrides the chart appVersion.
+  image:
+    repository: offchainlabs/nitro-node
+    pullPolicy: Always
+    tag: ""
+
+  ## @param imagePullSecrets Docker registry pull secret names as an array
+  imagePullSecrets: []
+  ## @param nameOverride String to partially override nitro.fullname
+  nameOverride: ""
+
+  ## @param fullnameOverride String to fully override nitro.fullname
+  fullnameOverride: ""
+
+  ## @param commandOverride Command override for the nitro container
+  commandOverride: {}
+
+  ## @param livenessProbe Liveness probe configuration
+  livenessProbe: {}
+
+  ## @param readinessProbe Readiness probe configuration
+  readinessProbe: {}
+
+  ## @param startupProbe.enabled Enable built in startup probe
+  ## @param startupProbe.failureThreshold Number of failures before pod is considered unhealthy
+  ## @param startupProbe.periodSeconds Number of seconds between startup probes
+  ## @param startupProbe.command Command to run for the startup probe. If empty, the built in probe will be used
+  startupProbe:
+    enabled: false
+    failureThreshold: 2419200
+    periodSeconds: 1
+    command: ""
+
+  ## @param updateStrategy.type Update strategy type
+  updateStrategy:
+    type: RollingUpdate
+
+  ## @param persistence.enabled Enable persistence
+  ## @param persistence.size Size of the persistent volume claim
+  ## @param persistence.storageClassName [string, nullable] Storage class of the persistent volume claim
+  ## @param persistence.accessModes Access modes of the persistent volume claim
+  persistence:
+    enabled: true
+    size: 500Gi
+    storageClassName: null
+    accessModes:
+      - ReadWriteOnce
+
+  ## @param serviceMonitor.enabled Enable service monitor CRD for prometheus operator
+  ## @param serviceMonitor.portName Name of the port to monitor
+  ## @param serviceMonitor.path Path to monitor
+  ## @param serviceMonitor.interval Interval to monitor
+  ## @param serviceMonitor.additionalLabels Additional labels for the service monitor
+  ## @param serviceMonitor.relabelings Add relabelings for the metrics being scraped
+  serviceMonitor:
+    enabled: false
+    portName: metrics
+    path: /debug/metrics/prometheus
+    interval: 5s
+    additionalLabels: {}
+    relabelings: []
+
+  ## @param perReplicaService.enabled Enable a service for each sts replica
+  ## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
+  ## @param perReplicaService.annotations Annotations for the service
+  perReplicaService:
+    enabled: false
+    publishNotReadyAddresses: true
+    annotations: {}
+
+  ## @param perReplicaHeadlessService.enabled Enable a headless service for each sts replica
+  ## @param perReplicaHeadlessService.publishNotReadyAddresses Publish not ready addresses
+  ## @param perReplicaHeadlessService.annotations Annotations for the headless service
+  perReplicaHeadlessService:
+    enabled: false
+    publishNotReadyAddresses: true
+    annotations: {}
+
+  ## @param jwtSecret.enabled Enable a jwt secret for use with the stateless validator
+  ## @param jwtSecret.value Value of the jwt secret for use with the stateless validator
+  jwtSecret:
+    enabled: false
+    value: ""
+
+  ## @param serviceAccount.create Create a service account
+  ## @param serviceAccount.annotations Annotations for the service account
+  ## @param serviceAccount.name Name of the service account
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+
+  ## @param podAnnotations Annotations for the pod
+  podAnnotations: {}
+
+  ## @param podLabels Labels for the pod
+  podLabels: {}
+
+  ## @param podSecurityContext.fsGroup Group id for the pod
+  ## @param podSecurityContext.runAsGroup Group id for the user
+  ## @param podSecurityContext.runAsNonRoot Run as non root
+  ## @param podSecurityContext.runAsUser User id for the user
+  ## @param podSecurityContext.fsGroupChangePolicy Policy for the fs group
+  podSecurityContext:
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroupChangePolicy: "OnRootMismatch"
+
+  ## @param securityContext Security context for the container
+  securityContext: {}
+
+  ## @param priorityClassName Priority class name
+  priorityClassName: ""
+
+  ## @param resources Resources for the container
+  resources: {}
+
+  ## @param nodeSelector Node selector for the pod
+  nodeSelector: {}
+
+  ## @param tolerations Tolerations for the pod
+  tolerations: []
+
+  ## @param affinity Affinity for the pod
+  affinity: {}
+
+  ## @param additionalVolumeClaims Additional volume claims for the pod
+  additionalVolumeClaims: []
+
+  ## @param extraVolumes Additional volumes for the pod
+  extraVolumes: []
+
+  ## @param extraVolumeMounts Additional volume mounts for the pod
+  extraVolumeMounts: []
+
+  ## @param extraPorts Additional ports for the pod
+  extraPorts: []
+
+  configmap:
+    ## @param configmap.enabled Enable a configmap for the nitro container
+    enabled: true
+    ## @extra configmap.data See Configuration Options for the full list of options
+    data:
+      ## @param configmap.data.conf.env-prefix Environment variable prefix
+      conf:
+        env-prefix: "NITRO"
+
+      ## @param configmap.data.http.addr Address to bind http service to
+      ## @param configmap.data.http.api List of apis to enable
+      ## @param configmap.data.http.corsdomain CORS domain
+      ## @param configmap.data.http.port Port to bind http service to
+      ## @param configmap.data.http.rpcprefix Prefix for rpc calls
+      ## @param configmap.data.http.vhosts Vhosts to allow
+      http:
+        addr: "0.0.0.0"
+        api: ["arb", "personal", "eth", "net", "web3", "txpool", "arbdebug"]
+        corsdomain: "*"
+        port: 8547
+        rpcprefix: "/rpc"
+        vhosts: "*"
+
+      ## @param configmap.data.parent-chain.id ID of the parent chain
+      ## @param configmap.data.parent-chain.connection.url URL of the parent chain
+      parent-chain:
+        id: 1
+        connection:
+          url: ""
+
+      ## @param configmap.data.chain.id ID of the chain
+      chain:
+        id: 42161
+
+      ## @param configmap.data.log-type Type of log
+      log-type: "json"
+
+      ## @param configmap.data.metrics Enable metrics
+      ## @param configmap.data.metrics-server.addr Address to bind metrics server to
+      ## @param configmap.data.metrics-server.port Port to bind metrics server to
+      metrics: false
+      metrics-server:
+        addr: "0.0.0.0"
+        port: 6070
+
+      ## @param configmap.data.persistent.chain Path to persistent chain data
+      persistent:
+        auctioneer: "/home/user/data/"
+
+      ## @param configmap.data.ws.addr Address to bind ws service to
+      ## @param configmap.data.ws.api List of apis to enable
+      ## @param configmap.data.ws.port Port to bind ws service to
+      ## @param configmap.data.ws.rpcprefix Prefix for rpc calls
+      ws:
+        addr: 0.0.0.0
+        api: ["net", "web3", "eth", "arb"]
+        port: 8548
+        rpcprefix: "/ws"
+
+      ## @param configmap.data.validation.wasm.allowed-wasm-module-roots Default flags as of v3.0.0
+      validation:
+        wasm:
+          allowed-wasm-module-roots:
+            - "/home/user/nitro-legacy/machines"
+            - "/home/user/target/machines"
+
+## @section Bid Validator Deployment Options
+bidValidator:
+  ## @param replicaCount Number of replicas to deploy
+  ##
+  replicaCount: 1
+
+  ## @param image.repository Docker image repository
+  ## @param image.pullPolicy Docker image pull policy
+  ## @param image.tag Docker image tag. Overrides the chart appVersion.
+  image:
+    repository: offchainlabs/nitro-node
+    pullPolicy: Always
+    tag: ""
+
+  ## @param imagePullSecrets Docker registry pull secret names as an array
+  imagePullSecrets: []
+  ## @param nameOverride String to partially override nitro.fullname
+  nameOverride: ""
+
+  ## @param fullnameOverride String to fully override nitro.fullname
+  fullnameOverride: ""
+
+  ## @param commandOverride Command override for the nitro container
+  commandOverride: {}
+
+  ## @param livenessProbe Liveness probe configuration
+  livenessProbe: {}
+
+  ## @param readinessProbe Readiness probe configuration
+  readinessProbe: {}
+
+  ## @param startupProbe.enabled Enable built in startup probe
+  ## @param startupProbe.failureThreshold Number of failures before pod is considered unhealthy
+  ## @param startupProbe.periodSeconds Number of seconds between startup probes
+  ## @param startupProbe.command Command to run for the startup probe. If empty, the built in probe will be used
+  startupProbe:
+    enabled: true
+    failureThreshold: 2419200
+    periodSeconds: 1
+    command: ""
+
+  ## @param updateStrategy.type Update strategy type
+  updateStrategy:
+    type: RollingUpdate
+
+  ## @param env.splitvalidator.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for the split validator
+  ## @param env.splitvalidator.goMemLimit.multiplier The multiplier of available memory to use for the split validator
+  ## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
+  ## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
+  ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
+  ## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
+  env:
+    splitvalidator:
+      goMemLimit:
+        enabled: true
+        multiplier: 0.75
+    nitro:
+      goMemLimit:
+        enabled: true
+        multiplier: 0.9
+    resourceMgmtMemFreeLimit:
+      enabled: false
+      multiplier: 0.05
+
+  ## @param persistence.enabled Enable persistence
+  ## @param persistence.size Size of the persistent volume claim
+  ## @param persistence.storageClassName [string, nullable] Storage class of the persistent volume claim
+  ## @param persistence.accessModes Access modes of the persistent volume claim
+  persistence:
+    enabled: true
+    size: 500Gi
+    storageClassName: null
+    accessModes:
+      - ReadWriteOnce
+
+  ## @param blobPersistence.enabled Enable blob persistence
+  ## @param blobPersistence.size Size of the blob persistent volume claim
+  ## @param blobPersistence.storageClassName [string, nullable] Storage class of the blob persistent volume claim
+  ## @param blobPersistence.accessModes Access modes of the blob persistent volume claim
+  blobPersistence:
+    enabled: false
+    size: 100Gi
+    storageClassName: null
+    accessModes:
+      - ReadWriteOnce
+
+  ## @param serviceMonitor.enabled Enable service monitor CRD for prometheus operator
+  ## @param serviceMonitor.portName Name of the port to monitor
+  ## @param serviceMonitor.path Path to monitor
+  ## @param serviceMonitor.interval Interval to monitor
+  ## @param serviceMonitor.additionalLabels Additional labels for the service monitor
+  ## @param serviceMonitor.relabelings Add relabelings for the metrics being scraped
+  serviceMonitor:
+    enabled: false
+    portName: metrics
+    path: /debug/metrics/prometheus
+    interval: 5s
+    additionalLabels: {}
+    relabelings: []
+
+  ## @param perReplicaService.enabled Enable a service for each sts replica
+  ## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
+  ## @param perReplicaService.annotations Annotations for the service
+  perReplicaService:
+    enabled: false
+    publishNotReadyAddresses: true
+    annotations: {}
+
+  ## @param perReplicaHeadlessService.enabled Enable a headless service for each sts replica
+  ## @param perReplicaHeadlessService.publishNotReadyAddresses Publish not ready addresses
+  ## @param perReplicaHeadlessService.annotations Annotations for the headless service
+  perReplicaHeadlessService:
+    enabled: false
+    publishNotReadyAddresses: true
+    annotations: {}
+
+  ## @param headlessservice.enabled Enable headless service
+  ## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
+  headlessservice:
+    enabled: true
+    publishNotReadyAddresses: true
+
+  ## @param jwtSecret.enabled Enable a jwt secret for use with the stateless validator
+  ## @param jwtSecret.value Value of the jwt secret for use with the stateless validator
+  jwtSecret:
+    enabled: false
+    value: ""
+
+  ## @param auth.enabled Enable auth for the stateless validator
+  auth:
+    enabled: false
+
+  ## @param pdb.enabled Enable pod disruption budget
+  ## @param pdb.minAvailable Minimum number of pods available
+  ## @param pdb.maxUnavailable Maximum number of pods unavailable
+  pdb:
+    enabled: false
+    minAvailable: "75%"
+    maxUnavailable: ""
+
+  ## @param serviceAccount.create Create a service account
+  ## @param serviceAccount.annotations Annotations for the service account
+  ## @param serviceAccount.name Name of the service account
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+
+  ## @param podAnnotations Annotations for the pod
+  podAnnotations: {}
+
+  ## @param podLabels Labels for the pod
+  podLabels: {}
+
+  ## @param podSecurityContext.fsGroup Group id for the pod
+  ## @param podSecurityContext.runAsGroup Group id for the user
+  ## @param podSecurityContext.runAsNonRoot Run as non root
+  ## @param podSecurityContext.runAsUser User id for the user
+  ## @param podSecurityContext.fsGroupChangePolicy Policy for the fs group
+  podSecurityContext:
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroupChangePolicy: "OnRootMismatch"
+
+  ## @param securityContext Security context for the container
+  securityContext: {}
+
+  ## @param priorityClassName Priority class name
+  priorityClassName: ""
+
+  ## @param service.type Service type
+  ## @param service.publishNotReadyAddresses Publish not ready addresses
+  service:
+    type: ClusterIP
+    publishNotReadyAddresses: false
+
+  ## @param resources Resources for the container
+  resources: {}
+
+  ## @param nodeSelector Node selector for the pod
+  nodeSelector: {}
+
+  ## @param tolerations Tolerations for the pod
+  tolerations: []
+
+  ## @param affinity Affinity for the pod
+  affinity: {}
+
+  ## @param additionalVolumeClaims Additional volume claims for the pod
+  additionalVolumeClaims: []
+
+  ## @param extraVolumes Additional volumes for the pod
+  extraVolumes: []
+
+  ## @param extraVolumeMounts Additional volume mounts for the pod
+  extraVolumeMounts: []
+
+  ## @param extraPorts Additional ports for the pod
+  extraPorts: []
+
+  ## @param wallet.mountPath Path to mount the wallets
+  ## @param wallet.files Key value pair of wallet name and contents (ethers json format)
+  wallet:
+    mountPath: "/wallet/"
+    files: {} # sequencer-wallet1.json: '{"address": "0x...", "encryptedData": "..." }'
+
+  ## @param enableAutoConfigProcessing Enable intelligent automatic configuration processing
+  enableAutoConfigProcessing: true
+
+  configmap:
+    ## @param configmap.enabled Enable a configmap for the nitro container
+    enabled: true
+    ## @extra configmap.data See Configuration Options for the full list of options
+    data:
+      ## @param configmap.data.conf.env-prefix Environment variable prefix
+      conf:
+        env-prefix: "NITRO"
+
+      ## @param configmap.data.http.addr Address to bind http service to
+      ## @param configmap.data.http.api List of apis to enable
+      ## @param configmap.data.http.corsdomain CORS domain
+      ## @param configmap.data.http.port Port to bind http service to
+      ## @param configmap.data.http.rpcprefix Prefix for rpc calls
+      ## @param configmap.data.http.vhosts Vhosts to allow
+      http:
+        addr: "0.0.0.0"
+        api: ["arb", "personal", "eth", "net", "web3", "txpool", "arbdebug"]
+        corsdomain: "*"
+        port: 8547
+        rpcprefix: "/rpc"
+        vhosts: "*"
+
+      ## @param configmap.data.parent-chain.id ID of the parent chain
+      ## @param configmap.data.parent-chain.connection.url URL of the parent chain
+      parent-chain:
+        id: 1
+        connection:
+          url: ""
+
+      ## @param configmap.data.chain.id ID of the chain
+      chain:
+        id: 42161
+
+      ## @param configmap.data.log-type Type of log
+      log-type: "json"
+
+      ## @param configmap.data.metrics Enable metrics
+      ## @param configmap.data.metrics-server.addr Address to bind metrics server to
+      ## @param configmap.data.metrics-server.port Port to bind metrics server to
+      metrics: false
+      metrics-server:
+        addr: "0.0.0.0"
+        port: 6070
+
+      ## @param configmap.data.persistent.chain Path to persistent chain data
+      persistent:
+        chain: "/home/user/data/"
+
+      ## @param configmap.data.ws.addr Address to bind ws service to
+      ## @param configmap.data.ws.api List of apis to enable
+      ## @param configmap.data.ws.port Port to bind ws service to
+      ## @param configmap.data.ws.rpcprefix Prefix for rpc calls
+      ws:
+        addr: 0.0.0.0
+        api: ["net", "web3", "eth", "arb"]
+        port: 8548
+        rpcprefix: "/ws"
+
+      ## @param configmap.data.validation.wasm.allowed-wasm-module-roots Default flags as of v3.0.0
+      validation:
+        wasm:
+          allowed-wasm-module-roots:
+            - "/home/user/nitro-legacy/machines"
+            - "/home/user/target/machines"
+
+  ## @section Stateless Validator
+  validator:
+    ## @param validator.enabled Enable the stateless validator
+    enabled: false
+
+    splitvalidator:
+      ## @param validator.splitvalidator.deployments List of deployments for the split validator. Each deploymeny can have its own image, config, etc.
+      deployments: []
+
+      global:
+        ## @param validator.splitvalidator.global.replicaCount Number of replicas for the split validator
+        replicaCount: 1
+
+        ## @param validator.splitvalidator.global.nodeSelector [object, default: {kubernetes.io/arch: amd64}] Node selector for the split validator
+        nodeSelector:
+          ## @skip validator.splitvalidator.global.nodeSelector.kubernetes.io/arch
+          kubernetes.io/arch: amd64
+
+        image:
+          ## @param validator.splitvalidator.global.image.repository Docker image repository for the split validator
+          repository: ""
+          ## @param validator.splitvalidator.global.image.tag Docker image tag for the split validator
+          tag: ""
+
+        ## @param validator.splitvalidator.global.useConfigmap Use the configmap for the validator container
+        useConfigmap: true
+
+        configmap:
+          data:
+            auth:
+              ## @param validator.splitvalidator.global.configmap.data.auth.addr Address to bind auth service to
+              addr: "0.0.0.0"
+              ## @param validator.splitvalidator.global.configmap.data.auth.port Port to bind auth service to
+              port: 8549
+              ## @param validator.splitvalidator.global.configmap.data.auth.origins Origins to allow to access auth service
+              origins: "*"
+              ## @param validator.splitvalidator.global.configmap.data.auth.jwtsecret Path to jwt secret for auth service
+              jwtsecret: "/secrets/jwtsecret"
+
+            ## @param validator.splitvalidator.global.configmap.data.metrics Enable metrics
+            metrics: false
+            metrics-server:
+              ## @param validator.splitvalidator.global.configmap.data.metrics-server.addr Address to bind metrics server to
+              addr: "0.0.0.0"
+              ## @param validator.splitvalidator.global.configmap.data.metrics-server.port Port to bind metrics server to
+              port: 6070
+
+            ## @param validator.splitvalidator.global.configmap.data.log-type Type of logs
+            log-type: "json"
+
+        ## @param validator.splitvalidator.global.extraArgs Extra arguments for the validator container
+        extraArgs: []
+
+        auth:
+          ## @param validator.splitvalidator.global.auth.enabled Enable the auth service for the validator statefulset
+          enabled: true
+          ## @param validator.splitvalidator.global.auth.port Port to bind auth service to
+          port: 8549
+
+        metrics:
+          ## @param validator.splitvalidator.global.metrics.enabled Enable metrics for the validator statefulset
+          enabled: false
+          ## @param validator.splitvalidator.global.metrics.port Port to bind metrics server to
+          port: 6070
+
+        ## @param validator.splitvalidator.global.extraLabels Extra labels for the validator statefulset
+        extraLabels: {}
+
+        serviceMonitor:
+          ## @param validator.splitvalidator.global.serviceMonitor.enabled Enable service monitor CRD for prometheus operator
+          enabled: false
+          ## @param validator.splitvalidator.global.serviceMonitor.portName Name of the port to monitor
+          portName: metrics
+          ## @param validator.splitvalidator.global.serviceMonitor.path Path to monitor
+          path: /debug/metrics/prometheus
+          ## @param validator.splitvalidator.global.serviceMonitor.interval Interval to monitor
+          interval: 5s
+          ## @param validator.splitvalidator.global.serviceMonitor.additionalLabels Additional labels for the service monitor
+          additionalLabels: {}
+          ## @param validator.splitvalidator.global.serviceMonitor.relabelings Add relabelings for the metrics being scraped
+          relabelings: []
+
+        livenessProbe:
+          ## @param validator.splitvalidator.global.livenessProbe.enabled Enable the liveness probe for the validator statefulset
+          enabled: true
+          tcpSocket:
+            ## @param validator.splitvalidator.global.livenessProbe.tcpSocket.port Port to probe
+            port: auth
+          ## @param validator.splitvalidator.global.livenessProbe.initialDelaySeconds Initial delay for the liveness probe
+          initialDelaySeconds: 30
+          ## @param validator.splitvalidator.global.livenessProbe.periodSeconds Period for the liveness probe
+          periodSeconds: 10
+
+        pdb:
+          ## @param validator.splitvalidator.global.pdb.enabled Enable pod disruption budget
+          enabled: true
+          ## @param validator.splitvalidator.global.pdb.minAvailable Minimum number of pods available
+          minAvailable: "75%"
+          ## @param validator.splitvalidator.global.pdb.maxUnavailable Maximum number of pods unavailable
+          maxUnavailable: ""
+
+        keda:
+          ## @param validator.splitvalidator.global.keda.enabled Enable keda
+          enabled: false
+          ## @param validator.splitvalidator.global.keda.scaledObject Scaled object for keda
+          scaledObject: {}
+
+        hpa:
+          ## @param validator.splitvalidator.global.hpa.enabled Enable horizontal pod autoscaler
+          enabled: false
+          ## @param validator.splitvalidator.global.hpa.minReplicas Minimum number of replicas
+          minReplicas: 1
+          ## @param validator.splitvalidator.global.hpa.maxReplicas Maximum number of replicas
+          maxReplicas: 10
+          metrics:
+            ## @param validator.splitvalidator.global.hpa.metrics[0].type Type of metric to monitor
+            - type: Resource
+              resource:
+                ## @param validator.splitvalidator.global.hpa.metrics[0].resource.name Name of the resource to monitor (cpu/memory)
+                name: cpu
+                target:
+                  ## @param validator.splitvalidator.global.hpa.metrics[0].resource.target.type Type of target
+                  type: Utilization
+                  ## @param validator.splitvalidator.global.hpa.metrics[0].resource.target.averageUtilization Target average utilization of the resource
+                  averageUtilization: 80
+          behavior:
+            scaleUp:
+              ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.stabilizationWindowSeconds Stabilization window for scaling up
+              stabilizationWindowSeconds: 300
+              ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.selectPolicy Policy to use when scaling up
+              selectPolicy: "Max"
+              policies:
+                ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].type Type of scale up policy
+                - type: Percent
+                  ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].value Percentage of pods to scale up
+                  value: 50
+                  ## @param validator.splitvalidator.global.hpa.behavior.scaleUp.policies[0].periodSeconds Period for scaling up
+                  periodSeconds: 60
+            scaleDown:
+              ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.stabilizationWindowSeconds Stabilization window for scaling down
+              stabilizationWindowSeconds: 300
+              ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.selectPolicy Policy to use when scaling down
+              selectPolicy: "Min"
+              policies:
+                ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].type Type of scale down policy
+                - type: Percent
+                  ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].value Percentage of pods to scale down
+                  value: 50
+                  ## @param validator.splitvalidator.global.hpa.behavior.scaleDown.policies[0].periodSeconds Period for scaling down
+                  periodSeconds: 60
+
+        readinessProbe:
+          ## @param validator.splitvalidator.global.readinessProbe.enabled Enable the readiness probe for the validator statefulset
+          enabled: true
+          tcpSocket:
+            ## @param validator.splitvalidator.global.readinessProbe.tcpSocket.port Port to probe
+            port: auth
+          ## @param validator.splitvalidator.global.readinessProbe.initialDelaySeconds Initial delay for the readiness probe
+          initialDelaySeconds: 3
+          ## @param validator.splitvalidator.global.readinessProbe.periodSeconds Period for the readiness probe
+          periodSeconds: 3
+
+        ## @param validator.splitvalidator.global.startupProbe.enabled Enable the startup probe for the validator statefulset
+        startupProbe:
+          enabled: false
+
+        ## @param validator.splitvalidator.global.resources Resources for the validator container
+        resources: {}
+
+        ## @param validator.splitvalidator.global.extraEnv Extra environment variables for the validator container
+        extraEnv: {}
+
+        ## @param validator.splitvalidator.global.extraPorts Additional ports for the stateless validator pod
+        extraPorts: []
+
+        ## @param validator.splitvalidator.global.podAnnotations Annotations for the stateless validator pod
+        podAnnotations: {}
+
+        ## @param validator.splitvalidator.global.priorityClassName Priority class name for the stateless validator pod
+        priorityClassName: ""
+
+  ## @skip ci
+  ci:
+    secretManifest:
+      enabled: false
+
+    debug:
+      enabled: false

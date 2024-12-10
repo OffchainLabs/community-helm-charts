@@ -1,0 +1,12 @@
+apiVersion: v2
+name: nitro
+description: A Helm chart for Arbitrum Timeboost components
+
+maintainers:
+  - name: OffchainLabs
+
+type: application
+
+version: 0.1.0
+
+appVersion: "v3.2.1-express-lane-timeboost-cee611d"

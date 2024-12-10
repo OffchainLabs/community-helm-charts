@@ -1,0 +1,204 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "timeboost.fullname" . }}-auctioneer
+  labels:
+    {{- include "timeboost.labels" . | nindent 4 }}
+  annotations:
+    timeboost.arbitrum.io/desiredReplicas: {{ $.Values.auctioneer.replicaCount | quote }}
+spec:
+  serviceName: "{{ include "timeboost.fullname" . }}"-auctioneer
+  replicas: {{ .Values.auctioneer.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "timeboost.selectorLabels" . | nindent 6 }}
+  podManagementPolicy: Parallel
+  {{- if .Values.auctioneer.updateStrategy }}
+  {{- with .Values.auctioneer.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  template:
+    metadata:
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/auctioneer-cm.yaml") . | sha256sum }}
+        {{- with .Values.auctioneer.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "timeboost.selectorLabels" . | nindent 8 }}
+        function: nitro
+        {{- with .Values.auctioneer.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.auctioneer.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "timeboost.serviceAccountName" . }}
+      securityContext:
+        {{- with .Values.auctioneer.podSecurityContext }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+      {{- if .Values.auctioneer.priorityClassName }}
+      priorityClassName: {{ .Values.auctioneer.priorityClassName }}
+      {{- end }}
+      initContainers:
+        {{- if .Values.auctioneer.initContainers }}
+        {{- toYaml .Values.auctioneer.initContainers | nindent 8 }}
+        {{- end }}
+        {{- include "timeboost.initContainers" . | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.auctioneer.securityContext | nindent 12 }}
+          image: "{{ .Values.auctioneer.image.repository }}:{{ .Values.auctioneer.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.auctioneer.image.pullPolicy }}
+          {{- if .Values.auctioneer.diagnosticMode }}
+          command: ["sleep"]
+          args: ["infinity"]
+          {{- else if .Values.auctioneer.commandOverride.enabled }}
+          {{- with .Values.auctioneer.commandOverride.command }}
+          command: {{- toYaml . | nindent 8}}
+          {{- end }}
+          {{- with .Values.auctioneer.commandOverride.args }}
+          args: {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- else }}
+          command: [/usr/local/bin/nitro]
+          args:
+            {{- if .Values.auctioneer.configmap.data.metrics}}
+            - --metrics
+            {{- end }}
+            {{- if .Values.auctioneer.configmap.enabled }}
+            - --conf.file=/config/config.json
+            {{- end }}
+            {{- if .Values.auctioneer.customArgs }}
+            {{- include "timeboost.customArgs" . | nindent 12 }}
+            {{- end }}
+          {{- if .Values.auctioneer.livenessProbe.enabled }}
+          livenessProbe:
+            {{- if and .Values.auctioneer.livenessProbe.exec (kindIs "string" .Values.auctioneer.livenessProbe.exec.command) }}
+            {{- omit .Values.auctioneer.livenessProbe "enabled" "exec" | toYaml | nindent 12 }}
+            exec:
+              command:
+                {{- tpl .Values.auctioneer.livenessProbe.exec.command . | nindent 14 }}
+            {{- else }}
+            {{- omit .Values.auctioneer.livenessProbe "enabled" | toYaml | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.auctioneer.readinessProbe.enabled }}
+          readinessProbe:
+            {{- omit .Values.auctioneer.readinessProbe "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if and .Values.auctioneer.startupProbe.enabled .Values.auctioneer.configmap.data.http .Values.auctioneer.configmap.data.http.port }}
+          startupProbe:
+            exec:
+              command:
+                - "bash"
+                - "-c"
+                - |
+                  {{- include "startupProbe" . | nindent 18 }}
+            failureThreshold: {{ .Values.auctioneer.startupProbe.failureThreshold }}
+            periodSeconds: {{ .Values.auctioneer.startupProbe.periodSeconds }}
+          {{- end }}
+          {{- end }}
+          env:
+          {{- include "timeboost.env" . | nindent 12 }}
+          {{- with .Values.auctioneer.extraEnv }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.auctioneer.persistence.enabled }}
+          volumeMounts:
+          - name: timeboostdata
+            mountPath: {{ .Values.auctioneer.configmap.data.persistent.auctioneer }}
+          {{- end }}
+          {{- if .Values.auctioneer.configmap.enabled }}
+          - name: config
+            mountPath: /config/
+          {{- end }}
+          {{- if .Values.auctioneer.extraVolumeMounts }}
+          {{- toYaml .Values.auctioneer.extraVolumeMounts | nindent 10}}
+          {{- end }}
+          {{- range .Values.auctioneer.additionalVolumeClaims }}
+          {{- if .enabled }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+          {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.auctioneer.resources | nindent 12 }}
+        {{- include "timeboost.sidecars" . | nindent 8 }}
+      volumes:
+      {{- if .Values.auctioneer.jwtSecret.enabled }}
+      - name: jwt-secret
+        secret:
+          secretName: {{ include "timeboost.fullname" . }}-jwt
+      {{- end }}
+      {{- if .Values.auctioneer.configmap.enabled }}
+      - name: config
+        configMap:
+          name: {{ include "timeboost.fullname" . }}
+      {{- end }}
+      {{- if .Values.auctioneer.extraVolumes }}
+      {{- toYaml .Values.auctioneer.extraVolumes | nindent 6 }}
+      {{- end }}
+      {{- range .Values.auctioneer.additionalVolumeClaims }}
+      {{- if .enabled }}
+      - name: {{ .name }}
+        persistentVolumeClaim:
+          claimName: {{ .name }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.auctioneer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.auctioneer.nodeSelector | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.auctioneer.terminationGracePeriodSeconds | default 600 }}
+      {{- with .Values.auctioneer.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.auctioneer.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.auctioneer.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range $constraint := . }}
+      - {{ toYaml $constraint | nindent 8 | trim }}
+        {{- if not $constraint.labelSelector }}
+        labelSelector:
+          matchLabels:
+            {{- include "timeboost.selectorLabels" $ | nindent 12 }}
+            function: nitro
+        {{- end }}
+        {{- end }}
+      {{- end }}
+  volumeClaimTemplates:
+    {{- if .Values.auctioneer.persistence.enabled }}
+    - metadata:
+        name: nitrodata
+        {{- with .Values.auctioneer.storageAnnotations }}
+        annotations:
+        {{- toYaml . | nindent 10 }}
+        {{- end }}
+        labels:
+          app: {{ template "timeboost.name" . }}
+          release: {{ .Release.Name }}
+          heritage: {{ .Release.Service }}
+          {{- if .Values.auctioneer.persistence.snapshotValue }}
+          snapshot: {{ .Values.auctioneer.persistence.snapshotValue }}
+          {{- end }}
+      spec:
+        accessModes:
+        {{- toYaml .Values.auctioneer.persistence.accessModes | nindent 8 }}
+        {{- if .Values.auctioneer.persistence.storageClassName }}
+        storageClassName: {{ .Values.auctioneer.persistence.storageClassName | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.auctioneer.persistence.size | quote }}
+      {{- end }}

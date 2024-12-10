@@ -1,0 +1,11 @@
+{{- if .Values.bidValidator.configmap.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "timeboost.fullname" . }}
+  labels:
+    {{- include "timeboost.labels" . | nindent 4 }}
+data:
+  config.json: |
+    {{- include "timeboost.configProcessor" . | nindent 4 }}
+{{- end }}
