@@ -2,9 +2,9 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "nitro.fullname" . }}
+  name: {{ include "timeboost.fullname" . }}-bid-validator
   labels:
-    {{- include "nitro.labels" . | nindent 4 }}
+    {{- include "timeboost.labels" . | nindent 4 }}
     {{- if .Values.serviceMonitor.additionalLabels }}
     {{- toYaml .Values.serviceMonitor.additionalLabels | nindent 4 }}
     {{- end }}
@@ -35,6 +35,6 @@ spec:
       - {{ .Release.Namespace }}
   selector:
     matchLabels:
-      {{- include "nitro.selectorLabels" . | nindent 6 }}
+      {{- include "timeboost.selectorLabels" . | nindent 6 }}
       function: nitro-svc
 {{- end }}

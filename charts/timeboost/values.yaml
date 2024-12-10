@@ -18,10 +18,10 @@ auctioneer:
 
   ## @param imagePullSecrets Docker registry pull secret names as an array
   imagePullSecrets: []
-  ## @param nameOverride String to partially override nitro.fullname
+  ## @param nameOverride String to partially override timeboost.fullname
   nameOverride: ""
 
-  ## @param fullnameOverride String to fully override nitro.fullname
+  ## @param fullnameOverride String to fully override timeboost.fullname
   fullnameOverride: ""
 
   ## @param commandOverride Command override for the nitro container
@@ -71,28 +71,6 @@ auctioneer:
     interval: 5s
     additionalLabels: {}
     relabelings: []
-
-  ## @param perReplicaService.enabled Enable a service for each sts replica
-  ## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
-  ## @param perReplicaService.annotations Annotations for the service
-  perReplicaService:
-    enabled: false
-    publishNotReadyAddresses: true
-    annotations: {}
-
-  ## @param perReplicaHeadlessService.enabled Enable a headless service for each sts replica
-  ## @param perReplicaHeadlessService.publishNotReadyAddresses Publish not ready addresses
-  ## @param perReplicaHeadlessService.annotations Annotations for the headless service
-  perReplicaHeadlessService:
-    enabled: false
-    publishNotReadyAddresses: true
-    annotations: {}
-
-  ## @param jwtSecret.enabled Enable a jwt secret for use with the stateless validator
-  ## @param jwtSecret.value Value of the jwt secret for use with the stateless validator
-  jwtSecret:
-    enabled: false
-    value: ""
 
   ## @param serviceAccount.create Create a service account
   ## @param serviceAccount.annotations Annotations for the service account
@@ -232,10 +210,10 @@ bidValidator:
 
   ## @param imagePullSecrets Docker registry pull secret names as an array
   imagePullSecrets: []
-  ## @param nameOverride String to partially override nitro.fullname
+  ## @param nameOverride String to partially override timeboost.fullname
   nameOverride: ""
 
-  ## @param fullnameOverride String to fully override nitro.fullname
+  ## @param fullnameOverride String to fully override timeboost.fullname
   fullnameOverride: ""
 
   ## @param commandOverride Command override for the nitro container
@@ -260,25 +238,6 @@ bidValidator:
   ## @param updateStrategy.type Update strategy type
   updateStrategy:
     type: RollingUpdate
-
-  ## @param env.splitvalidator.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for the split validator
-  ## @param env.splitvalidator.goMemLimit.multiplier The multiplier of available memory to use for the split validator
-  ## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
-  ## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
-  ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
-  ## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
-  env:
-    splitvalidator:
-      goMemLimit:
-        enabled: true
-        multiplier: 0.75
-    nitro:
-      goMemLimit:
-        enabled: true
-        multiplier: 0.9
-    resourceMgmtMemFreeLimit:
-      enabled: false
-      multiplier: 0.05
 
   ## @param persistence.enabled Enable persistence
   ## @param persistence.size Size of the persistent volume claim
