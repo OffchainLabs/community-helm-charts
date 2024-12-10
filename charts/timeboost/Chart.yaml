@@ -1,5 +1,5 @@
 apiVersion: v2
-name: nitro
+name: timeboost
 description: A Helm chart for Arbitrum Timeboost components
 
 maintainers:
