@@ -73,16 +73,30 @@ curl "http://localhost:{{ .Values.configmap.data.http.port }}{{ .Values.configma
 
 
 {{/*
-nitro args
+auctioneer args
 */}}
-{{- define "timeboost.customArgs" -}}
+{{- define "timeboost.auctioneer.customArgs" -}}
 
-{{- $customArgs := list -}}
-{{- range $k, $v := .Values.customArgs -}}
-  {{- $customArgs = concat $customArgs (list (printf "--%s" $v)) -}}
+{{- $auctioneerCustomArgs := list -}}
+{{- range $k, $v := .Values.auctioneer.auctioneerCustomArgs -}}
+  {{- $auctioneerCustomArgs = concat $auctioneerCustomArgs (list (printf "--%s" $v)) -}}
 {{- end -}}
 
-{{- $customArgs | compact | toStrings | toYaml -}}
+{{- $auctioneerCustomArgs | compact | toStrings | toYaml -}}
+
+{{- end -}}
+
+{{/*
+bid validator args
+*/}}
+{{- define "timeboost.bidValidator.bidValidatorCustomArgs" -}}
+
+{{- $bidValidatorCustomArgs := list -}}
+{{- range $k, $v := .Values.bidValidator.bidValidatorCustomArgs -}}
+  {{- $bidValidatorCustomArgs = concat $bidValidatorCustomArgs (list (printf "--%s" $v)) -}}
+{{- end -}}
+
+{{- $bidValidatorCustomArgs | compact | toStrings | toYaml -}}
 
 {{- end -}}
 
@@ -96,10 +110,24 @@ nitro args
 Process config data automatically depending on values that are set.
 Currently primarily used for stateless validator configuration
 */}}
-{{- define "timeboost.configProcessor" -}}
+{{- define "timeboost.auctioneer.configProcessor" -}}
 
 {{- /* Process the final configmap data into pretty JSON format */ -}}
-{{- $processed := $values.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" -}}
+{{- $processed := $values.auctioneer.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" -}}
+
+{{- /* Return the processed JSON data */ -}}
+{{- $processed -}}
+
+{{- end -}}
+
+{{/*
+Process config data automatically depending on values that are set.
+Currently primarily used for stateless validator configuration
+*/}}
+{{- define "timeboost.bidValidator.configProcessor" -}}
+
+{{- /* Process the final configmap data into pretty JSON format */ -}}
+{{- $processed := $values.bidValidator.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" -}}
 
 {{- /* Return the processed JSON data */ -}}
 {{- $processed -}}
