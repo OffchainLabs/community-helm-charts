@@ -31,11 +31,24 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Common labels
+Common labels Auctioneer
 */}}
-{{- define "timeboost.labels" -}}
+{{- define "timeboost.auctioneer.labels" -}}
 helm.sh/chart: {{ include "timeboost.chart" . }}
-{{ include "timeboost.selectorLabels" . }}
+{{ include "timeboost.auctioneer.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+
+{{/*
+Common labels Bid Validator
+*/}}
+{{- define "timeboost.bidValidator.labels" -}}
+helm.sh/chart: {{ include "timeboost.chart" . }}
+{{ include "timeboost.bidValidator.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -50,24 +63,12 @@ app.kubernetes.io/name: {{ include "timeboost.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
-
 {{/*
 Selector labels Bid Validator
 */}}
 {{- define "timeboost.bidValidator.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "timeboost.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "timeboost.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "timeboost.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
 {{- end }}
 
 {{- define "startupProbe" -}}
@@ -121,6 +122,9 @@ Currently primarily used for stateless validator configuration
 */}}
 {{- define "timeboost.auctioneer.configProcessor" -}}
 
+{{- /* Make a deep copy of the values from the Helm chart */ -}}
+{{- $values := deepCopy .Values -}}
+
 {{- /* Process the final configmap data into pretty JSON format */ -}}
 {{- $processed := $values.auctioneer.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" -}}
 
@@ -134,6 +138,9 @@ Process config data automatically depending on values that are set.
 Currently primarily used for stateless validator configuration
 */}}
 {{- define "timeboost.bidValidator.configProcessor" -}}
+
+{{- /* Make a deep copy of the values from the Helm chart */ -}}
+{{- $values := deepCopy .Values -}}
 
 {{- /* Process the final configmap data into pretty JSON format */ -}}
 {{- $processed := $values.bidValidator.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" -}}

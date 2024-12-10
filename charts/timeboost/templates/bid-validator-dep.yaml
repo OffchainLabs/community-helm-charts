@@ -3,16 +3,14 @@ kind: Deployment
 metadata:
   name: {{ include "timeboost.fullname" . }}-bid-validator
   labels:
-    {{- include "timeboost.labels" . | nindent 4 }}
+    {{- include "timeboost.bidValidator.labels" . | nindent 4 }}
   annotations:
     timeboost.arbitrum.io/desiredReplicas: {{ $.Values.bidValidator.replicaCount | quote }}
 spec:
-  {{- if not .Values.bidValidator.autoscaling.enabled }}
   replicas: {{ .Values.bidValidator.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
-      {{- include "timeboost.selectorLabels" . | nindent 6 }}
+      {{- include "timeboost.bidValidator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
@@ -21,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "timeboost.selectorLabels" . | nindent 8 }}
+        {{- include "timeboost.bidValidator.selectorLabels" . | nindent 8 }}
         function: nitro
         {{- with .Values.bidValidator.podLabels }}
         {{- toYaml . | nindent 8 }}
@@ -31,7 +29,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "timeboost.serviceAccountName" . }}
+      serviceAccountName: {{ include "timeboost.fullname" . }}-bid-validator
       securityContext:
         {{- with .Values.bidValidator.podSecurityContext }}
         {{ toYaml . | nindent 8 }}
@@ -80,7 +78,7 @@ spec:
             {{- end }}
             {{- if .Values.bidValidator.configmap.data.metrics }}
             - name: metrics
-              containerPort: {{ index .Values.bidValidator."configmap" "data" "metrics-server" "port" }}
+              containerPort: {{ index .Values.bidValidator "configmap" "data" "metrics-server" "port" }}
               protocol: TCP
             {{- end }}
             {{- range .Values.bidValidator.extraPorts }}
@@ -115,12 +113,6 @@ spec:
             periodSeconds: {{ .Values.bidValidator.startupProbe.periodSeconds }}
           {{- end }}
           {{- end }}
-          env:
-          {{- include "timeboost.env" . | nindent 12 }}
-          {{- with .Values.bidValidator.extraEnv }}
-          {{- toYaml . | nindent 12 }}
-          {{- end }}
-          {{- if .Values.bidValidator.persistence.enabled }}
           volumeMounts:
           {{- if .Values.bidValidator.configmap.enabled }}
           - name: config
@@ -134,7 +126,6 @@ spec:
           - name: {{ .name }}
             mountPath: {{ .mountPath }}
           {{- end }}
-          {{- end }} 
           resources:
             {{- toYaml .Values.bidValidator.resources | nindent 12 }}
         {{- include "timeboost.sidecars" . | nindent 8 }}
@@ -184,8 +175,9 @@ spec:
         {{- if not $constraint.labelSelector }}
         labelSelector:
           matchLabels:
-            {{- include "timeboost.selectorLabels" $ | nindent 12 }}
+            {{- include "timeboost.bidValidator.selectorLabels" $ | nindent 12 }}
             function: nitro
         {{- end }}
         {{- end }}
+      {{- end }}
       {{- end }}

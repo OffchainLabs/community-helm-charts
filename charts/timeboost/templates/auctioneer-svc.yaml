@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "timeboost.fullname" . }}-auctioneer
   labels:
-    {{- include "timeboost.labels" . | nindent 4 }}
+    {{- include "timeboost.auctioneer.labels" . | nindent 4 }}
     function: nitro-svc
 spec:
   type: {{ .Values.auctioneer.service.type }}

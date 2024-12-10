@@ -3,15 +3,15 @@ kind: StatefulSet
 metadata:
   name: {{ include "timeboost.fullname" . }}-auctioneer
   labels:
-    {{- include "timeboost.labels" . | nindent 4 }}
+    {{- include "timeboost.auctioneer.labels" . | nindent 4 }}
   annotations:
     timeboost.arbitrum.io/desiredReplicas: {{ $.Values.auctioneer.replicaCount | quote }}
 spec:
-  serviceName: "{{ include "timeboost.fullname" . }}"-auctioneer
+  serviceName: "{{ printf "%s-auctioneer" (include "timeboost.fullname" .) }}-auctioneer"
   replicas: {{ .Values.auctioneer.replicaCount }}
   selector:
     matchLabels:
-      {{- include "timeboost.selectorLabels" . | nindent 6 }}
+      {{- include "timeboost.auctioneer.selectorLabels" . | nindent 6 }}
   podManagementPolicy: Parallel
   {{- if .Values.auctioneer.updateStrategy }}
   {{- with .Values.auctioneer.updateStrategy }}
@@ -30,7 +30,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "timeboost.selectorLabels" . | nindent 8 }}
+        {{- include "timeboost.auctioneer.selectorLabels" . | nindent 8 }}
         function: nitro
         {{- with .Values.auctioneer.podLabels }}
         {{- toYaml . | nindent 8 }}
@@ -40,7 +40,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "timeboost.serviceAccountName" . }}
+      serviceAccountName: {{ include "timeboost.fullname" . }}-auctioneer
       securityContext:
         {{- with .Values.auctioneer.podSecurityContext }}
         {{ toYaml . | nindent 8 }}
@@ -84,7 +84,7 @@ spec:
           ports:
             {{- if .Values.auctioneer.configmap.data.metrics }}
             - name: metrics
-              containerPort: {{ index .Values.auctioneer."configmap" "data" "metrics-server" "port" }}
+              containerPort: {{ index .Values.auctioneer "configmap" "data" "metrics-server" "port" }}
               protocol: TCP
             {{- end }}
             {{- range .Values.auctioneer.extraPorts }}
@@ -119,11 +119,6 @@ spec:
             periodSeconds: {{ .Values.auctioneer.startupProbe.periodSeconds }}
           {{- end }}
           {{- end }}
-          env:
-          {{- include "timeboost.env" . | nindent 12 }}
-          {{- with .Values.auctioneer.extraEnv }}
-          {{- toYaml . | nindent 12 }}
-          {{- end }}
           {{- if .Values.auctioneer.persistence.enabled }}
           volumeMounts:
           - name: timeboostdata
@@ -133,10 +128,10 @@ spec:
           - name: config
             mountPath: /config/
           {{- end }}
-          {{- if .Values.wallet.files }}
-          {{ range $filename, $json := .Values.wallet.files }}
+          {{- if .Values.auctioneer.wallet.files }}
+          {{ range $filename, $json := .Values.auctioneer.wallet.files }}
           - name: wallet-files
-            mountPath: {{ $.Values.wallet.mountPath }}{{ $filename }}
+            mountPath: {{ $.Values.auctioneer.wallet.mountPath }}{{ $filename }}
             subPath: {{ $filename }}
           {{- end }}
           {{- end }}
@@ -193,7 +188,7 @@ spec:
         {{- if not $constraint.labelSelector }}
         labelSelector:
           matchLabels:
-            {{- include "timeboost.selectorLabels" $ | nindent 12 }}
+            {{- include "timeboost.auctioneer.selectorLabels" $ | nindent 12 }}
             function: nitro
         {{- end }}
         {{- end }}

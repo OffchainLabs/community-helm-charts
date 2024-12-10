@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "timeboost.fullname" . }}-bid-validator
   labels:
-    {{- include "timeboost.labels" . | nindent 4 }}
+    {{- include "timeboost.bidValidator.labels" . | nindent 4 }}
     function: nitro-svc
 spec:
   type: {{ .Values.bidValidator.service.type }}

@@ -104,6 +104,12 @@ auctioneer:
   ## @param auctioneer.priorityClassName Priority class name
   priorityClassName: ""
 
+  ## @param auctioneer.service.type Service type
+  ## @param auctioneer.service.publishNotReadyAddresses Publish not ready addresses
+  service:
+    type: ClusterIP
+    publishNotReadyAddresses: false
+
   ## @param auctioneer.resources Resources for the container
   resources: {}
 

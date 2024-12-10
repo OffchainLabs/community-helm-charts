@@ -4,8 +4,8 @@ kind: ConfigMap
 metadata:
   name: {{ include "timeboost.fullname" . }}-auctioneer
   labels:
-    {{- include "timeboost.labels" . | nindent 4 }}
+    {{- include "timeboost.auctioneer.labels" . | nindent 4 }}
 data:
   config.json: |
-    {{- include "timeboost.configProcessor" . | nindent 4 }}
+    {{- include "timeboost.auctioneer.configProcessor" . | nindent 4 }}
 {{- end }}

@@ -1,10 +1,10 @@
-{{- if .Values.serviceMonitor.enabled }}
+{{- if .Values.auctioneer.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "timeboost.fullname" . }}-auctioneer
   labels:
-    {{- include "timeboost.labels" . | nindent 4 }}
+    {{- include "timeboost.auctioneer.labels" . | nindent 4 }}
     {{- if .Values.serviceMonitor.additionalLabels }}
     {{- toYaml .Values.serviceMonitor.additionalLabels | nindent 4 }}
     {{- end }}
@@ -35,6 +35,6 @@ spec:
       - {{ .Release.Namespace }}
   selector:
     matchLabels:
-      {{- include "timeboost.selectorLabels" . | nindent 6 }}
-      function: nitro-svc
+      {{- include "timeboost.auctioneer.selectorLabels" . | nindent 6 }}
+      function: timeboost-svc
 {{- end }}
