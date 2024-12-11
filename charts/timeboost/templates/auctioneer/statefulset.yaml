@@ -24,7 +24,7 @@ spec:
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/auctioneer/configmap.yaml") . | sha256sum }}
         {{- if .Values.auctioneer.wallet.files }}
-        checksum/wallets: {{ include (print $.Template.BasePath "/wallets.yaml") . | sha256sum }}
+        checksum/wallets: {{ include (print $.Template.BasePath "/auctioneer/wallets.yaml") . | sha256sum }}
         {{- end }}
         {{- with .Values.auctioneer.podAnnotations }}
         {{- toYaml . | nindent 8 }}
