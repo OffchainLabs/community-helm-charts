@@ -4,13 +4,21 @@ A Helm chart for [Timeboost](https://forum.arbitrum.foundation/t/constitutional-
 
 ## Parameters
 
+### Global Image Configuration
+
+| Name               | Description                                               | Value                     |
+| ------------------ | --------------------------------------------------------- | ------------------------- |
+| `image.repository` | Docker image repository                                   | `offchainlabs/nitro-node` |
+| `image.pullPolicy` | Docker image pull policy                                  | `Always`                  |
+| `image.tag`        | Docker image tag. Defaults to Chart appVersion if not set | `""`                      |
+
 ### Auctioneer Deployment Options
 
 | Name                                                                   | Description                                                                     | Value                       |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------- |
 | `auctioneer.replicaCount`                                              | Number of replicas to deploy                                                    | `1`                         |
-| `auctioneer.image.repository`                                          | Docker image repository                                                         | `offchainlabs/nitro-node`   |
-| `auctioneer.image.pullPolicy`                                          | Docker image pull policy                                                        | `Always`                    |
+| `auctioneer.image.repository`                                          | Docker image repository override                                                | `""`                        |
+| `auctioneer.image.pullPolicy`                                          | Docker image pull policy override                                               | `""`                        |
 | `auctioneer.image.tag`                                                 | Docker image tag. Overrides the chart appVersion.                               | `""`                        |
 | `auctioneer.imagePullSecrets`                                          | Docker registry pull secret names as an array                                   | `[]`                        |
 | `auctioneer.nameOverride`                                              | String to partially override timeboost.fullname                                 | `""`                        |
@@ -81,8 +89,8 @@ A Helm chart for [Timeboost](https://forum.arbitrum.foundation/t/constitutional-
 | Name                                                                 | Description                                                                     | Value                       |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------- |
 | `bidValidator.replicaCount`                                          | Number of replicas to deploy                                                    | `1`                         |
-| `bidValidator.image.repository`                                      | Docker image repository                                                         | `offchainlabs/nitro-node`   |
-| `bidValidator.image.pullPolicy`                                      | Docker image pull policy                                                        | `Always`                    |
+| `bidValidator.image.repository`                                      | Docker image repository override                                                | `""`                        |
+| `bidValidator.image.pullPolicy`                                      | Docker image pull policy override                                               | `""`                        |
 | `bidValidator.image.tag`                                             | Docker image tag. Overrides the chart appVersion.                               | `""`                        |
 | `bidValidator.imagePullSecrets`                                      | Docker registry pull secret names as an array                                   | `[]`                        |
 | `bidValidator.nameOverride`                                          | String to partially override timeboost.fullname                                 | `""`                        |
