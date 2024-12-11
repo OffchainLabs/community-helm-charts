@@ -70,7 +70,7 @@ spec:
           args: {{- toYaml . | nindent 8 }}
           {{- end }}
           {{- else }}
-          command: [/usr/local/bin/nitro]
+          command: [/usr/local/bin/autonomous-auctioneer]
           args:
             {{- if .Values.auctioneer.configmap.data.metrics}}
             - --metrics
