@@ -128,7 +128,7 @@ spec:
             readOnly: true
           {{- end }}
           - name: timeboostdata
-            mountPath: {{ .Values.auctioneer.configmap.data.persistent.auctioneer }}
+            mountPath: {{ .Values.auctioneer.configmap.data.persistent.chain }}
           {{- end }}
           {{- if .Values.auctioneer.configmap.enabled }}
           - name: config
