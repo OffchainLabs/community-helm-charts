@@ -179,7 +179,7 @@ auctioneer:
         addr: "0.0.0.0"
         port: 6070
 
-      ## @param auctioneer.configmap.data.persistent.chain Path to persistent chain data
+      ## @param auctioneer.configmap.data.persistent.auctioneer Path to persistent auction data
       persistent:
         auctioneer: "/home/user/data/"
 
