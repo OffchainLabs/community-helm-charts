@@ -164,7 +164,7 @@ auctioneer:
           password: ''
           pathname: ''
 
-      ## @param bidValidator.configmap.data.bid-validator Bid Validator configuration
+      ## @param bidValidator.configmap.data.bid-validator.enable Enable bid validator
       bid-validator:
         enable: false
 
