@@ -36,6 +36,8 @@ A Helm chart for [Timeboost](https://forum.arbitrum.foundation/t/constitutional-
 | `auctioneer.serviceAccount.create`                                     | Create a service account                                                        | `true`                      |
 | `auctioneer.serviceAccount.annotations`                                | Annotations for the service account                                             | `{}`                        |
 | `auctioneer.serviceAccount.name`                                       | Name of the service account                                                     | `""`                        |
+| `auctioneer.jwtSecret.enabled`                                         | Enable a jwt secret                                                             | `false`                     |
+| `auctioneer.jwtSecret.value`                                           | Value of the jwt secret                                                         | `""`                        |
 | `auctioneer.podAnnotations`                                            | Annotations for the pod                                                         | `{}`                        |
 | `auctioneer.podLabels`                                                 | Labels for the pod                                                              | `{}`                        |
 | `auctioneer.podSecurityContext.fsGroup`                                | Group id for the pod                                                            | `1000`                      |
