@@ -57,8 +57,8 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.auctioneer.securityContext | nindent 12 }}
-          image: "{{ .Values.auctioneer.image.repository }}:{{ .Values.auctioneer.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.auctioneer.image.pullPolicy }}
+          image: "{{ include "timeboost.image.repository" (dict "root" . "component" .Values.auctioneer) }}:{{ include "timeboost.image.tag" (dict "root" . "component" .Values.auctioneer) }}"
+          imagePullPolicy: {{ include "timeboost.image.pullPolicy" (dict "root" . "component" .Values.auctioneer) }}
           {{- if .Values.auctioneer.diagnosticMode }}
           command: ["sleep"]
           args: ["infinity"]

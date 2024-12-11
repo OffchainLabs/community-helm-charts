@@ -46,8 +46,8 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.bidValidator.securityContext | nindent 12 }}
-          image: "{{ .Values.bidValidator.image.repository }}:{{ .Values.bidValidator.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.bidValidator.image.pullPolicy }}
+          image: "{{ include "timeboost.image.repository" (dict "root" . "component" .Values.bidValidator) }}:{{ include "timeboost.image.tag" (dict "root" . "component" .Values.bidValidator) }}"
+          imagePullPolicy: {{ include "timeboost.image.pullPolicy" (dict "root" . "component" .Values.bidValidator) }}
           {{- if .Values.bidValidator.diagnosticMode }}
           command: ["sleep"]
           args: ["infinity"]

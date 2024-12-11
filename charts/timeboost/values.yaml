@@ -2,18 +2,27 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+## @section Global Image Configuration
+image:
+  ## @param image.repository Docker image repository
+  ## @param image.pullPolicy Docker image pull policy
+  repository: offchainlabs/nitro-node
+  pullPolicy: Always
+  ## @param image.tag Docker image tag. Defaults to Chart appVersion if not set
+  tag: ""
+
 ## @section Auctioneer Deployment Options
 auctioneer:
   ## @param auctioneer.replicaCount Number of replicas to deploy
   ##
   replicaCount: 1
 
-  ## @param auctioneer.image.repository Docker image repository
-  ## @param auctioneer.image.pullPolicy Docker image pull policy
+  ## @param auctioneer.image.repository Docker image repository override
+  ## @param auctioneer.image.pullPolicy Docker image pull policy override
   ## @param auctioneer.image.tag Docker image tag. Overrides the chart appVersion.
   image:
-    repository: offchainlabs/nitro-node
-    pullPolicy: Always
+    repository: ""
+    pullPolicy: ""
     tag: ""
 
   ## @param auctioneer.imagePullSecrets Docker registry pull secret names as an array
@@ -160,15 +169,15 @@ auctioneer:
       ## @param auctioneer.configmap.data.auctioneer-server.wallet.password Wallet password
       ## @param auctioneer.configmap.data.auctioneer-server.wallet.pathname Path to wallet
       auctioneer-server:
-        auction-contract-address: ''
+        auction-contract-address: ""
         db-directory: "/data"
         redis-url: redis://redis:6379
         sequencer-endpoint: ws://sequencer:8549
         sequencer-jwt-path: "/config/jwt.hex"
         wallet:
-          account: ''
-          password: ''
-          pathname: ''
+          account: ""
+          password: ""
+          pathname: ""
 
       ## @param auctioneer.configmap.data.bid-validator.enable Enable bid validator
       bid-validator:
@@ -195,12 +204,12 @@ bidValidator:
   ##
   replicaCount: 1
 
-  ## @param bidValidator.image.repository Docker image repository
-  ## @param bidValidator.image.pullPolicy Docker image pull policy
+  ## @param bidValidator.image.repository Docker image repository override
+  ## @param bidValidator.image.pullPolicy Docker image pull policy override
   ## @param bidValidator.image.tag Docker image tag. Overrides the chart appVersion.
   image:
-    repository: offchainlabs/nitro-node
-    pullPolicy: Always
+    repository: ""
+    pullPolicy: ""
     tag: ""
 
   ## @param bidValidator.imagePullSecrets Docker registry pull secret names as an array
@@ -333,7 +342,7 @@ bidValidator:
       ## @param bidValidator.configmap.data.bid-validator.redis-url Redis URL
       ## @param bidValidator.configmap.data.bid-validator.sequencer-endpoint Sequencer endpoint
       bid-validator:
-        auction-contract-address: ''
+        auction-contract-address: ""
         redis-url: redis://redis:6379
         sequencer-endpoint: http://sequencer:8547
 
