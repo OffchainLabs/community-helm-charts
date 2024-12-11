@@ -121,6 +121,12 @@ spec:
           {{- end }}
           {{- if .Values.auctioneer.persistence.enabled }}
           volumeMounts:
+          {{- if .Values.auctioneer.jwtSecret.enabled }}
+          - name: jwt-secret
+            mountPath: /secrets/jwtsecret
+            subPath: jwtSecret
+            readOnly: true
+          {{- end }}
           - name: timeboostdata
             mountPath: {{ .Values.auctioneer.configmap.data.persistent.auctioneer }}
           {{- end }}
@@ -148,15 +154,20 @@ spec:
             {{- toYaml .Values.auctioneer.resources | nindent 12 }}
         {{- include "timeboost.sidecars" . | nindent 8 }}
       volumes:
-      {{- if .Values.auctioneer.wallet.files }}
-      - name: wallet-files
+      {{- if .Values.auctioneer.jwtSecret.enabled }}
+      - name: jwt-secret
         secret:
-          secretName: {{ include "timeboost.fullname" . }}-wallets
+          secretName: {{ include "timeboost.fullname" . }}-jwt
       {{- end }}
       {{- if .Values.auctioneer.configmap.enabled }}
       - name: config
         configMap:
           name: {{ include "timeboost.fullname" . }}
+      {{- end }}
+      {{- if .Values.auctioneer.wallet.files }}
+      - name: wallet-files
+        secret:
+          secretName: {{ include "timeboost.fullname" . }}-wallets
       {{- end }}
       {{- if .Values.auctioneer.extraVolumes }}
       {{- toYaml .Values.auctioneer.extraVolumes | nindent 6 }}
@@ -196,7 +207,7 @@ spec:
   volumeClaimTemplates:
     {{- if .Values.auctioneer.persistence.enabled }}
     - metadata:
-        name: nitrodata
+        name: timeboostdata
         {{- with .Values.auctioneer.storageAnnotations }}
         annotations:
         {{- toYaml . | nindent 10 }}
