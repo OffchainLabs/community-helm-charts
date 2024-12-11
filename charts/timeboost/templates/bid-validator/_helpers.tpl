@@ -81,8 +81,7 @@ bid validator args
 {{- end }}
 
 {{/*
-Process config data automatically depending on values that are set.
-Currently primarily used for stateless validator configuration
+Process config data 
 */}}
 {{- define "timeboost.bidValidator.configProcessor" -}}
 
