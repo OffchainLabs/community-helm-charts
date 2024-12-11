@@ -145,7 +145,14 @@ auctioneer:
     enabled: true
     ## @extra configmap.data See Configuration Options for the full list of options
     data:
-      ## @param bidValidator.configmap.data.auctioneer-server Auctioneer configuration
+      ## @param bidValidator.configmap.data.auctioneer-server.auction-contract-address Auction contract address
+      ## @param bidValidator.configmap.data.auctioneer-server.db-directory Database storage directory
+      ## @param bidValidator.configmap.data.auctioneer-server.redis-url Redis URL
+      ## @param bidValidator.configmap.data.auctioneer-server.sequencer-endpoint Sequencer endpoint
+      ## @param bidValidator.configmap.data.auctioneer-server.sequencer-jwt-path Path to seqeuncer JWT
+      ## @param bidValidator.configmap.data.auctioneer-server.wallet.account Wallet account
+      ## @param bidValidator.configmap.data.auctioneer-server.wallet.password Wallet password
+      ## @param bidValidator.configmap.data.auctioneer-server.wallet.pathname Path to wallet
       auctioneer-server:
         auction-contract-address: ''
         db-directory: "/data"
@@ -312,11 +319,13 @@ bidValidator:
         rpcprefix: "/rpc"
         vhosts: "*"
 
-      ## @param bidValidator.configmap.data.auctioneer-server Auctioneer configuration
+      ## @param bidValidator.configmap.data.auctioneer-server.enable Enable Auctioneer Server
       auctioneer-server:
         enable: false
 
-      ## @param bidValidator.configmap.data.bid-validator Bid Validator configuration
+      ## @param bidValidator.configmap.data.bid-validator.auction-contract-address Auction contract address
+      ## @param bidValidator.configmap.data.bid-validator.redis-url Redis URL
+      ## @param bidValidator.configmap.data.bid-validator.sequencer-endpoint Sequencer endpoint
       bid-validator:
         auction-contract-address: ''
         redis-url: redis://redis:6379
