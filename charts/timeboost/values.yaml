@@ -80,6 +80,12 @@ auctioneer:
     annotations: {}
     name: ""
 
+  ## @param auctioneer.jwtSecret.enabled Enable a jwt secret
+  ## @param auctioneer.jwtSecret.value Value of the jwt secret
+  jwtSecret:
+    enabled: false
+    value: ""
+
   ## @param auctioneer.podAnnotations Annotations for the pod
   podAnnotations: {}
 
