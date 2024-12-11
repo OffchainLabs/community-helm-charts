@@ -25,15 +25,13 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.bidValidator.imagePullSecrets }}
+      {{- with .Values.image.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "timeboost.fullname" . }}-bid-validator
       securityContext:
-        {{- with .Values.bidValidator.podSecurityContext }}
-        {{ toYaml . | nindent 8 }}
-        {{- end }}
+        {{- with .Values.bidValidator.podSecurityContext }}{{ toYaml . | nindent 8 }}{{- end }}
       {{- if .Values.bidValidator.priorityClassName }}
       priorityClassName: {{ .Values.bidValidator.priorityClassName }}
       {{- end }}
@@ -114,47 +112,38 @@ spec:
           {{- end }}
           {{- end }}
           volumeMounts:
-          {{- if .Values.bidValidator.configmap.enabled }}
-          - name: config
-            mountPath: /config/
-          {{- end }}
-          {{- if .Values.bidValidator.extraVolumeMounts }}
-          {{- toYaml .Values.bidValidator.extraVolumeMounts | nindent 10}}
-          {{- end }}
-          {{- range .Values.bidValidator.additionalVolumeClaims }}
-          {{- if .enabled }}
-          - name: {{ .name }}
-            mountPath: {{ .mountPath }}
-          {{- end }}
+            {{- if .Values.bidValidator.configmap.enabled }}
+            - name: config
+              mountPath: /config/
+            {{- end }}
+            {{- if .Values.bidValidator.extraVolumeMounts }}
+            {{- toYaml .Values.bidValidator.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+            {{- range .Values.bidValidator.additionalVolumeClaims }}
+            {{- if .enabled }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- end }}
+            {{- end }}
           resources:
             {{- toYaml .Values.bidValidator.resources | nindent 12 }}
-        {{- include "timeboost.sidecars" . | nindent 8 }}
+      {{- include "timeboost.sidecars" . | nindent 8 }}
       volumes:
-      {{- if .Values.bidValidator.jwtSecret.enabled }}
-      - name: jwt-secret
-        secret:
-          secretName: {{ include "timeboost.fullname" . }}-jwt
-      {{- end }}
-      {{- if .Values.bidValidator.configmap.enabled }}
-      - name: config
-        configMap:
-          name: {{ include "timeboost.fullname" . }}
-      {{- end }}
-      {{- if .Values.bidValidator.wallet.files }}
-      - name: wallet-files
-        secret:
-          secretName: {{ include "timeboost.fullname" . }}-wallets
-      {{- end }}
-      {{- if .Values.bidValidator.extraVolumes }}
-      {{- toYaml .Values.bidValidator.extraVolumes | nindent 6 }}
-      {{- end }}
-      {{- range .Values.bidValidator.additionalVolumeClaims }}
-      {{- if .enabled }}
-      - name: {{ .name }}
-        persistentVolumeClaim:
-          claimName: {{ .name }}
-      {{- end }}
-      {{- end }}
+        {{- if .Values.bidValidator.configmap.enabled }}
+        - name: config
+          configMap:
+            name: {{ include "timeboost.fullname" . }}-bid-validator
+        {{- end }}
+        {{- if .Values.bidValidator.extraVolumes }}
+        {{- toYaml .Values.bidValidator.extraVolumes | nindent 8 }}
+        {{- end }}
+        {{- range .Values.bidValidator.additionalVolumeClaims }}
+        {{- if .enabled }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ .name }}
+        {{- end }}
+        {{- end }}
       {{- if .Values.bidValidator.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.bidValidator.nodeSelector | nindent 8 }}
@@ -171,13 +160,12 @@ spec:
       {{- with .Values.bidValidator.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- range $constraint := . }}
-      - {{ toYaml $constraint | nindent 8 | trim }}
-        {{- if not $constraint.labelSelector }}
-        labelSelector:
-          matchLabels:
-            {{- include "timeboost.bidValidator.selectorLabels" $ | nindent 12 }}
-            function: nitro
+        - {{ toYaml $constraint | nindent 8 | trim }}
+          {{- if not $constraint.labelSelector }}
+          labelSelector:
+            matchLabels:
+              {{- include "timeboost.bidValidator.selectorLabels" $ | nindent 12 }}
+              function: nitro
+          {{- end }}
         {{- end }}
-        {{- end }}
-      {{- end }}
       {{- end }}
