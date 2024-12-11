@@ -22,7 +22,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configmap: {{ include (print $.Template.BasePath "/auctioneer-cm.yaml") . | sha256sum }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/auctioneer/auctioneer-cm.yaml") . | sha256sum }}
         {{- if .Values.auctioneer.wallet.files }}
         checksum/wallets: {{ include (print $.Template.BasePath "/wallets.yaml") . | sha256sum }}
         {{- end }}

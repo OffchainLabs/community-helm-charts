@@ -31,19 +31,6 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Common labels Auctioneer
-*/}}
-{{- define "timeboost.auctioneer.labels" -}}
-helm.sh/chart: {{ include "timeboost.chart" . }}
-{{ include "timeboost.auctioneer.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-
-{{/*
 Common labels Bid Validator
 */}}
 {{- define "timeboost.bidValidator.labels" -}}
@@ -53,14 +40,6 @@ helm.sh/chart: {{ include "timeboost.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Selector labels Auctioneer
-*/}}
-{{- define "timeboost.auctioneer.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "timeboost.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
@@ -79,21 +58,6 @@ curl "http://localhost:{{ .Values.configmap.data.http.port }}{{ .Values.configma
          -sd "{\"jsonrpc\":\"2.0\",\"id\":0,\"method\":\"eth_syncing\",\"params\":[]}" \
          | jq -ne "input.result == false"
 {{- end }}
-{{- end -}}
-
-
-{{/*
-auctioneer args
-*/}}
-{{- define "timeboost.auctioneer.customArgs" -}}
-
-{{- $auctioneerCustomArgs := list -}}
-{{- range $k, $v := .Values.auctioneer.auctioneerCustomArgs -}}
-  {{- $auctioneerCustomArgs = concat $auctioneerCustomArgs (list (printf "--%s" $v)) -}}
-{{- end -}}
-
-{{- $auctioneerCustomArgs | compact | toStrings | toYaml -}}
-
 {{- end -}}
 
 {{/*
@@ -115,23 +79,6 @@ bid validator args
 
 {{- define "timeboost.sidecars" -}}
 {{- end }}
-
-{{/*
-Process config data automatically depending on values that are set.
-Currently primarily used for stateless validator configuration
-*/}}
-{{- define "timeboost.auctioneer.configProcessor" -}}
-
-{{- /* Make a deep copy of the values from the Helm chart */ -}}
-{{- $values := deepCopy .Values -}}
-
-{{- /* Process the final configmap data into pretty JSON format */ -}}
-{{- $processed := $values.auctioneer.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" -}}
-
-{{- /* Return the processed JSON data */ -}}
-{{- $processed -}}
-
-{{- end -}}
 
 {{/*
 Process config data automatically depending on values that are set.
