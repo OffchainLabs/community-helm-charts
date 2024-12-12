@@ -1,0 +1,40 @@
+{{- if .Values.auctioneer.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "timeboost.fullname" . }}-auctioneer
+  labels:
+    {{- include "timeboost.auctioneer.labels" . | nindent 4 }}
+    {{- if .Values.auctioneer.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.auctioneer.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- end }}
+spec:
+  endpoints:
+    - port: {{ .Values.auctioneer.serviceMonitor.portName | default "http" }}
+      {{- if .Values.auctioneer.serviceMonitor.interval }}
+      interval: {{ .Values.auctioneer.serviceMonitor.interval }}
+      {{- end }}
+      {{- if .Values.auctioneer.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.auctioneer.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+      {{- if .Values.auctioneer.serviceMonitor.path }}
+      path: {{ .Values.auctioneer.serviceMonitor.path }}
+      {{- end }}
+      {{- if .Values.auctioneer.serviceMonitor.scheme }}
+      scheme: {{ .Values.auctioneer.serviceMonitor.scheme }}
+      {{- end }}
+      {{- if .Values.auctioneer.serviceMonitor.tlsConfig }}
+      tlsConfig: 
+        {{- toYaml .Values.auctioneer.serviceMonitor.tlsConfig | nindent 8 }}
+      {{- end }}
+      {{- with .Values.auctioneer.serviceMonitor.relabelings }}
+      relabelings: {{- toYaml . | nindent 8 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "timeboost.auctioneer.selectorLabels" . | nindent 6 }}
+      function: timeboost-svc
+{{- end }}

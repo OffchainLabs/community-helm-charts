@@ -1,0 +1,40 @@
+{{- $hasPorts := false }}
+{{- if .Values.auctioneer.configmap.data.metrics }}
+  {{- $hasPorts = true }}
+{{- end }}
+{{- range .Values.auctioneer.extraPorts }}
+  {{- if .serviceEnabled | default true }}
+    {{- $hasPorts = true }}
+  {{- end }}
+{{- end }}
+
+{{- if $hasPorts }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "timeboost.fullname" . }}-auctioneer
+  labels:
+    {{- include "timeboost.auctioneer.labels" . | nindent 4 }}
+    function: nitro-svc
+spec:
+  type: {{ .Values.auctioneer.service.type }}
+  ports:
+    {{- if .Values.auctioneer.configmap.data.metrics }}
+    - port: {{ index .Values.auctioneer "configmap" "data" "metrics-server" "port" }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+    {{- end }}
+    {{- range .Values.auctioneer.extraPorts }}
+    {{- if .serviceEnabled | default true }}
+    - name: {{ .name }}
+      port: {{ .servicePort | default .port }}
+      targetPort: {{ .port }}
+      protocol: {{ .protocol | default "TCP" }}
+    {{- end }}
+    {{- end }}
+  selector:
+    {{- include "timeboost.auctioneer.selectorLabels" . | nindent 4 }}
+    function: nitro
+  publishNotReadyAddresses: {{ .Values.auctioneer.service.publishNotReadyAddresses }}
+{{- end }}
