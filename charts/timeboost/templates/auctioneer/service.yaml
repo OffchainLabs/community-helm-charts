@@ -20,7 +20,7 @@ spec:
   type: {{ .Values.auctioneer.service.type }}
   ports:
     {{- if .Values.auctioneer.configmap.data.metrics }}
-    - port: {{ index .Values "configmap" "data" "metrics-server" "port" }}
+    - port: {{ index .Values.auctioneer "configmap" "data" "metrics-server" "port" }}
       targetPort: metrics
       protocol: TCP
       name: metrics
