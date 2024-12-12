@@ -5,29 +5,29 @@ metadata:
   name: {{ include "timeboost.fullname" . }}-auctioneer
   labels:
     {{- include "timeboost.auctioneer.labels" . | nindent 4 }}
-    {{- if .Values.serviceMonitor.additionalLabels }}
-    {{- toYaml .Values.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- if .Values.auctioneer.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.auctioneer.serviceMonitor.additionalLabels | nindent 4 }}
     {{- end }}
 spec:
   endpoints:
-    - port: {{ .Values.serviceMonitor.portName | default "http" }}
-      {{- if .Values.serviceMonitor.interval }}
-      interval: {{ .Values.serviceMonitor.interval }}
+    - port: {{ .Values.auctioneer.serviceMonitor.portName | default "http" }}
+      {{- if .Values.auctioneer.serviceMonitor.interval }}
+      interval: {{ .Values.auctioneer.serviceMonitor.interval }}
       {{- end }}
-      {{- if .Values.serviceMonitor.scrapeTimeout }}
-      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      {{- if .Values.auctioneer.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.auctioneer.serviceMonitor.scrapeTimeout }}
       {{- end }}
-      {{- if .Values.serviceMonitor.path }}
-      path: {{ .Values.serviceMonitor.path }}
+      {{- if .Values.auctioneer.serviceMonitor.path }}
+      path: {{ .Values.auctioneer.serviceMonitor.path }}
       {{- end }}
-      {{- if .Values.serviceMonitor.scheme }}
-      scheme: {{ .Values.serviceMonitor.scheme }}
+      {{- if .Values.auctioneer.serviceMonitor.scheme }}
+      scheme: {{ .Values.auctioneer.serviceMonitor.scheme }}
       {{- end }}
-      {{- if .Values.serviceMonitor.tlsConfig }}
+      {{- if .Values.auctioneer.serviceMonitor.tlsConfig }}
       tlsConfig: 
-        {{- toYaml .Values.serviceMonitor.tlsConfig | nindent 8 }}
+        {{- toYaml .Values.auctioneer.serviceMonitor.tlsConfig | nindent 8 }}
       {{- end }}
-      {{- with .Values.serviceMonitor.relabelings }}
+      {{- with .Values.auctioneer.serviceMonitor.relabelings }}
       relabelings: {{- toYaml . | nindent 8 }}
       {{- end }}
   namespaceSelector:

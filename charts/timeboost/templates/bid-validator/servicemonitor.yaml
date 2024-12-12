@@ -5,29 +5,29 @@ metadata:
   name: {{ include "timeboost.fullname" . }}-bid-validator
   labels:
     {{- include "timeboost.bidValidator.labels" . | nindent 4 }}
-    {{- if .Values.serviceMonitor.additionalLabels }}
-    {{- toYaml .Values.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- if .Values.bidValidator.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.bidValidator.serviceMonitor.additionalLabels | nindent 4 }}
     {{- end }}
 spec:
   endpoints:
-    - port: {{ .Values.serviceMonitor.portName | default "http" }}
-      {{- if .Values.serviceMonitor.interval }}
-      interval: {{ .Values.serviceMonitor.interval }}
+    - port: {{ .Values.bidValidator.serviceMonitor.portName | default "http" }}
+      {{- if .Values.bidValidator.serviceMonitor.interval }}
+      interval: {{ .Values.bidValidator.serviceMonitor.interval }}
       {{- end }}
-      {{- if .Values.serviceMonitor.scrapeTimeout }}
-      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      {{- if .Values.bidValidator.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.bidValidator.serviceMonitor.scrapeTimeout }}
       {{- end }}
-      {{- if .Values.serviceMonitor.path }}
-      path: {{ .Values.serviceMonitor.path }}
+      {{- if .Values.bidValidator.serviceMonitor.path }}
+      path: {{ .Values.bidValidator.serviceMonitor.path }}
       {{- end }}
-      {{- if .Values.serviceMonitor.scheme }}
-      scheme: {{ .Values.serviceMonitor.scheme }}
+      {{- if .Values.bidValidator.serviceMonitor.scheme }}
+      scheme: {{ .Values.bidValidator.serviceMonitor.scheme }}
       {{- end }}
-      {{- if .Values.serviceMonitor.tlsConfig }}
+      {{- if .Values.bidValidator.serviceMonitor.tlsConfig }}
       tlsConfig: 
-        {{- toYaml .Values.serviceMonitor.tlsConfig | nindent 8 }}
+        {{- toYaml .Values.bidValidator.serviceMonitor.tlsConfig | nindent 8 }}
       {{- end }}
-      {{- with .Values.serviceMonitor.relabelings }}
+      {{- with .Values.bidValidator.serviceMonitor.relabelings }}
       relabelings: {{- toYaml . | nindent 8 }}
       {{- end }}
   namespaceSelector:
