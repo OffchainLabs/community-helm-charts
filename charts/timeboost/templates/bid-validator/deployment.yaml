@@ -1,0 +1,171 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "timeboost.fullname" . }}-bid-validator
+  labels:
+    {{- include "timeboost.bidValidator.labels" . | nindent 4 }}
+  annotations:
+    timeboost.arbitrum.io/desiredReplicas: {{ $.Values.bidValidator.replicaCount | quote }}
+spec:
+  replicas: {{ .Values.bidValidator.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "timeboost.bidValidator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/bid-validator/configmap.yaml") . | sha256sum }}
+        {{- with .Values.bidValidator.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "timeboost.bidValidator.selectorLabels" . | nindent 8 }}
+        function: nitro
+        {{- with .Values.bidValidator.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.image.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "timeboost.fullname" . }}-bid-validator
+      securityContext:
+        {{- with .Values.bidValidator.podSecurityContext }}{{ toYaml . | nindent 8 }}{{- end }}
+      {{- if .Values.bidValidator.priorityClassName }}
+      priorityClassName: {{ .Values.bidValidator.priorityClassName }}
+      {{- end }}
+      initContainers:
+        {{- if .Values.bidValidator.initContainers }}
+        {{- toYaml .Values.bidValidator.initContainers | nindent 8 }}
+        {{- end }}
+        {{- include "timeboost.initContainers" . | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.bidValidator.securityContext | nindent 12 }}
+          image: "{{ include "timeboost.image.repository" (dict "root" . "component" .Values.bidValidator) }}:{{ include "timeboost.image.tag" (dict "root" . "component" .Values.bidValidator) }}"
+          imagePullPolicy: {{ include "timeboost.image.pullPolicy" (dict "root" . "component" .Values.bidValidator) }}
+          {{- if .Values.bidValidator.diagnosticMode }}
+          command: ["sleep"]
+          args: ["infinity"]
+          {{- else if .Values.bidValidator.commandOverride.enabled }}
+          {{- with .Values.bidValidator.commandOverride.command }}
+          command: {{- toYaml . | nindent 8}}
+          {{- end }}
+          {{- with .Values.bidValidator.commandOverride.args }}
+          args: {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- else }}
+          command: [/usr/local/bin/autonomous-auctioneer]
+          args:
+            {{- if .Values.bidValidator.configmap.data.metrics}}
+            - --metrics
+            {{- end }}
+            {{- if .Values.bidValidator.configmap.enabled }}
+            - --conf.file=/config/config.json
+            {{- end }}
+            {{- if .Values.bidValidator.customArgs }}
+            {{- include "timeboost.customArgs" . | nindent 12 }}
+            {{- end }}
+          ports:
+            {{- if and .Values.bidValidator.configmap.data.http .Values.bidValidator.configmap.data.http.port}}
+            - name: http
+              containerPort: {{ .Values.bidValidator.configmap.data.http.port }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.bidValidator.configmap.data.metrics }}
+            - name: metrics
+              containerPort: {{ index .Values.bidValidator "configmap" "data" "metrics-server" "port" }}
+              protocol: TCP
+            {{- end }}
+            {{- range .Values.bidValidator.extraPorts }}
+            - name: {{ .name }}
+              containerPort: {{ .port }}
+              protocol: {{ .protocol | default "TCP" }}
+            {{- end }}
+          {{- if .Values.bidValidator.livenessProbe.enabled }}
+          livenessProbe:
+            {{- if and .Values.bidValidator.livenessProbe.exec (kindIs "string" .Values.bidValidator.livenessProbe.exec.command) }}
+            {{- omit .Values.bidValidator.livenessProbe "enabled" "exec" | toYaml | nindent 12 }}
+            exec:
+              command:
+                {{- tpl .Values.bidValidator.livenessProbe.exec.command . | nindent 14 }}
+            {{- else }}
+            {{- omit .Values.bidValidator.livenessProbe "enabled" | toYaml | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.bidValidator.readinessProbe.enabled }}
+          readinessProbe:
+            {{- omit .Values.bidValidator.readinessProbe "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if and .Values.bidValidator.startupProbe.enabled .Values.bidValidator.configmap.data.http .Values.bidValidator.configmap.data.http.port }}
+          startupProbe:
+            exec:
+              command:
+                - "bash"
+                - "-c"
+                - |
+                  {{- include "startupProbe" . | nindent 18 }}
+            failureThreshold: {{ .Values.bidValidator.startupProbe.failureThreshold }}
+            periodSeconds: {{ .Values.bidValidator.startupProbe.periodSeconds }}
+          {{- end }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.bidValidator.configmap.enabled }}
+            - name: config
+              mountPath: /config/
+            {{- end }}
+            {{- if .Values.bidValidator.extraVolumeMounts }}
+            {{- toYaml .Values.bidValidator.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+            {{- range .Values.bidValidator.additionalVolumeClaims }}
+            {{- if .enabled }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- end }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.bidValidator.resources | nindent 12 }}
+      {{- include "timeboost.sidecars" . | nindent 8 }}
+      volumes:
+        {{- if .Values.bidValidator.configmap.enabled }}
+        - name: config
+          configMap:
+            name: {{ include "timeboost.fullname" . }}-bid-validator
+        {{- end }}
+        {{- if .Values.bidValidator.extraVolumes }}
+        {{- toYaml .Values.bidValidator.extraVolumes | nindent 8 }}
+        {{- end }}
+        {{- range .Values.bidValidator.additionalVolumeClaims }}
+        {{- if .enabled }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ .name }}
+        {{- end }}
+        {{- end }}
+      {{- if .Values.bidValidator.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.bidValidator.nodeSelector | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.bidValidator.terminationGracePeriodSeconds | default 600 }}
+      {{- with .Values.bidValidator.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.bidValidator.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.bidValidator.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range $constraint := . }}
+        - {{ toYaml $constraint | nindent 8 | trim }}
+          {{- if not $constraint.labelSelector }}
+          labelSelector:
+            matchLabels:
+              {{- include "timeboost.bidValidator.selectorLabels" $ | nindent 12 }}
+              function: nitro
+          {{- end }}
+        {{- end }}
+      {{- end }}

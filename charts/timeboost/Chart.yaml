@@ -1,0 +1,12 @@
+apiVersion: v2
+name: timeboost
+description: A Helm chart for Arbitrum Timeboost components
+
+maintainers:
+  - name: OffchainLabs
+
+type: application
+
+version: 0.1.0
+
+appVersion: "express-lane-timeboost-cee611d"
