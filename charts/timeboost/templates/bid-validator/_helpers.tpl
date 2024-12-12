@@ -81,7 +81,7 @@ bid validator args
 {{- end }}
 
 {{/*
-Process config data 
+Process config data
 */}}
 {{- define "timeboost.bidValidator.configProcessor" -}}
 
