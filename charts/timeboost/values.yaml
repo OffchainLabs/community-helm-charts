@@ -14,7 +14,6 @@ image:
 ## @section Auctioneer Deployment Options
 auctioneer:
   ## @param auctioneer.replicaCount Number of replicas to deploy
-  ##
   replicaCount: 1
 
   ## @param auctioneer.image.repository Docker image repository override
@@ -196,7 +195,7 @@ auctioneer:
 
       ## @param auctioneer.configmap.data.persistent.auctioneer Path to persistent auction data
       persistent:
-        auctioneer: "/home/user/data/"
+        chain: "/home/user/data/"
 
 ## @section Bid Validator Deployment Options
 bidValidator:
