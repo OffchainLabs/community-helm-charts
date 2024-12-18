@@ -116,7 +116,7 @@ nitro args
   value: {{ printf "%dB" (int (mulf $valueMi ($.Values.env.resourceMgmtMemFreeLimit.multiplier | default 0.05) 1048576)) }}
 {{- end }}
 {{- if $.Values.env.blockValidatorMemFreeLimit.enabled }}
-- name: {{ $envPrefix }}_NODE_BLOCK__VALIDATOR_MEM__FREE__LIMIT
+- name: {{ $envPrefix }}_NODE_BLOCK__VALIDATOR_MEMORY__FREE__LIMIT
   value: {{ printf "%dB" (int (mulf $valueMi ($.Values.env.blockValidatorMemFreeLimit.multiplier | default 0.05) 1048576)) }}
 {{- end }}
 {{- end -}}
