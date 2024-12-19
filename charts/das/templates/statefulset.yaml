@@ -13,7 +13,7 @@ spec:
   podManagementPolicy: Parallel
   {{- if .Values.updateStrategy }}
   {{- with .Values.updateStrategy }}
-  updateStrategy: 
+  updateStrategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
@@ -53,7 +53,7 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-          - mountPath: /data/das-storage
+          - mountPath: {{ index .Values "configmap" "data" "data-availability" "local-file-storage" "data-dir" }}
             name: localfilestorage
       {{- end }}
       {{- if .Values.initContainers }}
