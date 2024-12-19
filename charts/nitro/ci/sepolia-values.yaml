@@ -43,6 +43,8 @@ resources:
 env:
   resourceMgmtMemFreeLimit:
     enabled: true
+  blockValidatorMemFreeLimit:
+    enabled: true
 
 configmap:
   data:

@@ -49,6 +49,8 @@ updateStrategy:
 ## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
 ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
 ## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
+## @param env.blockValidatorMemFreeLimit.enabled Enable block validator memory management
+## @param env.blockValidatorMemFreeLimit.multiplier The multiplier of available memory to use
 env:
   splitvalidator:
     goMemLimit:
@@ -59,6 +61,9 @@ env:
       enabled: true
       multiplier: 0.9
   resourceMgmtMemFreeLimit:
+    enabled: false
+    multiplier: 0.05
+  blockValidatorMemFreeLimit:
     enabled: false
     multiplier: 0.05
 
