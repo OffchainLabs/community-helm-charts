@@ -96,6 +96,8 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `env.nitro.goMemLimit.multiplier`                          | The multiplier of available memory to use for nitro                             | `0.9`                                                               |
 | `env.resourceMgmtMemFreeLimit.enabled`                     | Enable nitro resource management                                                | `false`                                                             |
 | `env.resourceMgmtMemFreeLimit.multiplier`                  | The multiplier of available memory to use                                       | `0.05`                                                              |
+| `env.blockValidatorMemFreeLimit.enabled`                   | Enable block validator memory management                                        | `false`                                                             |
+| `env.blockValidatorMemFreeLimit.multiplier`                | The multiplier of available memory to use                                       | `0.05`                                                              |
 | `persistence.enabled`                                      | Enable persistence                                                              | `true`                                                              |
 | `persistence.size`                                         | Size of the persistent volume claim                                             | `500Gi`                                                             |
 | `persistence.storageClassName`                             | Storage class of the persistent volume claim                                    | `nil`                                                               |
