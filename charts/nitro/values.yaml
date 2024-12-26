@@ -119,10 +119,10 @@ perReplicaHeadlessService:
   publishNotReadyAddresses: true
   annotations: {}
 
-## @param headlessservice.enabled Enable headless service
-## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
-## @param headlessservice.annotations Annotations for the headless service
-headlessservice:
+## @param headlessService.enabled Enable headless service
+## @param headlessService.publishNotReadyAddresses Publish not ready addresses
+## @param headlessService.annotations Annotations for the headless service
+headlessService:
   enabled: true
   publishNotReadyAddresses: true
   annotations: {}

@@ -1,4 +1,4 @@
-{{- if .Values.headlessservice.enabled -}}
+{{- if .Values.headlessService.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -6,8 +6,8 @@ metadata:
   labels:
     {{- include "nitro.labels" . | nindent 4 }}
   annotations:
-    {{- if $.Values.headlessservice.annotations }}
-    {{- toYaml $.Values.headlessservice.annotations | nindent 4 }}
+    {{- if $.Values.headlessService.annotations }}
+    {{- toYaml $.Values.headlessService.annotations | nindent 4 }}
     {{- end }}
 spec:
   type: ClusterIP
@@ -16,6 +16,6 @@ spec:
   - None
   selector:
     {{- include "nitro.selectorLabels" . | nindent 4 }}
-  publishNotReadyAddresses: {{ .Values.headlessservice.publishNotReadyAddresses }}
+  publishNotReadyAddresses: {{ .Values.headlessService.publishNotReadyAddresses }}
 {{- end }}
 

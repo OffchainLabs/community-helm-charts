@@ -72,8 +72,8 @@ helm install <my-release> offchainlabs/relay \
 | `serviceMonitor.relabelings`                      | Add relabelings for the metrics being scraped    | `[]`                        |
 | `perReplicaService.enabled`                       | Enable per replica service                       | `false`                     |
 | `perReplicaService.publishNotReadyAddresses`      | Publish not ready addresses                      | `false`                     |
-| `headlessservice.enabled`                         | Enable headless service                          | `true`                      |
-| `headlessservice.publishNotReadyAddresses`        | Publish not ready addresses                      | `true`                      |
+| `headlessService.enabled`                         | Enable headless service                          | `true`                      |
+| `headlessService.publishNotReadyAddresses`        | Publish not ready addresses                      | `true`                      |
 | `pdb.enabled`                                     | Enable pod disruption budget                     | `false`                     |
 | `pdb.minAvailable`                                | Minimum number of available pods                 | `75%`                       |
 | `pdb.maxUnavailable`                              | Maximum number of unavailable pods               | `""`                        |
@@ -117,66 +117,66 @@ helm install <my-release> offchainlabs/relay \
 ## Configuration Options
 The following table lists the exhaustive configurable parameters that can be applied as part of the configmap (nested under `configmap.data`) or as standalone cli flags.
 
-Option | Description | Default
---- | --- | ---
-`chain.id` | uint                                                           L2 chain ID | None
-`conf.dump` | print out currently active configuration file | None
-`conf.env-prefix` | string                                                  environment variables with given prefix will be loaded as configuration values | None
-`conf.file` | strings                                                       name of configuration file | None
-`conf.reload-interval` | duration                                           how often to reload configuration (0=disable periodic reloading) | None
-`conf.s3.access-key` | string                                               S3 access key | None
-`conf.s3.bucket` | string                                                   S3 bucket | None
-`conf.s3.object-key` | string                                               S3 object key | None
-`conf.s3.region` | string                                                   S3 region | None
-`conf.s3.secret-key` | string                                               S3 secret key | None
-`conf.string` | string                                                      configuration as JSON string | None
-`log-level` | string                                                        log level, valid values are CRIT, ERROR, WARN, INFO, DEBUG, TRACE | `INFO`
-`log-type` | string                                                         log type | `plaintext`
-`metrics` | enable metrics | None
-`metrics-server.addr` | string                                              metrics server address | `127.0.0.1`
-`metrics-server.port` | int                                                 metrics server port | `6070`
-`metrics-server.update-interval` | duration                                 metrics server update interval | `3s`
-`node.feed.input.enable-compression` | enable per message deflate compression support | `true`
-`node.feed.input.reconnect-initial-backoff` | duration                      initial duration to wait before reconnect | `1s`
-`node.feed.input.reconnect-maximum-backoff` | duration                      maximum duration to wait before reconnect | `1m4s`
-`node.feed.input.require-chain-id` | require chain id to be present on connect | None
-`node.feed.input.require-feed-version` | require feed version to be present on connect | None
-`node.feed.input.secondary-url` | strings                                   list of secondary URLs of sequencer feed source. Would be started in the order they appear in the list when primary feeds fails | None
-`node.feed.input.timeout` | duration                                        duration to wait before timing out connection to sequencer feed | `20s`
-`node.feed.input.url` | strings                                             list of primary URLs of sequencer feed source | None
-`node.feed.input.verify.accept-sequencer` | accept verified message from sequencer | `true`
-`node.feed.input.verify.allowed-addresses` | strings                        a list of allowed addresses | None
-`node.feed.input.verify.dangerous.accept-missing` | accept empty as valid signature | `true`
-`node.feed.output.addr` | string                                            address to bind the relay feed output to | None
-`node.feed.output.backlog.segment-limit` | int                              the maximum number of messages each segment within the backlog can contain | `240`
-`node.feed.output.client-delay` | duration                                  delay the first messages sent to each client by this amount | None
-`node.feed.output.client-timeout` | duration                                duration to wait before timing out connections to client | `15s`
-`node.feed.output.connection-limits.enable` | enable broadcaster per-client connection limiting | None
-`node.feed.output.connection-limits.per-ip-limit` | int                     limit clients, as identified by IPv4/v6 address, to this many connections to this relay | `5`
-`node.feed.output.connection-limits.per-ipv6-cidr-48-limit` | int           limit ipv6 clients, as identified by IPv6 address masked with /48, to this many connections to this relay | `20`
-`node.feed.output.connection-limits.per-ipv6-cidr-64-limit` | int           limit ipv6 clients, as identified by IPv6 address masked with /64, to this many connections to this relay | `10`
-`node.feed.output.connection-limits.reconnect-cooldown-period` | duration   time to wait after a relay client disconnects before the disconnect is registered with respect to the limit for this client | None
-`node.feed.output.disable-signing` | don't sign feed messages | `true`
-`node.feed.output.enable` | enable broadcaster | None
-`node.feed.output.enable-compression` | enable per message deflate compression support | None
-`node.feed.output.handshake-timeout` | duration                             duration to wait before timing out HTTP to WS upgrade | `1s`
-`node.feed.output.limit-catchup` | only supply catchup buffer if requested sequence number is reasonable | None
-`node.feed.output.log-connect` | log every client connect | None
-`node.feed.output.log-disconnect` | log every client disconnect | None
-`node.feed.output.max-catchup` | int                                        the maximum size of the catchup buffer (-1 means unlimited) | `-1`
-`node.feed.output.max-send-queue` | int                                     maximum number of messages allowed to accumulate before client is disconnected | `4096`
-`node.feed.output.ping` | duration                                          duration for ping interval | `5s`
-`node.feed.output.port` | string                                            port to bind the relay feed output to | `9642`
-`node.feed.output.queue` | int                                              queue size for HTTP to WS upgrade | `100`
-`node.feed.output.read-timeout` | duration                                  duration to wait before timing out reading data (i.e. pings) from clients | `1s`
-`node.feed.output.require-compression` | require clients to use compression | None
-`node.feed.output.require-version` | don't connect if client version not present | None
-`node.feed.output.signed` | sign broadcast messages | None
-`node.feed.output.workers` | int                                            number of threads to reserve for HTTP to WS upgrade | `100`
-`node.feed.output.write-timeout` | duration                                 duration to wait before timing out writing data to clients | `2s`
-`pprof` | enable pprof | None
-`pprof-cfg.addr` | string                                                   pprof server address | `127.0.0.1`
-`pprof-cfg.port` | int                                                      pprof server port | `6071`
-`queue` | int                                                               queue for incoming messages from sequencer | `1024`
+Option                                                         | Description                                                                                                                                                               | Default
+---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------
+`chain.id`                                                     | uint                                                           L2 chain ID                                                                                                | None
+`conf.dump`                                                    | print out currently active configuration file                                                                                                                             | None
+`conf.env-prefix`                                              | string                                                  environment variables with given prefix will be loaded as configuration values                                    | None
+`conf.file`                                                    | strings                                                       name of configuration file                                                                                  | None
+`conf.reload-interval`                                         | duration                                           how often to reload configuration (0=disable periodic reloading)                                                       | None
+`conf.s3.access-key`                                           | string                                               S3 access key                                                                                                        | None
+`conf.s3.bucket`                                               | string                                                   S3 bucket                                                                                                        | None
+`conf.s3.object-key`                                           | string                                               S3 object key                                                                                                        | None
+`conf.s3.region`                                               | string                                                   S3 region                                                                                                        | None
+`conf.s3.secret-key`                                           | string                                               S3 secret key                                                                                                        | None
+`conf.string`                                                  | string                                                      configuration as JSON string                                                                                  | None
+`log-level`                                                    | string                                                        log level, valid values are CRIT, ERROR, WARN, INFO, DEBUG, TRACE                                           | `INFO`
+`log-type`                                                     | string                                                         log type                                                                                                   | `plaintext`
+`metrics`                                                      | enable metrics                                                                                                                                                            | None
+`metrics-server.addr`                                          | string                                              metrics server address                                                                                                | `127.0.0.1`
+`metrics-server.port`                                          | int                                                 metrics server port                                                                                                   | `6070`
+`metrics-server.update-interval`                               | duration                                 metrics server update interval                                                                                                   | `3s`
+`node.feed.input.enable-compression`                           | enable per message deflate compression support                                                                                                                            | `true`
+`node.feed.input.reconnect-initial-backoff`                    | duration                      initial duration to wait before reconnect                                                                                                   | `1s`
+`node.feed.input.reconnect-maximum-backoff`                    | duration                      maximum duration to wait before reconnect                                                                                                   | `1m4s`
+`node.feed.input.require-chain-id`                             | require chain id to be present on connect                                                                                                                                 | None
+`node.feed.input.require-feed-version`                         | require feed version to be present on connect                                                                                                                             | None
+`node.feed.input.secondary-url`                                | strings                                   list of secondary URLs of sequencer feed source. Would be started in the order they appear in the list when primary feeds fails | None
+`node.feed.input.timeout`                                      | duration                                        duration to wait before timing out connection to sequencer feed                                                           | `20s`
+`node.feed.input.url`                                          | strings                                             list of primary URLs of sequencer feed source                                                                         | None
+`node.feed.input.verify.accept-sequencer`                      | accept verified message from sequencer                                                                                                                                    | `true`
+`node.feed.input.verify.allowed-addresses`                     | strings                        a list of allowed addresses                                                                                                                | None
+`node.feed.input.verify.dangerous.accept-missing`              | accept empty as valid signature                                                                                                                                           | `true`
+`node.feed.output.addr`                                        | string                                            address to bind the relay feed output to                                                                                | None
+`node.feed.output.backlog.segment-limit`                       | int                              the maximum number of messages each segment within the backlog can contain                                                               | `240`
+`node.feed.output.client-delay`                                | duration                                  delay the first messages sent to each client by this amount                                                                     | None
+`node.feed.output.client-timeout`                              | duration                                duration to wait before timing out connections to client                                                                          | `15s`
+`node.feed.output.connection-limits.enable`                    | enable broadcaster per-client connection limiting                                                                                                                         | None
+`node.feed.output.connection-limits.per-ip-limit`              | int                     limit clients, as identified by IPv4/v6 address, to this many connections to this relay                                                           | `5`
+`node.feed.output.connection-limits.per-ipv6-cidr-48-limit`    | int           limit ipv6 clients, as identified by IPv6 address masked with /48, to this many connections to this relay                                                   | `20`
+`node.feed.output.connection-limits.per-ipv6-cidr-64-limit`    | int           limit ipv6 clients, as identified by IPv6 address masked with /64, to this many connections to this relay                                                   | `10`
+`node.feed.output.connection-limits.reconnect-cooldown-period` | duration   time to wait after a relay client disconnects before the disconnect is registered with respect to the limit for this client                                    | None
+`node.feed.output.disable-signing`                             | don't sign feed messages                                                                                                                                                  | `true`
+`node.feed.output.enable`                                      | enable broadcaster                                                                                                                                                        | None
+`node.feed.output.enable-compression`                          | enable per message deflate compression support                                                                                                                            | None
+`node.feed.output.handshake-timeout`                           | duration                             duration to wait before timing out HTTP to WS upgrade                                                                                | `1s`
+`node.feed.output.limit-catchup`                               | only supply catchup buffer if requested sequence number is reasonable                                                                                                     | None
+`node.feed.output.log-connect`                                 | log every client connect                                                                                                                                                  | None
+`node.feed.output.log-disconnect`                              | log every client disconnect                                                                                                                                               | None
+`node.feed.output.max-catchup`                                 | int                                        the maximum size of the catchup buffer (-1 means unlimited)                                                                    | `-1`
+`node.feed.output.max-send-queue`                              | int                                     maximum number of messages allowed to accumulate before client is disconnected                                                    | `4096`
+`node.feed.output.ping`                                        | duration                                          duration for ping interval                                                                                              | `5s`
+`node.feed.output.port`                                        | string                                            port to bind the relay feed output to                                                                                   | `9642`
+`node.feed.output.queue`                                       | int                                              queue size for HTTP to WS upgrade                                                                                        | `100`
+`node.feed.output.read-timeout`                                | duration                                  duration to wait before timing out reading data (i.e. pings) from clients                                                       | `1s`
+`node.feed.output.require-compression`                         | require clients to use compression                                                                                                                                        | None
+`node.feed.output.require-version`                             | don't connect if client version not present                                                                                                                               | None
+`node.feed.output.signed`                                      | sign broadcast messages                                                                                                                                                   | None
+`node.feed.output.workers`                                     | int                                            number of threads to reserve for HTTP to WS upgrade                                                                        | `100`
+`node.feed.output.write-timeout`                               | duration                                 duration to wait before timing out writing data to clients                                                                       | `2s`
+`pprof`                                                        | enable pprof                                                                                                                                                              | None
+`pprof-cfg.addr`                                               | string                                                   pprof server address                                                                                             | `127.0.0.1`
+`pprof-cfg.port`                                               | int                                                      pprof server port                                                                                                | `6071`
+`queue`                                                        | int                                                               queue for incoming messages from sequencer                                                              | `1024`
 
 ## Notes

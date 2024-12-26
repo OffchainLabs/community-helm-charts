@@ -93,9 +93,9 @@ perReplicaService:
   enabled: false
   publishNotReadyAddresses: false
 
-## @param headlessservice.enabled Enable headless service
-## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
-headlessservice:
+## @param headlessService.enabled Enable headless service
+## @param headlessService.publishNotReadyAddresses Publish not ready addresses
+headlessService:
   enabled: true
   publishNotReadyAddresses: true
 
