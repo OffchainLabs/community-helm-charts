@@ -35,7 +35,7 @@ helm install <my-release> offchainlabs/relay \
 ### Relay
 
 | Name                                              | Description                                      | Value                       |
-|---------------------------------------------------|--------------------------------------------------|-----------------------------|
+| ------------------------------------------------- | ------------------------------------------------ | --------------------------- |
 | `replicaCount`                                    | Number of replicas to deploy                     | `1`                         |
 | `image.repository`                                | Docker image repository                          | `offchainlabs/nitro-node`   |
 | `image.pullPolicy`                                | Docker image pull policy                         | `Always`                    |
@@ -98,7 +98,7 @@ helm install <my-release> offchainlabs/relay \
 ### Relay Configmap
 
 | Name                                                       | Description                                            | Value     |
-|------------------------------------------------------------|--------------------------------------------------------|-----------|
+| ---------------------------------------------------------- | ------------------------------------------------------ | --------- |
 | `configmap.enabled`                                        | Enable configmap                                       | `true`    |
 | `configmap.data`                                           | See Configuration Options for the full list of options |           |
 | `configmap.data.chain.id`                                  | Chain id                                               | `42161`   |
