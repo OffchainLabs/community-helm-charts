@@ -105,7 +105,7 @@ serviceMonitor:
 
 ## @param perReplicaService.enabled Enable a service for each sts replica
 ## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
-## @param perReplicaService.annotations Annotations for the service
+## @param perReplicaService.annotations Annotations for the per replica service
 perReplicaService:
   enabled: false
   publishNotReadyAddresses: true
@@ -113,7 +113,7 @@ perReplicaService:
 
 ## @param perReplicaHeadlessService.enabled Enable a headless service for each sts replica
 ## @param perReplicaHeadlessService.publishNotReadyAddresses Publish not ready addresses
-## @param perReplicaHeadlessService.annotations Annotations for the headless service
+## @param perReplicaHeadlessService.annotations Annotations for the per replica headless service
 perReplicaHeadlessService:
   enabled: false
   publishNotReadyAddresses: true
@@ -121,9 +121,11 @@ perReplicaHeadlessService:
 
 ## @param headlessservice.enabled Enable headless service
 ## @param headlessservice.publishNotReadyAddresses Publish not ready addresses
+## @param headlessservice.annotations Annotations for the headless service
 headlessservice:
   enabled: true
   publishNotReadyAddresses: true
+  annotations: {}
 
 ## @param jwtSecret.enabled Enable a jwt secret for use with the stateless validator
 ## @param jwtSecret.value Value of the jwt secret for use with the stateless validator
