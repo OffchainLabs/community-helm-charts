@@ -1,0 +1,13 @@
+{{- if .Values.auctioneer.wallet.files }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "timeboost.fullname" . }}-wallets
+  labels:
+    {{- include "timeboost.auctioneer.labels" . | nindent 4 }}
+type: Opaque
+data:
+{{- range $filename, $json := .Values.auctioneer.wallet.files }}
+  {{ $filename }}: {{ $json | b64enc }}
+{{- end }}
+{{- end }}

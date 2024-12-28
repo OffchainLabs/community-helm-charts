@@ -1,0 +1,40 @@
+{{- if .Values.bidValidator.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "timeboost.fullname" . }}-bid-validator
+  labels:
+    {{- include "timeboost.bidValidator.labels" . | nindent 4 }}
+    {{- if .Values.bidValidator.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.bidValidator.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- end }}
+spec:
+  endpoints:
+    - port: {{ .Values.bidValidator.serviceMonitor.portName | default "http" }}
+      {{- if .Values.bidValidator.serviceMonitor.interval }}
+      interval: {{ .Values.bidValidator.serviceMonitor.interval }}
+      {{- end }}
+      {{- if .Values.bidValidator.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.bidValidator.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+      {{- if .Values.bidValidator.serviceMonitor.path }}
+      path: {{ .Values.bidValidator.serviceMonitor.path }}
+      {{- end }}
+      {{- if .Values.bidValidator.serviceMonitor.scheme }}
+      scheme: {{ .Values.bidValidator.serviceMonitor.scheme }}
+      {{- end }}
+      {{- if .Values.bidValidator.serviceMonitor.tlsConfig }}
+      tlsConfig: 
+        {{- toYaml .Values.bidValidator.serviceMonitor.tlsConfig | nindent 8 }}
+      {{- end }}
+      {{- with .Values.bidValidator.serviceMonitor.relabelings }}
+      relabelings: {{- toYaml . | nindent 8 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "timeboost.bidValidator.selectorLabels" . | nindent 6 }}
+      function: timeboost-svc
+{{- end }}
