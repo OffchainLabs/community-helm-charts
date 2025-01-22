@@ -379,9 +379,9 @@ validator:
         ## @param validator.splitvalidator.global.pdb.enabled Enable pod disruption budget
         enabled: true
         ## @param validator.splitvalidator.global.pdb.minAvailable Minimum number of pods available
-        minAvailable: "75%"
+        minAvailable: ""
         ## @param validator.splitvalidator.global.pdb.maxUnavailable Maximum number of pods unavailable
-        maxUnavailable: ""
+        maxUnavailable: "100%"
 
       keda:
         ## @param validator.splitvalidator.global.keda.enabled Enable keda
