@@ -283,11 +283,11 @@ Option | Description | Default
 `data-availability.disable-signature-checking` | disables signature checking on Data Availability Store requests (DANGEROUS, FOR TESTING ONLY) | None
 `data-availability.enable` | enable Anytrust Data Availability mode | `true`
 `data-availability.extra-signature-checking-public-key` | string                                  public key to use to validate Data Availability Store requests in addition to the Sequencer's public key determined using sequencer-inbox-address, can be a file or the hex-encoded public key beginning with 0x; useful for testing | None
-`data-availability.google-cloud-storage.access-token` | string                                    Google Cloud Storage access token | None
+`data-availability.google-cloud-storage.access-token` | string                                    Google Cloud Storage access token (JSON string) | None
+`data-availability.google-cloud-storage.access-token-file` | string                               Google Cloud Storage access token (JSON file path) | None
 `data-availability.google-cloud-storage.bucket` | string                                          Google Cloud Storage bucket | None
+`data-availability.google-cloud-storage.discard-after-timeout` | discard data after its expiry timeout | None
 `data-availability.google-cloud-storage.enable` | EXPERIMENTAL/unsupported - enable storage/retrieval of sequencer batch data from an Google Cloud Storage bucket | None
-`data-availability.google-cloud-storage.enable-expiry` | enable expiry of batches | None
-`data-availability.google-cloud-storage.max-retention` | duration                                 store requests with expiry times farther in the future than max-retention will be rejected | `504h0m0s`
 `data-availability.google-cloud-storage.object-prefix` | string                                   prefix to add to Google Cloud Storage objects | None
 `data-availability.key.key-dir` | string                                                          the directory to read the bls keypair ('das_bls.pub' and 'das_bls') from; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
 `data-availability.key.priv-key` | string                                                         the base64 BLS private key to use for signing DAS certificates; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None

@@ -279,6 +279,7 @@ Option | Description | Default
 `conf.s3.region` | string                                                                                  S3 region | None
 `conf.s3.secret-key` | string                                                                              S3 secret key | None
 `conf.string` | string                                                                                     configuration as JSON string | None
+`ensure-rollup-deployment` | before starting the node, wait until the transaction that deployed rollup is finalized | `true`
 `execution.caching.archive` | retain past block state | None
 `execution.caching.block-age` | duration                                                                   minimum age of recent blocks to keep in memory | `30m0s`
 `execution.caching.block-count` | uint                                                                     minimum number of recent blocks to keep in memory | `128`
@@ -390,6 +391,7 @@ Option | Description | Default
 `init.download-poll` | duration                                                                            how long to wait between polling attempts | `1m0s`
 `init.empty` | init with empty state | None
 `init.force` | if true: in case database exists init code will be reexecuted and genesis block compared to database | None
+`init.genesis-json-file` | string                                                                          path for genesis json file | None
 `init.import-file` | string                                                                                path for json data to import | None
 `init.import-wasm` | if set, import the wasm directory when downloading a database (contains executable code - only use with highly trusted source) | None
 `init.latest` | string                                                                                     if set, searches for the latest snapshot of the given kind (accepted values: "archive" | "pruned" | "genesis") | None
@@ -450,6 +452,7 @@ Option | Description | Default
 `node.batch-poster.data-poster.use-db-storage` | uses database storage when enabled | `true`
 `node.batch-poster.data-poster.use-noop-storage` | uses noop storage, it doesn't store anything | None
 `node.batch-poster.data-poster.wait-for-l1-finality` | only treat a transaction as confirmed after L1 finality has been achieved (recommended) | `true`
+`node.batch-poster.delay-buffer-threshold-margin` | uint                                                   the number of blocks to post the batch before reaching the delay buffer threshold | `25`
 `node.batch-poster.disable-dap-fallback-store-data-on-chain` | If unable to batch to DA provider, disable fallback storing data on chain | None
 `node.batch-poster.enable` | enable posting batches to l1 | None
 `node.batch-poster.error-delay` | duration                                                                 how long to delay after error posting batch | `10s`
@@ -517,8 +520,14 @@ Option | Description | Default
 `node.bold.assertion-confirming-interval` | duration                                                       confirm assertion interval | `1m0s`
 `node.bold.assertion-posting-interval` | duration                                                          assertion posting interval | `15m0s`
 `node.bold.assertion-scanning-interval` | duration                                                         scan assertion interval | `1m0s`
+`node.bold.auto-deposit` | auto-deposit stake token whenever making a move in BoLD that does not have enough stake token balance | `true`
+`node.bold.auto-increase-allowance` | auto-increase spending allowance of the stake token by the rollup and challenge manager contracts | `true`
 `node.bold.check-staker-switch-interval` | duration                                                        how often to check if staker can switch to bold | `1m0s`
+`node.bold.delegated-staking.custom-withdrawal-address` | string                                           enable a custom withdrawal address for staking on the rollup contract, useful for delegated stakers | None
+`node.bold.delegated-staking.enable` | enable delegated staking by having the validator call newStake on startup | None
 `node.bold.enable` | enable bold challenge protocol | None
+`node.bold.minimum-gap-to-parent-assertion` | duration                                                     minimum duration to wait since the parent assertion was created to post a new assertion | `1m0s`
+`node.bold.rpc-block-number` | string                                                                      define the block number to use for reading data onchain, either latest, safe, or finalized | `finalized`
 `node.bold.start-validation-from-staked` | assume staked nodes are valid | `true`
 `node.bold.state-provider-config.check-batch-finality` | check batch finality | `true`
 `node.bold.state-provider-config.machine-leaves-cache-path` | string                                       path to machine cache | `machine-hashes-cache`
@@ -554,11 +563,13 @@ Option | Description | Default
 `node.data-availability.rpc-aggregator.assumed-honest` | int                                               Number of assumed honest backends (H). If there are N backends, K=N+1-H valid responses are required to consider an Store request to be successful. | None
 `node.data-availability.rpc-aggregator.backends` | backendConfigList                                       JSON RPC backend configuration. This can be specified on the command line as a JSON array, eg: [{"url": "...", "pubkey": "..."},...], or as a JSON array in the config file. | `null`
 `node.data-availability.rpc-aggregator.enable` | enable storage of sequencer batch data from a list of RPC endpoints; this should only be used by the batch poster and not in combination with other DAS storage types | None
+`node.data-availability.rpc-aggregator.enable-chunked-store` | enable data to be sent to DAS in chunks instead of all at once | `true`
 `node.data-availability.rpc-aggregator.max-store-chunk-body-size` | int                                    maximum HTTP POST body size to use for individual batch chunks, including JSON RPC overhead and an estimated overhead of 512B of headers | `524288`
 `node.data-availability.sequencer-inbox-address` | string                                                  parent chain address of SequencerInbox contract | None
 `node.delayed-sequencer.enable` | enable delayed sequencer | None
 `node.delayed-sequencer.finalize-distance` | int                                                           how many blocks in the past L1 block is considered final (ignored when using Merge finality) | `20`
 `node.delayed-sequencer.require-full-finality` | whether to wait for full finality before sequencing delayed messages | None
+`node.delayed-sequencer.rescan-interval` | duration                                                        frequency to rescan for new delayed messages (the parent chain reader's poll-interval config is more important than this) | `1s`
 `node.delayed-sequencer.use-merge-finality` | whether to use The Merge's notion of finality before sequencing delayed messages | `true`
 `node.feed.input.enable-compression` | enable per message deflate compression support | `true`
 `node.feed.input.reconnect-initial-backoff` | duration                                                     initial duration to wait before reconnect | `1s`
@@ -601,7 +612,6 @@ Option | Description | Default
 `node.inbox-reader.check-delay` | duration                                                                 the maximum time to wait between inbox checks (if not enough new blocks are found) | `1m0s`
 `node.inbox-reader.default-blocks-to-read` | uint                                                          the default number of blocks to read at once (will vary based on traffic by default) | `100`
 `node.inbox-reader.delay-blocks` | uint                                                                    number of latest blocks to ignore to reduce reorgs | None
-`node.inbox-reader.hard-reorg` | erase future transactions in addition to overwriting existing ones on reorg | None
 `node.inbox-reader.max-blocks-to-read` | uint                                                              if adjust-blocks-to-read is enabled, the maximum number of blocks to read at once | `2000`
 `node.inbox-reader.min-blocks-to-read` | uint                                                              the minimum number of blocks to read at once (when caught up lowers load on L1) | `1`
 `node.inbox-reader.read-mode` | string                                                                     mode to only read latest or safe or finalized L1 blocks. Enabling safe or finalized disables feed input and output. Defaults to latest. Takes string input, valid strings- latest, safe, finalized | `latest`
@@ -614,7 +624,7 @@ Option | Description | Default
 `node.maintenance.lock.refresh-duration` | duration                                                        how long between consecutive calls to redis | `10s`
 `node.maintenance.time-of-day` | string                                                                    UTC 24-hour time of day to run maintenance (currently only db compaction) at (e.g. 15:00) | None
 `node.message-pruner.enable` | enable message pruning | `true`
-`node.message-pruner.min-batches-left` | uint                                                              min number of batches not pruned | `2`
+`node.message-pruner.min-batches-left` | uint                                                              min number of batches not pruned | `1000`
 `node.message-pruner.prune-interval` | duration                                                            interval for running message pruner | `1m0s`
 `node.parent-chain-reader.dangerous.wait-for-tx-approval-safe-poll` | duration                             Dangerous! only meant to be used by system tests | None
 `node.parent-chain-reader.enable` | enable reader connection | `true`
@@ -747,11 +757,12 @@ Option | Description | Default
 `persistent.pebble.experimental.read-sampling-multiplier` | int                                            a multiplier for the readSamplingPeriod in iterator.maybeSampleRead() to control the frequency of read sampling to trigger a read triggered compaction. A value of -1 prevents sampling and disables read triggered compactions. Geth default is -1. The pebble default is 1 << 4. which gets multiplied with a constant of 1 << 16 to yield 1 << 20 (1MB). | `-1`
 `persistent.pebble.experimental.target-byte-deletion-rate` | int                                           rate (in bytes per second) at which sstable file deletions are limited to (under normal circumstances). | None
 `persistent.pebble.experimental.target-file-size` | int                                                    target file size for the level 0 | `2097152`
-`persistent.pebble.experimental.target-file-size-equal-levels` | if true same target-file-size will be uses for all levels, otherwise target size for layer n = 2 * target size for layer n - 1 | `true`
+`persistent.pebble.experimental.target-file-size-equal-levels` | if true same target-file-size will be uses for all levels, otherwise target size for layer n = 2 * target size for layer n - 1 | None
 `persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | None
 `persistent.pebble.experimental.wal-dir` | string                                                          absolute path of directory to store write-ahead logs (WALs) in. If empty, WALs will be stored in the same directory as sstables | None
 `persistent.pebble.experimental.wal-min-sync-interval` | int                                               minimum duration in microseconds between syncs of the WAL. If WAL syncs are requested faster than this interval, they will be artificially delayed. | None
 `persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `12`
+`persistent.pebble.sync-mode` | if true sync mode is used (data needs to be written to WAL before the write is marked as completed) | None
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                                  pprof server address | `127.0.0.1`
 `pprof-cfg.port` | int                                                                                     pprof server port | `6071`
