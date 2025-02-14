@@ -257,7 +257,7 @@ Option | Description | Default
 `blocks-reexecutor.end-block` | uint                                                                       last block number of the block range for re-execution | None
 `blocks-reexecutor.min-blocks-per-thread` | uint                                                           minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
-`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `12`
+`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `10`
 `blocks-reexecutor.start-block` | uint                                                                     first block number of the block range for re-execution | None
 `blocks-reexecutor.trie-clean-limit` | int                                                                 memory allowance (MB) to use for caching trie nodes in memory | None
 `chain.dev-wallet.account` | string                                                                        account to use | `is first account in keystore`
@@ -280,6 +280,8 @@ Option | Description | Default
 `conf.s3.secret-key` | string                                                                              S3 secret key | None
 `conf.string` | string                                                                                     configuration as JSON string | None
 `ensure-rollup-deployment` | before starting the node, wait until the transaction that deployed rollup is finalized | `true`
+`execution.block-metadata-api-blocks-limit` | uint                                                         maximum number of blocks allowed to be queried for blockMetadata per arb_getRawBlockMetadata query. Enabled by default, set 0 to disable the limit | `100`
+`execution.block-metadata-api-cache-size` | uint                                                           size (in bytes) of lru cache storing the blockMetadata to service arb_getRawBlockMetadata | `104857600`
 `execution.caching.archive` | retain past block state | None
 `execution.caching.block-age` | duration                                                                   minimum age of recent blocks to keep in memory | `30m0s`
 `execution.caching.block-count` | uint                                                                     minimum number of recent blocks to keep in memory | `128`
@@ -292,6 +294,7 @@ Option | Description | Default
 `execution.caching.state-history` | uint                                                                   number of recent blocks to retain state history for (path state-scheme only) | `345600`
 `execution.caching.state-scheme` | string                                                                  scheme to use for state trie storage (hash, path) | `hash`
 `execution.caching.stylus-lru-cache-capacity` | uint32                                                     capacity, in megabytes, of the LRU cache that keeps initialized stylus programs | `256`
+`execution.caching.trie-cap-limit` | uint32                                                                amount of memory in megabytes to be used in the TrieDB Cap operation during maintenance | `100`
 `execution.caching.trie-clean-cache` | int                                                                 amount of memory in megabytes to cache unchanged state trie nodes with | `600`
 `execution.caching.trie-dirty-cache` | int                                                                 amount of memory in megabytes to cache state diffs against disk with (larger cache lowers database growth) | `1024`
 `execution.caching.trie-time-limit` | duration                                                             maximum block processing time before trie is written to hard-disk | `1h0m0s`
@@ -331,6 +334,15 @@ Option | Description | Default
 `execution.rpc.tx-allow-unprotected` | allow transactions that aren't EIP-155 replay protected to be submitted over the RPC | `true`
 `execution.rpc.tx-fee-cap` | float                                                                         cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
 `execution.secondary-forwarding-target` | strings                                                          secondary transaction forwarding target URL | None
+`execution.sequencer.dangerous.timeboost.auction-contract-address` | string                                Address of the proxy pointing to the ExpressLaneAuction contract | None
+`execution.sequencer.dangerous.timeboost.auctioneer-address` | string                                      Address of the Timeboost Autonomous Auctioneer | None
+`execution.sequencer.dangerous.timeboost.early-submission-grace` | duration                                period of time before the next round where submissions for the next round will be queued | `2s`
+`execution.sequencer.dangerous.timeboost.enable` | enable timeboost based on express lane auctions | None
+`execution.sequencer.dangerous.timeboost.express-lane-advantage` | duration                                specify the express lane advantage | `200ms`
+`execution.sequencer.dangerous.timeboost.max-future-sequence-distance` | uint                              maximum allowed difference (in terms of sequence numbers) between a future express lane tx and the current sequence count of a round | `100`
+`execution.sequencer.dangerous.timeboost.max-queued-tx-count` | int                                        maximum allowed number of express lane txs with future sequence number to be queued. Set 0 to disable this check and a negative value to prevent queuing of any future sequence number transactions | `10`
+`execution.sequencer.dangerous.timeboost.redis-url` | string                                               the Redis URL for expressLaneService to coordinate via | `unset`
+`execution.sequencer.dangerous.timeboost.sequencer-http-endpoint` | string                                 this sequencer's http endpoint | `http://localhost:8547`
 `execution.sequencer.enable` | act and post to l1 as sequencer | None
 `execution.sequencer.enable-profiling` | enable CPU profiling and tracing | None
 `execution.sequencer.expected-surplus-hard-threshold` | string                                             if expected surplus is lower than this value, new incoming transactions will be denied | `default`
@@ -398,7 +410,7 @@ Option | Description | Default
 `init.latest-base` | string                                                                                base url used when searching for the latest | `https://snapshot.arbitrum.foundation/`
 `init.prune` | string                                                                                      pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                             the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
-`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `12`
+`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `10`
 `init.prune-trie-clean-cache` | int                                                                        amount of memory in megabytes to cache unchanged state trie nodes with when traversing state database during pruning | `600`
 `init.rebuild-local-wasm` | string                                                                         rebuild local wasm database on boot if needed (otherwise-will be done lazily). Three modes are supported  "auto"- (enabled by default) if any previous rebuilding attempt was successful then rebuilding is disabled else continues to rebuild, "force"- force rebuilding which would commence rebuilding despite the status of previous attempts, "false"- do not rebuild on startup (default "auto") | None
 `init.recreate-missing-state-from` | uint                                                                  block number to start recreating missing states from (0 = disabled) | None
@@ -483,6 +495,18 @@ Option | Description | Default
 `node.batch-poster.reorg-resistance-margin` | duration                                                     do not post batch if its within this duration from layer 1 minimum bounds. Requires l1-block-bound option not be set to "ignore" | `10m0s`
 `node.batch-poster.use-access-lists` | post batches with access lists to reduce gas usage (disabled for L3s) | `true`
 `node.batch-poster.wait-for-max-delay` | wait for the max batch delay, even if the batch is full | None
+`node.block-metadata-fetcher.api-blocks-limit` | uint                                                      maximum number of blocks allowed to be queried for blockMetadata per arb_getRawBlockMetadata query. This should be set lesser than or equal to the limit on the api provider side (default 100) | None
+`node.block-metadata-fetcher.enable` | enable syncing blockMetadata using a bulk blockMetadata api. If the source doesn't have the missing blockMetadata, we keep retyring in every sync-interval (default=5mins) duration | None
+`node.block-metadata-fetcher.source.arg-log-limit` | uint                                                  limit size of arguments in log entries | `2048`
+`node.block-metadata-fetcher.source.connection-wait` | duration                                            how long to wait for initial connection | None
+`node.block-metadata-fetcher.source.jwtsecret` | string                                                    path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`node.block-metadata-fetcher.source.retries` | uint                                                        number of retries in case of failure(0 mean one attempt) | `3`
+`node.block-metadata-fetcher.source.retry-delay` | duration                                                delay between retries | None
+`node.block-metadata-fetcher.source.retry-errors` | string                                                 Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`node.block-metadata-fetcher.source.timeout` | duration                                                    per-response timeout (0-disabled) | None
+`node.block-metadata-fetcher.source.url` | string                                                          url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
+`node.block-metadata-fetcher.source.websocket-message-size-limit` | int                                    websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`node.block-metadata-fetcher.sync-interval` | duration                                                     interval at which blockMetadata are synced regularly | `5m0s`
 `node.block-validator.batch-cache-limit` | uint32                                                          limit number of old batches to keep in block-validator | `20`
 `node.block-validator.block-inputs-file-path` | string                                                     directory to write block validation inputs files | `./target/validation_inputs`
 `node.block-validator.current-module-root` | string                                                        current wasm module root ('current' read from chain, 'latest' from machines/latest dir, or provide hash) | `current`
@@ -492,7 +516,7 @@ Option | Description | Default
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (stores batch-copy per block) | `128`
 `node.block-validator.memory-free-limit` | string                                                          minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                                pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
-`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `24`
+`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `20`
 `node.block-validator.recording-iter-limit` | uint                                                         limit on block recordings sent per iteration | `20`
 `node.block-validator.redis-validation-client-config.create-streams` | create redis streams if it does not exist | `true`
 `node.block-validator.redis-validation-client-config.name` | string                                        validation client name | `redis validation client`
@@ -622,7 +646,8 @@ Option | Description | Default
 `node.maintenance.lock.lockout-duration` | duration                                                        how long lock is held | `1m0s`
 `node.maintenance.lock.my-id` | string                                                                     this node's id prefix when acquiring the lock (optional) | None
 `node.maintenance.lock.refresh-duration` | duration                                                        how long between consecutive calls to redis | `10s`
-`node.maintenance.time-of-day` | string                                                                    UTC 24-hour time of day to run maintenance (currently only db compaction) at (e.g. 15:00) | None
+`node.maintenance.time-of-day` | string                                                                    UTC 24-hour time of day to run maintenance at (e.g. 15:00) | None
+`node.maintenance.triggerable` | maintenance is triggerable via rpc | None
 `node.message-pruner.enable` | enable message pruning | `true`
 `node.message-pruner.min-batches-left` | uint                                                              min number of batches not pruned | `1000`
 `node.message-pruner.prune-interval` | duration                                                            interval for running message pruner | `1m0s`
@@ -635,6 +660,7 @@ Option | Description | Default
 `node.parent-chain-reader.subscribe-err-interval` | duration                                               interval for subscribe error | `5m0s`
 `node.parent-chain-reader.tx-timeout` | duration                                                           timeout when waiting for a transaction | `5m0s`
 `node.parent-chain-reader.use-finality-data` | use l1 data about finalized/safe blocks | `true`
+`node.seq-coordinator.block-metadata-duration` | duration | `240h0m0s`
 `node.seq-coordinator.chosen-healthcheck-addr` | string                                                    if non-empty, launch an HTTP service binding to this address that returns status code 200 when chosen and 503 otherwise | None
 `node.seq-coordinator.delete-finalized-msgs` | enable deleting of finalized messages from redis | `true`
 `node.seq-coordinator.enable` | enable sequence coordinator | None
@@ -720,6 +746,7 @@ Option | Description | Default
 `node.transaction-streamer.execute-message-loop-delay` | duration                                          delay when polling calls to execute messages | `100ms`
 `node.transaction-streamer.max-broadcaster-queue-size` | int                                               maximum cache of pending broadcaster messages | `50000`
 `node.transaction-streamer.max-reorg-resequence-depth` | int                                               maximum number of messages to attempt to resequence on reorg (0 = never resequence, -1 = always resequence) | `1024`
+`node.transaction-streamer.track-block-metadata-from` | uint                                               this is the block number starting from which blockmetadata is being tracked in the local disk and is being published to the feed. This is also the starting position for bulk syncing of missing blockmetadata. Setting to zero (default value) disables this | None
 `parent-chain.blob-client.authorization` | string                                                          Value to send with the HTTP Authorization: header for Beacon REST requests, must include both scheme and scheme parameters | None
 `parent-chain.blob-client.beacon-url` | string                                                             Beacon Chain RPC URL to use for fetching blobs (normally on port 3500) | None
 `parent-chain.blob-client.blob-directory` | string                                                         Full path of the directory to save fetched blobs | None
@@ -761,7 +788,7 @@ Option | Description | Default
 `persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | None
 `persistent.pebble.experimental.wal-dir` | string                                                          absolute path of directory to store write-ahead logs (WALs) in. If empty, WALs will be stored in the same directory as sstables | None
 `persistent.pebble.experimental.wal-min-sync-interval` | int                                               minimum duration in microseconds between syncs of the WAL. If WAL syncs are requested faster than this interval, they will be artificially delayed. | None
-`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `12`
+`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `10`
 `persistent.pebble.sync-mode` | if true sync mode is used (data needs to be written to WAL before the write is marked as completed) | None
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                                  pprof server address | `127.0.0.1`
