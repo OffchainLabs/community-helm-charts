@@ -36,6 +36,7 @@ livenessProbe: {}
 ## @param readinessProbe.sequencerProbe.initialDelaySeconds Initial delay before starting sequencer readiness checks
 ## @param readinessProbe.sequencerProbe.periodSeconds How often to perform sequencer readiness checks
 ## @param readinessProbe.sequencerProbe.timeoutSeconds Timeout for sequencer readiness checks
+## @param readinessProbe.sequencerProbe.failureThreshold Number of failures before pod is considered unhealthy
 readinessProbe:
   enabled: true
   # Default probe settings for non-sequencer nodes
