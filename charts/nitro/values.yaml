@@ -27,9 +27,15 @@ commandOverride: {}
 livenessProbe: {}
 
 ## @param readinessProbe.enabled Enable readiness probe
+## @param readinessProbe.tcpSocket.port Port to check for readiness (defaults to http-rpc)
+## @param readinessProbe.initialDelaySeconds Initial delay before starting readiness checks
+## @param readinessProbe.periodSeconds How often to perform readiness checks
 ## @param readinessProbe.sequencerProbe.forceEnabled Force sequencer probe regardless of config detection
 ## @param readinessProbe.sequencerProbe.disableAutoDetect Disable auto-detection of sequencer from config
 ## @param readinessProbe.sequencerProbe.command Custom command, if empty uses maintenance API check
+## @param readinessProbe.sequencerProbe.initialDelaySeconds Initial delay before starting sequencer readiness checks
+## @param readinessProbe.sequencerProbe.periodSeconds How often to perform sequencer readiness checks
+## @param readinessProbe.sequencerProbe.timeoutSeconds Timeout for sequencer readiness checks
 readinessProbe:
   enabled: true
   # Default probe settings for non-sequencer nodes
