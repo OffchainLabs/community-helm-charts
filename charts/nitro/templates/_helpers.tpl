@@ -94,7 +94,19 @@ true
 {{- else if .Values.readinessProbe.sequencerProbe.disableAutoDetect -}}
 false
 {{- else -}}
-{{- index .Values.configmap.data "execution" "sequencer" "enable" -}}
+{{- if hasKey .Values.configmap.data "execution" -}}
+  {{- if hasKey (index .Values.configmap.data "execution") "sequencer" -}}
+    {{- if hasKey (index .Values.configmap.data "execution" "sequencer") "enable" -}}
+      {{- index .Values.configmap.data "execution" "sequencer" "enable" -}}
+    {{- else -}}
+      false
+    {{- end -}}
+  {{- else -}}
+    false
+  {{- end -}}
+{{- else -}}
+  false
+{{- end -}}
 {{- end -}}
 {{- end }}
 
