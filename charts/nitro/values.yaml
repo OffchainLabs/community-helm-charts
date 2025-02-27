@@ -26,8 +26,25 @@ commandOverride: {}
 ## @param livenessProbe Liveness probe configuration
 livenessProbe: {}
 
-## @param readinessProbe Readiness probe configuration
-readinessProbe: {}
+## @param readinessProbe.enabled Enable readiness probe
+## @param readinessProbe.sequencerProbe.forceEnabled Force sequencer probe regardless of config detection
+## @param readinessProbe.sequencerProbe.disableAutoDetect Disable auto-detection of sequencer from config
+## @param readinessProbe.sequencerProbe.command Custom command, if empty uses maintenance API check
+readinessProbe:
+  enabled: true
+  # Default probe settings for non-sequencer nodes
+  tcpSocket:
+    port: http-rpc
+  initialDelaySeconds: 10
+  periodSeconds: 3
+  # Sequencer probe settings
+  sequencerProbe:
+    forceEnabled: false
+    disableAutoDetect: false
+    command: ""
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 5
 
 ## @param startupProbe.enabled Enable built in startup probe
 ## @param startupProbe.failureThreshold Number of failures before pod is considered unhealthy

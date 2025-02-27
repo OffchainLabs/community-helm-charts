@@ -71,6 +71,33 @@ curl "http://localhost:{{ .Values.configmap.data.http.port }}{{ .Values.configma
 {{- end }}
 {{- end -}}
 
+{{/*
+Sequencer readiness probe command
+*/}}
+{{- define "nitro.sequencerReadinessProbeCommand" -}}
+{{- if .Values.readinessProbe.sequencerProbe.command -}}
+{{ .Values.readinessProbe.sequencerProbe.command }}
+{{- else -}}
+curl -s "http://localhost:{{ .Values.configmap.data.http.port }}{{ .Values.configmap.data.http.rpcprefix }}" \
+    -X POST -H "Content-Type: application/json" \
+    --data '{"jsonrpc":"2.0","method":"maintenance_secondsSinceLastMaintenance","id":1}' \
+    | jq -e '.error == null and .result > 0'
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check if node should use sequencer probe
+*/}}
+{{- define "nitro.useSequencerProbe" -}}
+{{- if .Values.readinessProbe.sequencerProbe.forceEnabled -}}
+true
+{{- else if .Values.readinessProbe.sequencerProbe.disableAutoDetect -}}
+false
+{{- else -}}
+{{- index .Values.configmap.data "execution" "sequencer" "enable" -}}
+{{- end -}}
+{{- end }}
+
 
 {{/*
 nitro args

@@ -125,7 +125,19 @@ spec:
           {{- end }}
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-            {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 12 }}
+            {{- if include "nitro.useSequencerProbe" . | eq "true" }}
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+                  {{ include "nitro.sequencerReadinessProbeCommand" . | nindent 18 }}
+            {{- with .Values.readinessProbe.sequencerProbe }}
+            {{- omit . "command" "forceEnabled" "disableAutoDetect" | toYaml | nindent 12 }}
+            {{- end }}
+            {{- else }}
+            {{- omit .Values.readinessProbe "enabled" "sequencerProbe" | toYaml | nindent 12 }}
+            {{- end }}
           {{- end }}
           {{- if and .Values.startupProbe.enabled .Values.configmap.data.http .Values.configmap.data.http.port }}
           startupProbe:
