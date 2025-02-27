@@ -49,8 +49,9 @@ readinessProbe:
     disableAutoDetect: false
     command: ""
     initialDelaySeconds: 10
-    periodSeconds: 5
+    periodSeconds: 3
     timeoutSeconds: 5
+    failureThreshold: 3
 
 ## @param startupProbe.enabled Enable built in startup probe
 ## @param startupProbe.failureThreshold Number of failures before pod is considered unhealthy
