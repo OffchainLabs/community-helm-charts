@@ -66,6 +66,7 @@ helm install <my-release> offchainlabs/relay \
 | `readinessProbe.periodSeconds`                    | Period for readiness probe                       | `1`                         |
 | `startupProbe.enabled`                            | Enable built in startup probe                    | `false`                     |
 | `serviceMonitor.enabled`                          | Enable prometheus service monitor                | `false`                     |
+| `serviceMonitor.fallbackScrapeProtocol`           | Set the fallback scrape protocol                 | `PrometheusText0.0.4`       |
 | `serviceMonitor.portName`                         | Port name for prometheus service monitor         | `metrics`                   |
 | `serviceMonitor.path`                             | Path for prometheus service monitor              | `/debug/metrics/prometheus` |
 | `serviceMonitor.interval`                         | Interval for prometheus service monitor          | `5s`                        |
@@ -180,3 +181,4 @@ Option | Description | Default
 `queue` | int                                                               queue for incoming messages from sequencer | `1024`
 
 ## Notes
+
