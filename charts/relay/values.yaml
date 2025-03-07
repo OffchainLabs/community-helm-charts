@@ -76,12 +76,14 @@ startupProbe:
   enabled: false
 
 ## @param serviceMonitor.enabled Enable prometheus service monitor
+## @param serviceMonitor.fallbackScrapeProtocol Set the fallback scrape protocol
 ## @param serviceMonitor.portName Port name for prometheus service monitor
 ## @param serviceMonitor.path Path for prometheus service monitor
 ## @param serviceMonitor.interval Interval for prometheus service monitor
 ## @param serviceMonitor.relabelings Add relabelings for the metrics being scraped
 serviceMonitor:
   enabled: false
+  fallbackScrapeProtocol: PrometheusText0.0.4
   portName: metrics
   path: /debug/metrics/prometheus
   interval: 5s
