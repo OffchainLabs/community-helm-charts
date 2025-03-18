@@ -550,6 +550,7 @@ Option | Description | Default
 `node.bold.delegated-staking.custom-withdrawal-address` | string                                           enable a custom withdrawal address for staking on the rollup contract, useful for delegated stakers | None
 `node.bold.delegated-staking.enable` | enable delegated staking by having the validator call newStake on startup | None
 `node.bold.enable` | enable bold challenge protocol | None
+`node.bold.max-get-log-blocks` | int                                                                       maximum size for chunk of blocks when using get logs rpc | `5000`
 `node.bold.minimum-gap-to-parent-assertion` | duration                                                     minimum duration to wait since the parent assertion was created to post a new assertion | `1m0s`
 `node.bold.rpc-block-number` | string                                                                      define the block number to use for reading data onchain, either latest, safe, or finalized | `finalized`
 `node.bold.start-validation-from-staked` | assume staked nodes are valid | `true`
