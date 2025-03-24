@@ -1,0 +1,357 @@
+# Default values for timeboost.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+## @section Global Image Configuration
+image:
+  ## @param image.repository Docker image repository
+  ## @param image.pullPolicy Docker image pull policy
+  repository: offchainlabs/nitro-node
+  pullPolicy: Always
+  ## @param image.tag Docker image tag. Defaults to Chart appVersion if not set
+  tag: ""
+
+## @section Auctioneer Deployment Options
+auctioneer:
+  ## @param auctioneer.replicaCount Number of replicas to deploy
+  replicaCount: 1
+
+  ## @param auctioneer.image.repository Docker image repository override
+  ## @param auctioneer.image.pullPolicy Docker image pull policy override
+  ## @param auctioneer.image.tag Docker image tag. Overrides the chart appVersion.
+  image:
+    repository: ""
+    pullPolicy: ""
+    tag: ""
+
+  ## @param auctioneer.imagePullSecrets Docker registry pull secret names as an array
+  imagePullSecrets: []
+  ## @param auctioneer.nameOverride String to partially override timeboost.fullname
+  nameOverride: ""
+
+  ## @param auctioneer.fullnameOverride String to fully override timeboost.fullname
+  fullnameOverride: ""
+
+  ## @param auctioneer.commandOverride Command override for the nitro container
+  commandOverride: {}
+
+  ## @param auctioneer.livenessProbe Liveness probe configuration
+  livenessProbe: {}
+
+  ## @param auctioneer.readinessProbe Readiness probe configuration
+  readinessProbe: {}
+
+  ## @param auctioneer.startupProbe.enabled Enable built in startup probe
+  ## @param auctioneer.startupProbe.failureThreshold Number of failures before pod is considered unhealthy
+  ## @param auctioneer.startupProbe.periodSeconds Number of seconds between startup probes
+  ## @param auctioneer.startupProbe.command Command to run for the startup probe. If empty, the built in probe will be used
+  startupProbe:
+    enabled: false
+    failureThreshold: 2419200
+    periodSeconds: 1
+    command: ""
+
+  ## @param auctioneer.updateStrategy.type Update strategy type
+  updateStrategy:
+    type: RollingUpdate
+
+  ## @param auctioneer.persistence.enabled Enable persistence
+  ## @param auctioneer.persistence.size Size of the persistent volume claim
+  ## @param auctioneer.persistence.storageClassName [string, nullable] Storage class of the persistent volume claim
+  ## @param auctioneer.persistence.accessModes Access modes of the persistent volume claim
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClassName: null
+    accessModes:
+      - ReadWriteOnce
+
+  ## @param auctioneer.serviceMonitor.enabled Enable service monitor CRD for prometheus operator
+  ## @param auctioneer.serviceMonitor.portName Name of the port to monitor
+  ## @param auctioneer.serviceMonitor.path Path to monitor
+  ## @param auctioneer.serviceMonitor.interval Interval to monitor
+  ## @param auctioneer.serviceMonitor.additionalLabels Additional labels for the service monitor
+  ## @param auctioneer.serviceMonitor.relabelings Add relabelings for the metrics being scraped
+  serviceMonitor:
+    enabled: false
+    portName: metrics
+    path: /debug/metrics/prometheus
+    interval: 5s
+    additionalLabels: {}
+    relabelings: []
+
+  ## @param auctioneer.serviceAccount.create Create a service account
+  ## @param auctioneer.serviceAccount.annotations Annotations for the service account
+  ## @param auctioneer.serviceAccount.name Name of the service account
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+
+  ## @param auctioneer.jwtSecret.enabled Enable a jwt secret
+  ## @param auctioneer.jwtSecret.value Value of the jwt secret
+  jwtSecret:
+    enabled: false
+    value: ""
+
+  ## @param auctioneer.podAnnotations Annotations for the pod
+  podAnnotations: {}
+
+  ## @param auctioneer.podLabels Labels for the pod
+  podLabels: {}
+
+  ## @param auctioneer.podSecurityContext.fsGroup Group id for the pod
+  ## @param auctioneer.podSecurityContext.runAsGroup Group id for the user
+  ## @param auctioneer.podSecurityContext.runAsNonRoot Run as non root
+  ## @param auctioneer.podSecurityContext.runAsUser User id for the user
+  ## @param auctioneer.podSecurityContext.fsGroupChangePolicy Policy for the fs group
+  podSecurityContext:
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroupChangePolicy: "OnRootMismatch"
+
+  ## @param auctioneer.securityContext Security context for the container
+  securityContext: {}
+
+  ## @param auctioneer.priorityClassName Priority class name
+  priorityClassName: ""
+
+  ## @param auctioneer.service.type Service type
+  ## @param auctioneer.service.publishNotReadyAddresses Publish not ready addresses
+  service:
+    type: ClusterIP
+    publishNotReadyAddresses: false
+
+  ## @param auctioneer.resources Resources for the container
+  resources: {}
+
+  ## @param auctioneer.nodeSelector Node selector for the pod
+  nodeSelector: {}
+
+  ## @param auctioneer.tolerations Tolerations for the pod
+  tolerations: []
+
+  ## @param auctioneer.affinity Affinity for the pod
+  affinity: {}
+
+  ## @param auctioneer.additionalVolumeClaims Additional volume claims for the pod
+  additionalVolumeClaims: []
+
+  ## @param auctioneer.extraVolumes Additional volumes for the pod
+  extraVolumes: []
+
+  ## @param auctioneer.extraVolumeMounts Additional volume mounts for the pod
+  extraVolumeMounts: []
+
+  ## @param auctioneer.extraPorts Additional ports for the pod
+  extraPorts: []
+
+  ## @param auctioneer.wallet.mountPath Path to mount the wallets
+  ## @param auctioneer.wallet.files Key value pair of wallet name and contents (ethers json format)
+  wallet:
+    mountPath: "/wallet/"
+    files: {} # sequencer-wallet1.json: '{"address": "0x...", "encryptedData": "..." }'
+
+  configmap:
+    ## @param auctioneer.configmap.enabled Enable a configmap for the nitro container
+    enabled: true
+    ## @extra configmap.data See Configuration Options for the full list of options
+    data:
+      ## @param auctioneer.configmap.data.auctioneer-server.auction-contract-address Auction contract address
+      ## @param auctioneer.configmap.data.auctioneer-server.db-directory Database storage directory
+      ## @param auctioneer.configmap.data.auctioneer-server.redis-url Redis URL
+      ## @param auctioneer.configmap.data.auctioneer-server.sequencer-endpoint Sequencer endpoint
+      ## @param auctioneer.configmap.data.auctioneer-server.sequencer-jwt-path Path to seqeuncer JWT
+      ## @param auctioneer.configmap.data.auctioneer-server.wallet.account Wallet account
+      ## @param auctioneer.configmap.data.auctioneer-server.wallet.password Wallet password
+      ## @param auctioneer.configmap.data.auctioneer-server.wallet.pathname Path to wallet
+      auctioneer-server:
+        auction-contract-address: ""
+        db-directory: "/data"
+        redis-url: redis://redis:6379
+        sequencer-endpoint: ws://sequencer:8549
+        sequencer-jwt-path: "/config/jwt.hex"
+        wallet:
+          account: ""
+          password: ""
+          pathname: ""
+
+      ## @param auctioneer.configmap.data.bid-validator.enable Enable bid validator
+      bid-validator:
+        enable: false
+
+      ## @param auctioneer.configmap.data.log-type Type of log
+      log-type: "json"
+
+      ## @param auctioneer.configmap.data.metrics Enable metrics
+      ## @param auctioneer.configmap.data.metrics-server.addr Address to bind metrics server to
+      ## @param auctioneer.configmap.data.metrics-server.port Port to bind metrics server to
+      metrics: false
+      metrics-server:
+        addr: "0.0.0.0"
+        port: 6070
+
+      ## @param auctioneer.configmap.data.persistent.auctioneer Path to persistent auction data
+      persistent:
+        chain: "/home/user/data/"
+
+## @section Bid Validator Deployment Options
+bidValidator:
+  ## @param bidValidator.replicaCount Number of replicas to deploy
+  ##
+  replicaCount: 1
+
+  ## @param bidValidator.image.repository Docker image repository override
+  ## @param bidValidator.image.pullPolicy Docker image pull policy override
+  ## @param bidValidator.image.tag Docker image tag. Overrides the chart appVersion.
+  image:
+    repository: ""
+    pullPolicy: ""
+    tag: ""
+
+  ## @param bidValidator.imagePullSecrets Docker registry pull secret names as an array
+  imagePullSecrets: []
+  ## @param bidValidator.nameOverride String to partially override timeboost.fullname
+  nameOverride: ""
+
+  ## @param bidValidator.fullnameOverride String to fully override timeboost.fullname
+  fullnameOverride: ""
+
+  ## @param bidValidator.commandOverride Command override for the nitro container
+  commandOverride: {}
+
+  ## @param bidValidator.livenessProbe Liveness probe configuration
+  livenessProbe: {}
+
+  ## @param bidValidator.readinessProbe Readiness probe configuration
+  readinessProbe: {}
+
+  ## @param bidValidator.startupProbe.enabled Enable built in startup probe
+  ## @param bidValidator.startupProbe.failureThreshold Number of failures before pod is considered unhealthy
+  ## @param bidValidator.startupProbe.periodSeconds Number of seconds between startup probes
+  ## @param bidValidator.startupProbe.command Command to run for the startup probe. If empty, the built in probe will be used
+  startupProbe:
+    enabled: false
+    failureThreshold: 2419200
+    periodSeconds: 1
+    command: ""
+
+  ## @param bidValidator.serviceMonitor.enabled Enable service monitor CRD for prometheus operator
+  ## @param bidValidator.serviceMonitor.portName Name of the port to monitor
+  ## @param bidValidator.serviceMonitor.path Path to monitor
+  ## @param bidValidator.serviceMonitor.interval Interval to monitor
+  ## @param bidValidator.serviceMonitor.additionalLabels Additional labels for the service monitor
+  ## @param bidValidator.serviceMonitor.relabelings Add relabelings for the metrics being scraped
+  serviceMonitor:
+    enabled: false
+    portName: metrics
+    path: /debug/metrics/prometheus
+    interval: 5s
+    additionalLabels: {}
+    relabelings: []
+
+  ## @param bidValidator.serviceAccount.create Create a service account
+  ## @param bidValidator.serviceAccount.annotations Annotations for the service account
+  ## @param bidValidator.serviceAccount.name Name of the service account
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+
+  ## @param bidValidator.podAnnotations Annotations for the pod
+  podAnnotations: {}
+
+  ## @param bidValidator.podLabels Labels for the pod
+  podLabels: {}
+
+  ## @param bidValidator.podSecurityContext.fsGroup Group id for the pod
+  ## @param bidValidator.podSecurityContext.runAsGroup Group id for the user
+  ## @param bidValidator.podSecurityContext.runAsNonRoot Run as non root
+  ## @param bidValidator.podSecurityContext.runAsUser User id for the user
+  ## @param bidValidator.podSecurityContext.fsGroupChangePolicy Policy for the fs group
+  podSecurityContext:
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroupChangePolicy: "OnRootMismatch"
+
+  ## @param bidValidator.securityContext Security context for the container
+  securityContext: {}
+
+  ## @param bidValidator.priorityClassName Priority class name
+  priorityClassName: ""
+
+  ## @param bidValidator.service.type Service type
+  ## @param bidValidator.service.publishNotReadyAddresses Publish not ready addresses
+  service:
+    type: ClusterIP
+    publishNotReadyAddresses: false
+
+  ## @param bidValidator.resources Resources for the container
+  resources: {}
+
+  ## @param bidValidator.nodeSelector Node selector for the pod
+  nodeSelector: {}
+
+  ## @param bidValidator.tolerations Tolerations for the pod
+  tolerations: []
+
+  ## @param bidValidator.affinity Affinity for the pod
+  affinity: {}
+
+  ## @param bidValidator.additionalVolumeClaims Additional volume claims for the pod
+  additionalVolumeClaims: []
+
+  ## @param bidValidator.extraVolumes Additional volumes for the pod
+  extraVolumes: []
+
+  ## @param bidValidator.extraVolumeMounts Additional volume mounts for the pod
+  extraVolumeMounts: []
+
+  ## @param bidValidator.extraPorts Additional ports for the pod
+  extraPorts: []
+
+  configmap:
+    ## @param bidValidator.configmap.enabled Enable a configmap for the nitro container
+    enabled: true
+    ## @extra configmap.data See Configuration Options for the full list of options
+    data:
+      ## @param bidValidator.configmap.data.http.addr Address to bind http service to
+      ## @param bidValidator.configmap.data.http.api List of apis to enable
+      ## @param bidValidator.configmap.data.http.corsdomain CORS domain
+      ## @param bidValidator.configmap.data.http.port Port to bind http service to
+      ## @param bidValidator.configmap.data.http.rpcprefix Prefix for rpc calls
+      ## @param bidValidator.configmap.data.http.vhosts Vhosts to allow
+      http:
+        addr: "0.0.0.0"
+        api: ["auctioneer"]
+        corsdomain: "*"
+        port: 8547
+        rpcprefix: "/rpc"
+        vhosts: "*"
+
+      ## @param bidValidator.configmap.data.auctioneer-server.enable Enable Auctioneer Server
+      auctioneer-server:
+        enable: false
+
+      ## @param bidValidator.configmap.data.bid-validator.auction-contract-address Auction contract address
+      ## @param bidValidator.configmap.data.bid-validator.redis-url Redis URL
+      ## @param bidValidator.configmap.data.bid-validator.sequencer-endpoint Sequencer endpoint
+      bid-validator:
+        auction-contract-address: ""
+        redis-url: redis://redis:6379
+        sequencer-endpoint: http://sequencer:8547
+
+      ## @param bidValidator.configmap.data.log-type Type of log
+      log-type: "json"
+
+      ## @param bidValidator.configmap.data.metrics Enable metrics
+      ## @param bidValidator.configmap.data.metrics-server.addr Address to bind metrics server to
+      ## @param bidValidator.configmap.data.metrics-server.port Port to bind metrics server to
+      metrics: false
+      metrics-server:
+        addr: "0.0.0.0"
+        port: 6070
