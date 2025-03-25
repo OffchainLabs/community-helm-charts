@@ -154,6 +154,35 @@ service:
   type: ClusterIP
   publishNotReadyAddresses: false
 
+## @param ingress Ingress configuration
+## @param ingress.enabled Enable ingress
+## @param ingress.className Ingress class name
+## @param ingress.annotations Annotations for the ingress
+## @param ingress.hosts Hosts for the ingress
+## @param ingress.tls TLS configuration for the ingress
+ingress:
+  enabled: false
+  className: ""
+  annotations:
+    {}
+    # For WebSocket support with nginx ingress controller:
+    # nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    # nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backendPort: 9876
+          service: http-rpc
+        - path: /rest
+          pathType: Prefix
+          backendPort: 9877
+          service: http-rest
+  tls:
+    enable: false
+    secretName: ""
+
 ## @param resources Resource requests and limits for the das container
 resources: {}
 

@@ -152,7 +152,6 @@ extraEnv:
         key: secretKey
 ```
 
-
 ## Parameters
 
 ### DAS Deployment Options
@@ -366,3 +365,31 @@ Option | Description | Default
 `rpc-server-timeouts.write-timeout` | duration                                                    the maximum duration before timing out writes of the response (http.Server.WriteTimeout) | `30s`
 
 ## Notes
+
+## Ingress Configuration
+
+The chart includes support for Ingress to expose the DAS node's API endpoints. To enable the Ingress, set `ingress.enabled` to `true` in your values file:
+
+```yaml
+ingress:
+  enabled: true
+  className: "nginx"  # Specify your ingress controller class
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # Add other annotations as needed
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: das.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: http-rpc  # RPC API service
+        - path: /rest
+          pathType: Prefix
+          service: http-rest  # REST API service
+  tls:
+    enable: true
+    secretName: das-tls-secret  # TLS secret name
+```
+
+This will create an Ingress resource that routes traffic to the DAS service.

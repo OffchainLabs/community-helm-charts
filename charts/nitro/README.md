@@ -36,7 +36,7 @@ helm install <my-release> offchainlabs/nitro \
 --set configmap.data.chain.id=421614
 ```
 There are snapshots available to speed up the sync process for Arbitrum Sepolia. See the [Arbitrum Snapshot Page](https://snapshot.arbitrum.io/) for more details.
-    
+
 #### Xai
 
 ```yaml
@@ -827,3 +827,37 @@ Option | Description | Default
 `ws.rpcprefix` | string                                                                                    WS path path prefix on which JSON-RPC is served. Use '/' to serve on all paths | None
 
 ## Notes
+
+## Ingress Configuration
+
+The chart includes support for Ingress to expose the Nitro node's endpoints. To enable the Ingress, set `ingress.enabled` to `true` in your values file:
+
+```yaml
+ingress:
+  enabled: true
+  className: "nginx"  # Specify your ingress controller class
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # WebSocket support
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    # Add other annotations as needed
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: nitro.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: http-rpc  # HTTP/RPC endpoint
+        - path: /ws
+          pathType: Prefix
+          service: ws  # WebSocket endpoint
+        - path: /feed
+          pathType: Prefix
+          service: feed  # Feed endpoint
+  tls:
+    enable: true
+    secretName: nitro-tls-secret  # TLS secret name
+```
+
+This will create an Ingress resource that routes traffic to the appropriate Nitro services. Note that WebSocket connections require specific annotations on most ingress controllers to support the longer-lived connections.
