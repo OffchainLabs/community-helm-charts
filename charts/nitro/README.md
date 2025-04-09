@@ -334,15 +334,6 @@ Option | Description | Default
 `execution.rpc.tx-allow-unprotected` | allow transactions that aren't EIP-155 replay protected to be submitted over the RPC | `true`
 `execution.rpc.tx-fee-cap` | float                                                                         cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
 `execution.secondary-forwarding-target` | strings                                                          secondary transaction forwarding target URL | None
-`execution.sequencer.dangerous.timeboost.auction-contract-address` | string                                Address of the proxy pointing to the ExpressLaneAuction contract | None
-`execution.sequencer.dangerous.timeboost.auctioneer-address` | string                                      Address of the Timeboost Autonomous Auctioneer | None
-`execution.sequencer.dangerous.timeboost.early-submission-grace` | duration                                period of time before the next round where submissions for the next round will be queued | `2s`
-`execution.sequencer.dangerous.timeboost.enable` | enable timeboost based on express lane auctions | None
-`execution.sequencer.dangerous.timeboost.express-lane-advantage` | duration                                specify the express lane advantage | `200ms`
-`execution.sequencer.dangerous.timeboost.max-future-sequence-distance` | uint                              maximum allowed difference (in terms of sequence numbers) between a future express lane tx and the current sequence count of a round | `100`
-`execution.sequencer.dangerous.timeboost.max-queued-tx-count` | int                                        maximum allowed number of express lane txs with future sequence number to be queued. Set 0 to disable this check and a negative value to prevent queuing of any future sequence number transactions | `10`
-`execution.sequencer.dangerous.timeboost.redis-url` | string                                               the Redis URL for expressLaneService to coordinate via | `unset`
-`execution.sequencer.dangerous.timeboost.sequencer-http-endpoint` | string                                 this sequencer's http endpoint | `http://localhost:8547`
 `execution.sequencer.enable` | act and post to l1 as sequencer | None
 `execution.sequencer.enable-profiling` | enable CPU profiling and tracing | None
 `execution.sequencer.expected-surplus-hard-threshold` | string                                             if expected surplus is lower than this value, new incoming transactions will be denied | `default`
@@ -363,6 +354,16 @@ Option | Description | Default
 `execution.sequencer.queue-size` | int                                                                     size of the pending tx queue | `1024`
 `execution.sequencer.queue-timeout` | duration                                                             maximum amount of time transaction can wait in queue | `12s`
 `execution.sequencer.sender-whitelist` | strings                                                           comma separated whitelist of authorized senders (if empty, everyone is allowed) | None
+`execution.sequencer.timeboost.auction-contract-address` | string                                          Address of the proxy pointing to the ExpressLaneAuction contract | None
+`execution.sequencer.timeboost.auctioneer-address` | string                                                Address of the Timeboost Autonomous Auctioneer | None
+`execution.sequencer.timeboost.early-submission-grace` | duration                                          period of time before the next round where submissions for the next round will be queued | `2s`
+`execution.sequencer.timeboost.enable` | enable timeboost based on express lane auctions | None
+`execution.sequencer.timeboost.express-lane-advantage` | duration                                          specify the express lane advantage | `200ms`
+`execution.sequencer.timeboost.max-future-sequence-distance` | uint                                        maximum allowed difference (in terms of sequence numbers) between a future express lane tx and the current sequence count of a round | `1000`
+`execution.sequencer.timeboost.queue-timeout-in-blocks` | uint                                             maximum amount of time (measured in blocks) that Express Lane transactions can wait in the sequencer's queue | `5`
+`execution.sequencer.timeboost.redis-update-events-channel-size` | uint                                    size of update events' buffered channels in timeboost redis coordinator | `500`
+`execution.sequencer.timeboost.redis-url` | string                                                         the Redis URL for expressLaneService to coordinate via | `unset`
+`execution.sequencer.timeboost.sequencer-http-endpoint` | string                                           this sequencer's http endpoint | `http://localhost:8547`
 `execution.stylus-target.amd64` | string                                                                   stylus programs compilation target for amd64 linux | `x86_64-linux-unknown+sse4.2+lzcnt+bmi`
 `execution.stylus-target.arm64` | string                                                                   stylus programs compilation target for arm64 linux | `arm64-linux-unknown+neon`
 `execution.stylus-target.extra-archs` | strings                                                            Comma separated list of extra architectures to cross-compile stylus program to and cache in wasm store (additionally to local target). Currently must include at least wavm. (supported targets: wavm, arm64, amd64, host) | `[wavm]`
@@ -550,6 +551,7 @@ Option | Description | Default
 `node.bold.delegated-staking.custom-withdrawal-address` | string                                           enable a custom withdrawal address for staking on the rollup contract, useful for delegated stakers | None
 `node.bold.delegated-staking.enable` | enable delegated staking by having the validator call newStake on startup | None
 `node.bold.enable` | enable bold challenge protocol | None
+`node.bold.enable-fast-confirmation` | enable fast confirmation | None
 `node.bold.max-get-log-blocks` | int                                                                       maximum size for chunk of blocks when using get logs rpc | `5000`
 `node.bold.minimum-gap-to-parent-assertion` | duration                                                     minimum duration to wait since the parent assertion was created to post a new assertion | `1m0s`
 `node.bold.rpc-block-number` | string                                                                      define the block number to use for reading data onchain, either latest, safe, or finalized | `finalized`
