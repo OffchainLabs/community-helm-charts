@@ -7,11 +7,6 @@ on:
       - feat/secure-test-install-workflow
     paths:
       - "charts/**"
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - labeled
 
 # Limit permissions to only what's needed
 permissions:
@@ -65,51 +60,10 @@ jobs:
             echo "No charts changed."
           fi
 
-      # For fork PRs without approval label, add a comment and fail the check
-      - name: Check for approval label
-        if: steps.list-changed.outputs.changed == 'true' && steps.check-fork.outputs.is_fork == 'true' && !contains(github.event.pull_request.labels.*.name, 'approved-for-ci')
-        id: check-approval
-        run: |
-          echo "approved=false" >> $GITHUB_OUTPUT
-
-      - name: Find existing approval request comment
-        if: steps.check-approval.outputs.approved == 'false'
-        uses: peter-evans/find-comment@v3
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: '## Chart Installation Approval Required'
-
-      - name: Create or update approval request comment
-        if: steps.check-approval.outputs.approved == 'false'
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## Chart Installation Approval Required
-            
-            This PR contains changes to Helm charts that need to be tested.
-            
-            A maintainer needs to add the `approved-for-ci` label to this PR to run the installation tests.
-          edit-mode: replace
-          reactions: eyes
-          
-      - name: Fail check for unapproved fork PRs
-        if: steps.check-approval.outputs.approved == 'false'
-        run: |
-          echo "::error::This PR is from a fork and requires approval to run chart installation tests."
-          echo "Please ask a maintainer to add the 'approved-for-ci' label to this PR."
-          exit 1
-
   test-install:
     needs: check-changes
-    # Only run if:
-    # 1. There are chart changes AND
-    # 2. Either it's an internal PR OR it's a fork PR with the approval label
-    if: needs.check-changes.outputs.changed == 'true' && 
-        (!github.event.pull_request.head.repo.fork || contains(github.event.pull_request.labels.*.name, 'approved-for-ci'))
+    # Only run if there are chart changes
+    if: needs.check-changes.outputs.changed == 'true'
     runs-on: ubuntu-8
 
     steps:
@@ -141,7 +95,6 @@ jobs:
         uses: helm/kind-action@v1.9.0
 
       - name: Prepare CI secrets for Helm as a single quoted string
-        if: steps.check-fork.outputs.is_fork == 'false' || contains(github.event.pull_request.labels.*.name, 'approved-for-ci')
         env:
           CI_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.CI_TEST_ACCOUNT_PRIVATE_KEY }}
           CI_PARENT_CHAIN_URL_SEPOLIA: ${{ secrets.CI_PARENT_CHAIN_URL_SEPOLIA }}
@@ -177,15 +130,7 @@ jobs:
         
       - name: Run chart-testing (install)
         run: |
-          if [[ "${{ steps.check-fork.outputs.is_fork }}" == "true" && "${{ contains(github.event.pull_request.labels.*.name, 'approved-for-ci') }}" != "true" ]]; then
-            # For unapproved fork PRs, run without secrets
-            echo "Running chart-testing for unapproved fork PR without secrets"
-            ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml
-          else
-            # For internal PRs or approved fork PRs, run with secrets
-            echo "Running chart-testing with secrets"
-            ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
-          fi
+          ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
 
       - name: Update PR with test results
         if: always()
@@ -195,45 +140,51 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const pr_number = ${{ github.event.pull_request.number }};
+            const commit_sha = "${{ github.event.pull_request.head.sha }}";
             
             const workflow_run_url = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
             
-            let status_icon = '✅';
-            let status_text = 'succeeded';
-            
-            if (context.job.status !== 'success') {
-              status_icon = '❌';
-              status_text = 'failed';
-            }
+            // Use job.status to determine if the job succeeded or failed
+            const status = "${{ job.status }}";
+            const status_icon = status === 'success' ? '✅' : '❌';
+            const status_text = status === 'success' ? 'succeeded' : 'failed';
             
             const message = `## Chart Installation Test ${status_text} ${status_icon}
             
-            The chart installation test has ${status_text}. [View workflow run](${workflow_run_url})
+            The chart installation test for commit \`${commit_sha.substring(0, 7)}\` has ${status_text}.
             
-            ${context.job.status !== 'success' ? '⚠️ Please check the workflow logs for details on the failure.' : ''}`;
+            [View workflow run](${workflow_run_url})
             
-            await github.rest.issues.createComment({
+            ${status !== 'success' ? '⚠️ Please check the workflow logs for details on the failure.' : ''}`;
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
               owner,
               repo,
-              issue_number: pr_number,
-              body: message
+              issue_number: pr_number
             });
             
-      # Remove the approval label after running to require re-approval for new commits
-      - name: Remove approval label
-        if: steps.check-fork.outputs.is_fork == 'true' && always()
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            try {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                name: 'approved-for-ci'
+            const botComment = comments.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('Chart Installation Test')
+            );
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: botComment.id,
+                body: message
               });
-              console.log('Removed approved-for-ci label');
-            } catch (error) {
-              console.log('Error removing label (may not exist):', error);
+              console.log(`Updated existing comment #${botComment.id}`);
+            } else {
+              // Create new comment
+              const { data: newComment } = await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr_number,
+                body: message
+              });
+              console.log(`Created new comment #${newComment.id}`);
             }
