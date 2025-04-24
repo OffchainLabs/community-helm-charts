@@ -1,5 +1,11 @@
 ## @section Nitro Deployment Options
 
+## @param lifecycle Lifecycle hooks configuration
+lifecycle: {}
+
+## @param extraEnv Additional environment variables for the container
+extraEnv: {}
+
 ## @param replicaCount Number of replicas to deploy
 ##
 replicaCount: 1
@@ -285,7 +291,7 @@ configmap:
 ## @section Stateless Validator
 validator:
   ## @param validator.enabled Enable the stateless validator
-  enabled: false
+  enabled: true
 
   splitvalidator:
     ## @param validator.splitvalidator.deployments List of deployments for the split validator. Each deploymeny can have its own image, config, etc.
@@ -299,6 +305,9 @@ validator:
       nodeSelector:
         ## @skip validator.splitvalidator.global.nodeSelector.kubernetes.io/arch
         kubernetes.io/arch: amd64
+
+      ## @param validator.splitvalidator.global.lifecycle Lifecycle hooks configuration
+      lifecycle: {}
 
       image:
         ## @param validator.splitvalidator.global.image.repository Docker image repository for the split validator

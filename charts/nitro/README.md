@@ -75,6 +75,8 @@ helm install xai offchainlabs/nitro -f values.yaml
 
 | Name                                                       | Description                                                                     | Value                                                               |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `lifecycle`                                                | Lifecycle hooks configuration                                                   | `{}`                                                                |
+| `extraEnv`                                                 | Additional environment variables for the container                              | `{}`                                                                |
 | `replicaCount`                                             | Number of replicas to deploy                                                    | `1`                                                                 |
 | `image.repository`                                         | Docker image repository                                                         | `offchainlabs/nitro-node`                                           |
 | `image.pullPolicy`                                         | Docker image pull policy                                                        | `Always`                                                            |
@@ -174,17 +176,16 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `configmap.data.ws.port`                                   | Port to bind ws service to                                                      | `8548`                                                              |
 | `configmap.data.ws.rpcprefix`                              | Prefix for rpc calls                                                            | `/ws`                                                               |
 | `configmap.data.validation.wasm.allowed-wasm-module-roots` | Default flags as of v3.0.0                                                      | `["/home/user/nitro-legacy/machines","/home/user/target/machines"]` |
-| `lifecycle`                                     | Configure container lifecycle hooks (postStart, preStop)                    | `{}`                        |
-| `extraEnv`                                      | List of extra environment variables to add to the container                 | `[]`                        |
 
 ### Stateless Validator
 
 | Name                                                                                | Description                                                                                       | Value                         |
 | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `validator.enabled`                                                                 | Enable the stateless validator                                                                    | `false`                       |
+| `validator.enabled`                                                                 | Enable the stateless validator                                                                    | `true`                        |
 | `validator.splitvalidator.deployments`                                              | List of deployments for the split validator. Each deploymeny can have its own image, config, etc. | `[]`                          |
 | `validator.splitvalidator.global.replicaCount`                                      | Number of replicas for the split validator                                                        | `1`                           |
 | `validator.splitvalidator.global.nodeSelector`                                      | Node selector for the split validator                                                             | `{kubernetes.io/arch: amd64}` |
+| `validator.splitvalidator.global.lifecycle`                                         | Lifecycle hooks configuration                                                                     | `{}`                          |
 | `validator.splitvalidator.global.image.repository`                                  | Docker image repository for the split validator                                                   | `""`                          |
 | `validator.splitvalidator.global.image.tag`                                         | Docker image tag for the split validator                                                          | `""`                          |
 | `validator.splitvalidator.global.useConfigmap`                                      | Use the configmap for the validator container                                                     | `true`                        |
@@ -244,7 +245,6 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.splitvalidator.global.extraPorts`                                        | Additional ports for the stateless validator pod                                                  | `[]`                          |
 | `validator.splitvalidator.global.podAnnotations`                                    | Annotations for the stateless validator pod                                                       | `{}`                          |
 | `validator.splitvalidator.global.priorityClassName`                                 | Priority class name for the stateless validator pod                                               | `""`                          |
-| `validator.splitvalidator.global.lifecycle`                                        | Configure container lifecycle hooks (postStart, preStop) for all validator deployments             | `{}`                          |
 
 ## Configuration Options
 The following table lists the exhaustive configurable parameters that can be applied as part of the configmap (nested under `configmap.data`) or as standalone cli flags.

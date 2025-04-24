@@ -1,5 +1,11 @@
 ## @section Relay
 
+## @param lifecycle Lifecycle hooks configuration
+lifecycle: {}
+
+## @param extraEnv Additional environment variables for the container
+extraEnv: {}
+
 ## @param replicaCount Number of replicas to deploy
 replicaCount: 1
 

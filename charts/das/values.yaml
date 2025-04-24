@@ -3,6 +3,12 @@
 ## @param replicaCount Number of replicas
 replicaCount: 1
 
+## @param lifecycle Lifecycle hooks configuration
+lifecycle: {}
+
+## @param extraEnv Additional environment variables for the container
+extraEnv: {}
+
 ## @param image.repository Docker image repository
 ## @param image.pullPolicy Docker image pull policy
 ## @param image.tag Docker image tag ovverrides the chart appVersion

@@ -160,6 +160,8 @@ extraEnv:
 | Name                                            | Description                                                                 | Value                       |
 | ----------------------------------------------- | --------------------------------------------------------------------------- | --------------------------- |
 | `replicaCount`                                  | Number of replicas                                                          | `1`                         |
+| `lifecycle`                                     | Lifecycle hooks configuration                                               | `{}`                        |
+| `extraEnv`                                      | Additional environment variables for the container                          | `{}`                        |
 | `image.repository`                              | Docker image repository                                                     | `offchainlabs/nitro-node`   |
 | `image.pullPolicy`                              | Docker image pull policy                                                    | `Always`                    |
 | `image.tag`                                     | Docker image tag ovverrides the chart appVersion                            | `""`                        |
@@ -224,8 +226,6 @@ extraEnv:
 | `affinity`                                      | Affinity for the das pod                                                    | `{}`                        |
 | `dasecretName`                                  | Name of the das bls secret that contains the bls key                        | `""`                        |
 | `overrideKeydirMountPath`                       | Override the keydir mount path                                              | `""`                        |
-| `lifecycle`                                     | Configure container lifecycle hooks (postStart, preStop)                    | `{}`                        |
-| `extraEnv`                                      | List of extra environment variables to add to the container                 | `[]`                        |
 
 ### DAS Config options
 
