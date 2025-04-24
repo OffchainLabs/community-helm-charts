@@ -78,7 +78,7 @@ helm install <my-release> offchainlabs/relay \
 | `headlessService.enabled`                         | Enable headless service                            | `true`                      |
 | `headlessService.publishNotReadyAddresses`        | Publish not ready addresses                        | `true`                      |
 | `pdb.enabled`                                     | Enable pod disruption budget                       | `false`                     |
-| `pdb.minAvailable`                                | Minimum number of available pods                   | `75%`                       |
+| `pdb.minAvailable`                                | Minimum number of available pods                   | `50%`                       |
 | `pdb.maxUnavailable`                              | Maximum number of unavailable pods                 | `""`                        |
 | `serviceAccount.create`                           | Create a service account                           | `true`                      |
 | `serviceAccount.annotations`                      | Annotations for the service account                | `{}`                        |
