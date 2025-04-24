@@ -15,7 +15,7 @@ image:
 ## @param imagePullSecrets Docker registry pull secret names as an array
 imagePullSecrets: []
 ## @param nameOverride String to partially override nitro.fullname
-nameOverride: ""
+nameOverride: "test123"
 
 ## @param fullnameOverride String to fully override nitro.fullname
 fullnameOverride: ""
