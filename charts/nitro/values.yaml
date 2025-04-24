@@ -12,7 +12,7 @@ image:
   repository: offchainlabs/nitro-node
   pullPolicy: Always
   tag: ""
-  blah: "blah"
+  blah: "blah1"
 
 ## @param imagePullSecrets Docker registry pull secret names as an array
 imagePullSecrets: []
