@@ -156,6 +156,11 @@ spec:
           {{- with .Values.extraEnv }}
           {{- toYaml . | nindent 12 }}
           {{- end }}
+          lifecycle:
+          {{- include "nitro.lifecycle" . | nindent 12 }}
+          {{- with .Values.lifecycle }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if .Values.persistence.enabled }}
           volumeMounts:
           {{- if .Values.jwtSecret.enabled }}

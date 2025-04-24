@@ -174,6 +174,8 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `configmap.data.ws.port`                                   | Port to bind ws service to                                                      | `8548`                                                              |
 | `configmap.data.ws.rpcprefix`                              | Prefix for rpc calls                                                            | `/ws`                                                               |
 | `configmap.data.validation.wasm.allowed-wasm-module-roots` | Default flags as of v3.0.0                                                      | `["/home/user/nitro-legacy/machines","/home/user/target/machines"]` |
+| `lifecycle`                                     | Configure container lifecycle hooks (postStart, preStop)                    | `{}`                        |
+| `extraEnv`                                      | List of extra environment variables to add to the container                 | `[]`                        |
 
 ### Stateless Validator
 
@@ -242,6 +244,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.splitvalidator.global.extraPorts`                                        | Additional ports for the stateless validator pod                                                  | `[]`                          |
 | `validator.splitvalidator.global.podAnnotations`                                    | Annotations for the stateless validator pod                                                       | `{}`                          |
 | `validator.splitvalidator.global.priorityClassName`                                 | Priority class name for the stateless validator pod                                               | `""`                          |
+| `validator.splitvalidator.global.lifecycle`                                        | Configure container lifecycle hooks (postStart, preStop) for all validator deployments             | `{}`                          |
 
 ## Configuration Options
 The following table lists the exhaustive configurable parameters that can be applied as part of the configmap (nested under `configmap.data`) or as standalone cli flags.

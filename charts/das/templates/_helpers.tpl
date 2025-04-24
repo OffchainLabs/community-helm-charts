@@ -82,5 +82,5 @@ curl "http://localhost:{{ index .Values.configmap.data "rpc-port" }}" -X POST \
 {{- define "das.env" -}}
 {{- end -}}
 
-
-
+{{- define "das.lifecycle" -}}
+{{- end -}}

@@ -192,3 +192,6 @@ Currently primarily used for stateless validator configuration
 {{- $processed -}}
 
 {{- end -}}
+
+{{- define "nitro.lifecycle" -}}
+{{- end -}}

@@ -95,6 +95,8 @@ helm install <my-release> offchainlabs/relay \
 | `tolerations`                                     | Tolerations for the pod                          | `[]`                        |
 | `topologySpreadConstraints`                       | Topology spread constraints for the pod          | `[]`                        |
 | `affinity`                                        | Affinity for the pod                             | `{}`                        |
+| `lifecycle`                                     | Configure container lifecycle hooks (postStart, preStop)                    | `{}`                        |
+| `extraEnv`                                      | List of extra environment variables to add to the container                 | `[]`                        |
 
 ### Relay Configmap
 

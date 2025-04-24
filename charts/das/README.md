@@ -224,6 +224,8 @@ extraEnv:
 | `affinity`                                      | Affinity for the das pod                                                    | `{}`                        |
 | `dasecretName`                                  | Name of the das bls secret that contains the bls key                        | `""`                        |
 | `overrideKeydirMountPath`                       | Override the keydir mount path                                              | `""`                        |
+| `lifecycle`                                     | Configure container lifecycle hooks (postStart, preStop)                    | `{}`                        |
+| `extraEnv`                                      | List of extra environment variables to add to the container                 | `[]`                        |
 
 ### DAS Config options
 

@@ -195,6 +195,11 @@ spec:
           {{- toYaml . | nindent 10 }}
           {{- end }}
           {{- end }}
+          lifecycle:
+          {{- include "das.lifecycle" . | nindent 12 }}
+          {{- with .Values.lifecycle }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
           {{- if index .Values "configmap" "data" "data-availability" "local-db-storage" "enable" }}
           - name: localdbstorage
