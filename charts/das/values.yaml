@@ -52,6 +52,7 @@ livenessProbe:
 ## @param readinessProbe.timeoutSeconds Timeout for the readiness probe
 ## @param readinessProbe.failureThreshold Failure threshold for the readiness probe
 ## @param readinessProbe.successThreshold Success threshold for the readiness probe
+## @param readinessProbe.blah Blah for the readiness probe
 readinessProbe:
   enabled: true
   initialDelaySeconds: 0
