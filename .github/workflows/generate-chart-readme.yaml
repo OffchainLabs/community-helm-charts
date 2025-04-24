@@ -81,44 +81,7 @@ jobs:
         with:
           commit_message: Update README and values.schema.json for modified charts
 
-      # For fork PRs, create a comment with instructions first
-      - name: Prepare Comment Content (Fork PR)
-        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
-        id: prepare-comment
-        run: |
-          # Create a temporary file for the comment
-          echo "## README Update Required" > comment.md
-          echo "" >> comment.md
-          echo "This PR is from a fork. The README generator has detected changes that need to be made to the README files." >> comment.md
-          echo "" >> comment.md
-          echo "Please update the following README files manually:" >> comment.md
-          
-          IFS=' ' read -ra ADDR <<< "$paths"
-          for chart in "${ADDR[@]}"; do
-            echo "- ${chart}/README.md" >> comment.md
-          done
-          
-          echo "" >> comment.md
-          echo "You can use the readme-generator tool to generate the updated README content:" >> comment.md
-          echo "" >> comment.md
-          echo '```bash' >> comment.md
-          echo "npm install -g @bitnami/readme-generator-for-helm" >> comment.md
-          
-          for chart in "${ADDR[@]}"; do
-            echo "readme-generator --values ${chart}/values.yaml --readme ${chart}/README.md" >> comment.md
-          done
-          
-          echo '```' >> comment.md
-
-      - name: Create PR Comment with README Changes (Fork PR)
-        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body-path: comment.md
-          reactions: 'eyes'
-
-      # For fork PRs, check if changes are needed and fail if they are
+      # For fork PRs, check if changes are needed first
       - name: Check README changes needed (Fork PR)
         if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
         id: check-changes
@@ -147,8 +110,78 @@ jobs:
             fi
           done
           
-          # If changes are needed, fail the check
-          if [ "$changes_needed" = true ]; then
-            echo "README changes are needed. Please update the README files as instructed in the PR comment."
-            exit 1
+          # Set output for use in later steps
+          echo "changes_needed=${changes_needed}" >> $GITHUB_OUTPUT
+
+      # For fork PRs, prepare comment content based on whether changes are needed
+      - name: Prepare Comment Content (Fork PR)
+        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
+        id: prepare-comment
+        run: |
+          # Create a temporary file for the comment
+          if [ "${{ steps.check-changes.outputs.changes_needed }}" == "true" ]; then
+            # Changes needed - create instructions
+            echo "## README Update Required" > comment.md
+            echo "" >> comment.md
+            echo "This PR is from a fork. The README generator has detected changes that need to be made to the README files." >> comment.md
+            echo "" >> comment.md
+            echo "Please update the following README files manually:" >> comment.md
+            
+            IFS=' ' read -ra ADDR <<< "$paths"
+            for chart in "${ADDR[@]}"; do
+              echo "- ${chart}/README.md" >> comment.md
+            done
+            
+            echo "" >> comment.md
+            echo "You can use the readme-generator tool to generate the updated README content:" >> comment.md
+            echo "" >> comment.md
+            echo '```bash' >> comment.md
+            echo "npm install -g @bitnami/readme-generator-for-helm" >> comment.md
+            
+            for chart in "${ADDR[@]}"; do
+              echo "readme-generator --values ${chart}/values.yaml --readme ${chart}/README.md" >> comment.md
+            done
+            
+            echo '```' >> comment.md
+          else
+            # No changes needed - create success message
+            echo "## README Check Passed" > comment.md
+            echo "" >> comment.md
+            echo "This PR is from a fork. The README generator has checked the README files and no changes are needed." >> comment.md
+            echo "" >> comment.md
+            echo "The following README files were checked:" >> comment.md
+            
+            IFS=' ' read -ra ADDR <<< "$paths"
+            for chart in "${ADDR[@]}"; do
+              echo "- ${chart}/README.md" >> comment.md
+            done
           fi
+
+      - name: Find Existing README Comment (Fork PR)
+        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          # Look for either type of comment (update required or check passed)
+          body-regex: '^## README (Update Required|Check Passed)'
+
+      - name: Create or Update PR Comment with README Changes (Fork PR)
+        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          # If comment-id exists, update that comment; otherwise create a new one
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: comment.md
+          reactions: 'eyes'
+          # Replace the entire comment when updating
+          edit-mode: replace
+
+      # Fail the check if changes are needed
+      - name: Fail if README changes are needed (Fork PR)
+        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true' && steps.check-changes.outputs.changes_needed == 'true'
+        run: |
+          echo "README changes are needed. Please update the README files as instructed in the PR comment."
+          exit 1
