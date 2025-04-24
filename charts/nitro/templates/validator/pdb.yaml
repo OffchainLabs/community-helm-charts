@@ -15,10 +15,12 @@ metadata:
   labels:
     {{- $labels | nindent 4 }}
 spec:
-  {{- if and ($mergedValues.pdb.minAvailable) (not $mergedValues.pdb.maxUnavailable) }}
+  {{- $rc := .Values.validator.splitvalidator.global.replicaCount }}
+  {{- if and (eq $rc 1) (not $mergedValues.pdb.minAvailable) (not $mergedValues.pdb.maxUnavailable) }}
+  maxUnavailable: "100%"
+  {{- else if and ($mergedValues.pdb.minAvailable) (not $mergedValues.pdb.maxUnavailable) }}
   minAvailable: {{ $mergedValues.pdb.minAvailable }}
-  {{- end }}
-  {{- if and ($mergedValues.pdb.maxUnavailable) (not $mergedValues.pdb.minAvailable) }}
+  {{- else if and ($mergedValues.pdb.maxUnavailable) (not $mergedValues.pdb.minAvailable) }}
   maxUnavailable: {{ $mergedValues.pdb.maxUnavailable }}
   {{- end }}
   selector:
