@@ -174,7 +174,7 @@ jobs:
           issue-number: ${{ env.PR_NUMBER }}
           comment-author: 'github-actions[bot]'
           # Look for any README-related comment
-          body-regex: '^## README (Update Required|Check Passed|Update Completed)'
+          body-regex: '^## README (Update Required|Check Passed)'
 
       - name: Create or Update PR Comment
         if: env.HAS_CHANGES == 'true'
