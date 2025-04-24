@@ -7,6 +7,11 @@ on:
       - feat/secure-test-install-workflow
     paths:
       - "charts/**"
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
 
 # Limit permissions to only what's needed
 permissions:
