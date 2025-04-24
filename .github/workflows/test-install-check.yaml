@@ -4,6 +4,7 @@ on:
   pull_request_target:
     branches:
       - main
+      - feat/secure-test-install-workflow
     paths:
       - "charts/**"
 
