@@ -1,0 +1,246 @@
+name: 'Update README (Privileged)'
+
+on:
+  workflow_run:
+    workflows: ["Check README Updates (Unprivileged)"]
+    types:
+      - completed
+
+# Limit permissions to only what's needed
+permissions:
+  contents: write  # Need write permission to commit changes
+  pull-requests: write  # Need write permission to comment on PRs
+  checks: write  # Need write permission to update status checks
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    # Only run if the unprivileged workflow completed successfully
+    if: github.event.workflow_run.conclusion == 'success'
+    
+    steps:
+      - name: Download workflow artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-readme-info
+          path: pr-info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+      
+      - name: Extract PR information
+        id: extract-pr-info
+        run: |
+          echo "PR_NUMBER=$(cat pr-info/PR_NUMBER)" >> $GITHUB_ENV
+          echo "HEAD_SHA=$(cat pr-info/HEAD_SHA)" >> $GITHUB_ENV
+          echo "IS_FORK=$(cat pr-info/IS_FORK)" >> $GITHUB_ENV
+          echo "HAS_CHANGES=$(cat pr-info/HAS_CHANGES)" >> $GITHUB_ENV
+          echo "CHANGES_NEEDED=$(cat pr-info/CHANGES_NEEDED)" >> $GITHUB_ENV
+          
+          if [[ -f "pr-info/MODIFIED_CHARTS" ]]; then
+            echo "MODIFIED_CHARTS=$(cat pr-info/MODIFIED_CHARTS)" >> $GITHUB_ENV
+          fi
+          
+          if [[ -f "pr-info/CHANGES_DETAILS" ]]; then
+            echo "CHANGES_DETAILS=$(cat pr-info/CHANGES_DETAILS)" >> $GITHUB_ENV
+          fi
+      
+      # Only proceed if there are chart changes
+      - name: Checkout repository
+        if: env.HAS_CHANGES == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.HEAD_SHA }}
+          # Important: For fork PRs, don't persist credentials
+          persist-credentials: ${{ env.IS_FORK == 'false' }}
+      
+      - name: Install readme-generator-for-helm
+        if: env.HAS_CHANGES == 'true'
+        run: npm install -g @bitnami/readme-generator-for-helm
+      
+      # For internal PRs, update READMEs and commit changes
+      - name: Execute readme-generator-for-helm (Internal PR)
+        if: env.HAS_CHANGES == 'true' && env.CHANGES_NEEDED == 'true' && env.IS_FORK == 'false'
+        run: |
+          IFS=' ' read -ra ADDR <<< "$MODIFIED_CHARTS"
+          echo "Updating READMEs for modified charts: ${ADDR[@]}"
+          for chart in "${ADDR[@]}"; do
+            echo "Updating README.md for ${chart}"
+            readme-generator --values "${chart}/values.yaml" --readme "${chart}/README.md"
+            if [[ $? -ne 0 ]]; then
+              echo "Error: Failed to update README for ${chart}"
+              exit 1
+            fi
+          done
+
+      # Only commit changes for internal PRs
+      - name: Commit and Push Changes (Internal PR)
+        if: env.HAS_CHANGES == 'true' && env.CHANGES_NEEDED == 'true' && env.IS_FORK == 'false'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update README for modified charts
+
+      # Prepare comment content based on whether changes are needed
+      - name: Prepare Comment Content
+        if: env.HAS_CHANGES == 'true'
+        id: prepare-comment
+        run: |
+          # Create a temporary file for the comment
+          if [[ "$IS_FORK" == "true" && "$CHANGES_NEEDED" == "true" ]]; then
+            # Fork PR with changes needed - create instructions
+            echo "## README Update Required" > comment.md
+            echo "" >> comment.md
+            echo "This PR is from a fork. The README generator has detected changes that need to be made to the README files." >> comment.md
+            echo "" >> comment.md
+            echo "Please update the following README files manually:" >> comment.md
+            
+            # Parse CHANGES_DETAILS to get charts that need updates
+            IFS=',' read -ra DETAILS <<< "$CHANGES_DETAILS"
+            for detail in "${DETAILS[@]}"; do
+              chart=$(echo $detail | cut -d':' -f1)
+              status=$(echo $detail | cut -d':' -f2)
+              
+              if [[ "$status" == "needs_update" ]]; then
+                echo "- ${chart}/README.md" >> comment.md
+              fi
+            done
+            
+            echo "" >> comment.md
+            echo "You can use the readme-generator tool to generate the updated README content:" >> comment.md
+            echo "" >> comment.md
+            echo '```bash' >> comment.md
+            echo "npm install -g @bitnami/readme-generator-for-helm" >> comment.md
+            
+            for detail in "${DETAILS[@]}"; do
+              chart=$(echo $detail | cut -d':' -f1)
+              status=$(echo $detail | cut -d':' -f2)
+              
+              if [[ "$status" == "needs_update" ]]; then
+                echo "readme-generator --values ${chart}/values.yaml --readme ${chart}/README.md" >> comment.md
+              fi
+            done
+            
+            echo '```' >> comment.md
+          elif [[ "$IS_FORK" == "true" && "$CHANGES_NEEDED" == "false" ]]; then
+            # Fork PR with no changes needed - create success message
+            echo "## README Check Passed" > comment.md
+            echo "" >> comment.md
+            echo "This PR is from a fork. The README generator has checked the README files and no changes are needed." >> comment.md
+            echo "" >> comment.md
+            echo "The following README files were checked:" >> comment.md
+            
+            IFS=' ' read -ra ADDR <<< "$MODIFIED_CHARTS"
+            for chart in "${ADDR[@]}"; do
+              echo "- ${chart}/README.md" >> comment.md
+            done
+          elif [[ "$IS_FORK" == "false" && "$CHANGES_NEEDED" == "true" ]]; then
+            # Internal PR with changes - create success message
+            echo "## README Update Completed" > comment.md
+            echo "" >> comment.md
+            echo "The README files have been automatically updated for the modified charts." >> comment.md
+            echo "" >> comment.md
+            echo "The following README files were updated:" >> comment.md
+            
+            # Parse CHANGES_DETAILS to get charts that were updated
+            IFS=',' read -ra DETAILS <<< "$CHANGES_DETAILS"
+            for detail in "${DETAILS[@]}"; do
+              chart=$(echo $detail | cut -d':' -f1)
+              status=$(echo $detail | cut -d':' -f2)
+              
+              if [[ "$status" == "needs_update" ]]; then
+                echo "- ${chart}/README.md" >> comment.md
+              fi
+            done
+          else
+            # Internal PR with no changes needed
+            echo "## README Check Passed" > comment.md
+            echo "" >> comment.md
+            echo "The README generator has checked the README files and no changes are needed." >> comment.md
+            echo "" >> comment.md
+            echo "The following README files were checked:" >> comment.md
+            
+            IFS=' ' read -ra ADDR <<< "$MODIFIED_CHARTS"
+            for chart in "${ADDR[@]}"; do
+              echo "- ${chart}/README.md" >> comment.md
+            done
+          fi
+
+      - name: Find Existing README Comment
+        if: env.HAS_CHANGES == 'true'
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-author: 'github-actions[bot]'
+          # Look for any README-related comment
+          body-regex: '^## README (Update Required|Check Passed|Update Completed)'
+
+      - name: Create or Update PR Comment
+        if: env.HAS_CHANGES == 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          # If comment-id exists, update that comment; otherwise create a new one
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ env.PR_NUMBER }}
+          body-path: comment.md
+          reactions: 'eyes'
+          # Replace the entire comment when updating
+          edit-mode: replace
+
+      # Fail the check if changes are needed for fork PRs
+      - name: Fail if README changes are needed (Fork PR)
+        if: env.HAS_CHANGES == 'true' && env.CHANGES_NEEDED == 'true' && env.IS_FORK == 'true'
+        run: |
+          echo "README changes are needed. Please update the README files as instructed in the PR comment."
+          exit 1
+          
+      # Update status check
+      - name: Update status check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const { owner, repo } = context.repo;
+              const commit_sha = process.env.HEAD_SHA;
+              
+              // Determine status based on conditions
+              let status = 'success';
+              let title = 'README Check Passed';
+              let summary = 'No README updates needed.';
+              
+              if (process.env.HAS_CHANGES === 'true') {
+                if (process.env.CHANGES_NEEDED === 'true') {
+                  if (process.env.IS_FORK === 'true') {
+                    status = 'failure';
+                    title = 'README Update Required';
+                    summary = 'README updates are needed. Please see PR comment for details.';
+                  } else {
+                    title = 'README Update Completed';
+                    summary = 'README files have been automatically updated.';
+                  }
+                }
+              }
+              
+              const workflow_run_url = `https://github.com/${owner}/${repo}/actions/runs/${{ github.run_id }}`;
+              
+              // Update status check
+              await github.rest.checks.create({
+                owner,
+                repo,
+                name: 'README Update Check',
+                head_sha: commit_sha,
+                status: 'completed',
+                conclusion: status,
+                output: {
+                  title: title,
+                  summary: summary
+                },
+                details_url: workflow_run_url
+              });
+              console.log(`Updated status check for commit ${commit_sha}`);
+            } catch (error) {
+              console.error(`Error updating status check: ${error.message}`);
+              core.setFailed(`Failed to update status check: ${error.message}`);
+            }
