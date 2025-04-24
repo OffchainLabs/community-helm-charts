@@ -80,8 +80,30 @@ jobs:
           path: ./pr-info/pr-info.json
           retention-days: 1
 
+      # For internal PRs, automatically trigger the test workflow
+      - name: Trigger test workflow for internal PR
+        if: steps.list-changed.outputs.changed == 'true' && steps.check-fork.outputs.is_fork == 'false'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'test-install-run.yaml',
+              ref: '${{ github.event.pull_request.head.ref }}',
+              inputs: {
+                pr_number: '${{ github.event.pull_request.number }}',
+                head_sha: '${{ github.event.pull_request.head.sha }}',
+                head_ref: '${{ github.event.pull_request.head.ref }}',
+                base_ref: '${{ github.event.pull_request.base.ref }}',
+                is_fork: 'false'
+              }
+            });
+
+      # For fork PRs, add a comment requesting manual approval
       - name: Find existing approval request comment
-        if: steps.list-changed.outputs.changed == 'true'
+        if: steps.list-changed.outputs.changed == 'true' && steps.check-fork.outputs.is_fork == 'true'
         uses: peter-evans/find-comment@v3
         id: find-comment
         with:
@@ -90,7 +112,7 @@ jobs:
           body-includes: '## Chart Installation Approval Required'
 
       - name: Create or update approval request comment
-        if: steps.list-changed.outputs.changed == 'true'
+        if: steps.list-changed.outputs.changed == 'true' && steps.check-fork.outputs.is_fork == 'true'
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
@@ -109,6 +131,19 @@ jobs:
             3. Click "Run workflow"
             4. Select the branch with the changes
             5. Click "Run workflow"
-            
+            6. Enter the following information:
+               - PR number: ${{ github.event.pull_request.number }}
+               - Head SHA: ${{ github.event.pull_request.head.sha }}
+               - Head ref: ${{ github.event.pull_request.head.ref }}
+               - Base ref: ${{ github.event.pull_request.base.ref }}
+               - Is fork: true
           edit-mode: replace
           reactions: eyes
+          
+      # Fail the check for fork PRs to indicate approval is required
+      - name: Fail check for fork PRs
+        if: steps.list-changed.outputs.changed == 'true' && steps.check-fork.outputs.is_fork == 'true'
+        run: |
+          echo "::error::This PR is from a fork and requires manual approval to run chart installation tests."
+          echo "Please see the comment in the PR for instructions on how to approve the tests."
+          exit 1
