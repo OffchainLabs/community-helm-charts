@@ -81,13 +81,15 @@ jobs:
         with:
           commit_message: Update README and values.schema.json for modified charts
 
-      # For fork PRs, just check if changes are needed without modifying files
+      # For fork PRs, check if changes are needed and fail if they are
       - name: Check README changes needed (Fork PR)
         if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
         id: check-changes
         run: |
           # Create a temporary directory
           mkdir -p temp_readme_files
+          
+          changes_needed=false
           
           IFS=' ' read -ra ADDR <<< "$paths"
           for chart in "${ADDR[@]}"; do
@@ -104,8 +106,15 @@ jobs:
               echo "No changes needed for ${chart}/README.md"
             else
               echo "Changes needed for ${chart}/README.md"
+              changes_needed=true
             fi
           done
+          
+          # If changes are needed, fail the check
+          if [ "$changes_needed" = true ]; then
+            echo "README changes are needed. Please update the README files as instructed in the PR comment."
+            exit 1
+          fi
 
       # For fork PRs, create a comment with instructions
       - name: Prepare Comment Content (Fork PR)
