@@ -1,0 +1,121 @@
+name: Test Charts (Check)
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    paths:
+      - "charts/**"
+
+# Limit permissions to only what's needed
+permissions:
+  contents: read
+  pull-requests: write  # Needed to comment on PR
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.list-changed.outputs.changed }}
+    
+    steps:
+      - name: Check if PR is from a fork
+        id: check-fork
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "is_fork=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_fork=false" >> $GITHUB_OUTPUT
+          fi
+
+      # For internal PRs, checkout code normally
+      - name: Checkout code (Internal PR)
+        if: steps.check-fork.outputs.is_fork == 'false'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      
+      # For fork PRs, checkout with extra security measures
+      - name: Checkout code (Fork PR)
+        if: steps.check-fork.outputs.is_fork == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false  # Security measure for pull_request_target
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml)
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Changed charts: $changed"
+          else
+            echo "No charts changed."
+          fi
+          
+      - name: Save PR information
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          mkdir -p ./pr-info
+          echo '{
+            "number": "${{ github.event.pull_request.number }}",
+            "head_sha": "${{ github.event.pull_request.head.sha }}",
+            "head_ref": "${{ github.event.pull_request.head.ref }}",
+            "base_ref": "${{ github.event.pull_request.base.ref }}",
+            "changed": "${{ steps.list-changed.outputs.changed }}"
+          }' > ./pr-info/pr-info.json
+          
+      - name: Upload PR information
+        if: steps.list-changed.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-info
+          path: ./pr-info/pr-info.json
+          retention-days: 1
+
+      - name: Find existing approval request comment
+        if: steps.list-changed.outputs.changed == 'true'
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '## Chart Installation Approval Required'
+
+      - name: Create or update approval request comment
+        if: steps.list-changed.outputs.changed == 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Chart Installation Approval Required
+            
+            This PR contains changes to Helm charts that need to be tested.
+            
+            A maintainer needs to manually trigger the "Test Charts (Run)" workflow to proceed with installation testing.
+            
+            ### For Maintainers:
+            
+            1. Go to the "Actions" tab
+            2. Select the "Test Charts (Run)" workflow
+            3. Click "Run workflow"
+            4. Select the branch with the changes
+            5. Click "Run workflow"
+            
+            ### Repository Setup (One-time):
+            
+            For enhanced security with required approvals:
+            
+            1. Go to repository Settings > Environments
+            2. Create a new environment named "chart-testing"
+            3. Add required reviewers who can approve workflow runs
+            4. Update the test-install-run.yaml workflow to use this environment
+          edit-mode: replace
+          reactions: eyes
