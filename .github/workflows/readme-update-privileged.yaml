@@ -182,15 +182,16 @@ jobs:
               
               if (process.env.HAS_CHANGES === 'true') {
                 if (process.env.CHANGES_NEEDED === 'true') {
-                  // Always mark as failure if README updates are required
-                  status = 'failure';
-                  
                   if (process.env.IS_FORK === 'true') {
+                    // Mark as failure for fork PRs that need updates
+                    status = 'failure';
                     title = 'README Update Required';
                     summary = 'README updates are needed. Please see PR comment for details.';
                   } else {
-                    title = 'README Update Required';
-                    summary = 'README updates are needed and will be automatically applied.';
+                    // Mark as success for internal PRs since we auto-update
+                    status = 'success';
+                    title = 'README Updated';
+                    summary = 'README files have been automatically updated.';
                   }
                 }
               }
