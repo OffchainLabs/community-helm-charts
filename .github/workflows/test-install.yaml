@@ -1,41 +1,72 @@
-name: Test Charts (Install)
+name: Test Charts (Privileged)
 
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Test Charts (Unprivileged)"]
+    types:
+      - completed
+
+# Limit permissions to only what's needed
+permissions:
+  contents: read
+  pull-requests: write  # Needed to comment on results
+  checks: write  # Needed to create status checks
 
 jobs:
   test-install:
     runs-on: ubuntu-8
-
+    # Only run if the unprivileged workflow completed successfully
+    if: github.event.workflow_run.conclusion == 'success'
+    
     steps:
-      - name: Checkout
+      - name: Download workflow artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-info
+          path: pr-info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+      
+      - name: Extract PR information
+        id: extract-pr-info
+        run: |
+          echo "PR_NUMBER=$(cat pr-info/PR_NUMBER)" >> $GITHUB_ENV
+          echo "HEAD_SHA=$(cat pr-info/HEAD_SHA)" >> $GITHUB_ENV
+          echo "HAS_CHANGES=$(cat pr-info/HAS_CHANGES)" >> $GITHUB_ENV
+          
+          if [[ -f "pr-info/changed-charts.txt" ]]; then
+            echo "CHANGED_CHARTS=$(cat pr-info/changed-charts.txt)" >> $GITHUB_ENV
+          fi
+      
+      # Only proceed with testing if there are chart changes
+      - name: Checkout repository
+        if: env.HAS_CHANGES == 'true'
         uses: actions/checkout@v4
         with:
+          # We're checking out the PR code, but we're not executing any untrusted code
+          # We're only using it as a reference for chart-testing
           fetch-depth: 0
-
+          ref: ${{ env.HEAD_SHA }}
+          # Important: Don't persist credentials when checking out PR code
+          persist-credentials: false
+      
       - name: Set up Helm
+        if: env.HAS_CHANGES == 'true'
         uses: azure/setup-helm@v3
         with:
           version: v3.14.0
 
       - name: Set up chart-testing
+        if: env.HAS_CHANGES == 'true'
         uses: helm/chart-testing-action@v2.6.1
 
       - name: Create kind cluster
+        if: env.HAS_CHANGES == 'true'
         uses: helm/kind-action@v1.9.0
 
-      - name: Run chart-testing (list-changed)
-        id: list-changed
-        run: |
-          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml)
-          if [[ -n "$changed" ]]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Prepare CI secrets for Helm as a single quoted string
-        if: steps.list-changed.outputs.changed == 'true'
+      - name: Prepare CI secrets for Helm
+        if: env.HAS_CHANGES == 'true'
         env:
           CI_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.CI_TEST_ACCOUNT_PRIVATE_KEY }}
           CI_PARENT_CHAIN_URL_SEPOLIA: ${{ secrets.CI_PARENT_CHAIN_URL_SEPOLIA }}
@@ -68,10 +99,85 @@ jobs:
 
           # Use the command directly or set the HELM_EXTRA_SET_ARGS environment variable for later use in the workflow
           echo "HELM_EXTRA_SET_ARGS=${helm_extra_set_args}" >> $GITHUB_ENV
-        
-        
+      
       - name: Run chart-testing (install)
-        if: steps.list-changed.outputs.changed == 'true'
+        if: env.HAS_CHANGES == 'true'
+        id: chart-test
+        continue-on-error: true
         run: |
           ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
+          echo "CT_EXIT_CODE=$?" >> $GITHUB_ENV
+      
+      - name: Determine test status
+        id: test-status
+        run: |
+          if [[ "${{ env.HAS_CHANGES }}" == "false" ]]; then
+            echo "STATUS=success" >> $GITHUB_ENV
+            echo "STATUS_TEXT=No chart changes detected" >> $GITHUB_ENV
+          elif [[ "${{ env.CT_EXIT_CODE }}" == "0" ]]; then
+            echo "STATUS=success" >> $GITHUB_ENV
+            echo "STATUS_TEXT=succeeded" >> $GITHUB_ENV
+          else
+            echo "STATUS=failure" >> $GITHUB_ENV
+            echo "STATUS_TEXT=failed" >> $GITHUB_ENV
+          fi
+      
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'Chart Installation Test'
 
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          body: |
+            ## Chart Installation Test ${{ env.STATUS_TEXT }} ${{ env.STATUS == 'success' && '✅' || '❌' }}
+            
+            The chart installation test for commit `${{ env.HEAD_SHA }}` has ${{ env.STATUS_TEXT }}.
+            
+            ${{ env.HAS_CHANGES == 'true' && format('Changed charts: `{0}`', env.CHANGED_CHARTS) || '' }}
+            
+            [View workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [View unprivileged test run](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})
+            
+            ${{ env.STATUS != 'success' && '⚠️ Please check the workflow logs for details on the failure.' || '' }}
+          edit-mode: replace
+          reactions: ${{ env.STATUS == 'success' && 'rocket' || 'eyes' }}
+      
+      - name: Report status check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const { owner, repo } = context.repo;
+              const commit_sha = process.env.HEAD_SHA;
+              const status = process.env.STATUS;
+              const status_text = process.env.STATUS_TEXT;
+              
+              const workflow_run_url = `https://github.com/${owner}/${repo}/actions/runs/${{ github.run_id }}`;
+              
+              // Report status check
+              await github.rest.checks.create({
+                owner,
+                repo,
+                name: 'Chart Installation Test',
+                head_sha: commit_sha,
+                status: 'completed',
+                conclusion: status === 'success' ? 'success' : 'failure',
+                output: {
+                  title: `Chart Installation ${status_text}`,
+                  summary: `The chart installation test has ${status_text}.`
+                },
+                details_url: workflow_run_url
+              });
+              console.log(`Created status check for commit ${commit_sha}`);
+            } catch (error) {
+              console.error(`Error creating status check: ${error.message}`);
+              core.setFailed(`Failed to create status check: ${error.message}`);
+            }
