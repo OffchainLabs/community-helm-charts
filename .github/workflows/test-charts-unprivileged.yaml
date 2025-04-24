@@ -56,20 +56,3 @@ jobs:
         with:
           name: pr-info
           path: pr-info/
-          
-      - name: Create initial pending status check
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'Chart Installation Test',
-              head_sha: context.payload.pull_request.head.sha,
-              status: 'in_progress',
-              output: {
-                title: 'Chart Installation Test in progress',
-                summary: 'The chart installation test is currently running. Please wait for the results.'
-              }
-            });
