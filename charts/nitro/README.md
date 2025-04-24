@@ -79,7 +79,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `image.repository`                                         | Docker image repository                                                         | `offchainlabs/nitro-node`                                           |
 | `image.pullPolicy`                                         | Docker image pull policy                                                        | `Always`                                                            |
 | `image.tag`                                                | Docker image tag. Overrides the chart appVersion.                               | `""`                                                                |
-| `image.blah`                                               | Blah blah                                                                       | `blah`                                                              |
+| `image.blah`                                               | Blah blah                                                                       | `blah1`                                                             |
 | `imagePullSecrets`                                         | Docker registry pull secret names as an array                                   | `[]`                                                                |
 | `nameOverride`                                             | String to partially override nitro.fullname                                     | `""`                                                                |
 | `fullnameOverride`                                         | String to fully override nitro.fullname                                         | `""`                                                                |
