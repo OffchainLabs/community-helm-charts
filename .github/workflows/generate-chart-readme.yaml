@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-4
     permissions:
       contents: write
+      issues: write  # Add permission to write to issues for commenting
       pull-requests: write  # Add permission to write to pull requests for commenting
     steps:
       - name: Install readme-generator-for-helm
