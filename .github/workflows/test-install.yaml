@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   test-install:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-8
     # Only run if the unprivileged workflow completed successfully
     if: github.event.workflow_run.conclusion == 'success'
     
