@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   pull-requests: write  # Needed to comment on results
+  checks: write  # Needed to create status checks
 
 jobs:
   test-install:
@@ -186,6 +187,23 @@ jobs:
                 });
                 console.log(`Created new comment #${newComment.id}`);
               }
+              
+              // Report status check
+              await github.rest.checks.create({
+                owner,
+                repo,
+                name: 'Chart Installation Test',
+                head_sha: commit_sha,
+                status: 'completed',
+                conclusion: status === 'success' ? 'success' : 'failure',
+                output: {
+                  title: `Chart Installation ${status_text}`,
+                  summary: `The chart installation test has ${status_text}.`,
+                  text: message
+                },
+                details_url: workflow_run_url
+              });
+              console.log(`Created status check for commit ${commit_sha}`);
             } catch (error) {
               console.error(`Error updating PR: ${error.message}`);
               core.setFailed(`Failed to update PR: ${error.message}`);
