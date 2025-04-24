@@ -81,42 +81,7 @@ jobs:
         with:
           commit_message: Update README and values.schema.json for modified charts
 
-      # For fork PRs, check if changes are needed and fail if they are
-      - name: Check README changes needed (Fork PR)
-        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
-        id: check-changes
-        run: |
-          # Create a temporary directory
-          mkdir -p temp_readme_files
-          
-          changes_needed=false
-          
-          IFS=' ' read -ra ADDR <<< "$paths"
-          for chart in "${ADDR[@]}"; do
-            echo "Checking README changes for ${chart}"
-            
-            # Copy the existing README to a temporary file
-            cp "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md"
-            
-            # Try to generate README to a temporary location
-            readme-generator --values "${chart}/values.yaml" --readme "temp_readme_files/$(basename ${chart})_README.md" || true
-            
-            # Check if there are differences
-            if diff -q "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md" > /dev/null; then
-              echo "No changes needed for ${chart}/README.md"
-            else
-              echo "Changes needed for ${chart}/README.md"
-              changes_needed=true
-            fi
-          done
-          
-          # If changes are needed, fail the check
-          if [ "$changes_needed" = true ]; then
-            echo "README changes are needed. Please update the README files as instructed in the PR comment."
-            exit 1
-          fi
-
-      # For fork PRs, create a comment with instructions
+      # For fork PRs, create a comment with instructions first
       - name: Prepare Comment Content (Fork PR)
         if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
         id: prepare-comment
@@ -152,3 +117,38 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body-path: comment.md
           reactions: 'eyes'
+
+      # For fork PRs, check if changes are needed and fail if they are
+      - name: Check README changes needed (Fork PR)
+        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
+        id: check-changes
+        run: |
+          # Create a temporary directory
+          mkdir -p temp_readme_files
+          
+          changes_needed=false
+          
+          IFS=' ' read -ra ADDR <<< "$paths"
+          for chart in "${ADDR[@]}"; do
+            echo "Checking README changes for ${chart}"
+            
+            # Copy the existing README to a temporary file
+            cp "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md"
+            
+            # Try to generate README to a temporary location
+            readme-generator --values "${chart}/values.yaml" --readme "temp_readme_files/$(basename ${chart})_README.md" || true
+            
+            # Check if there are differences
+            if diff -q "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md" > /dev/null; then
+              echo "No changes needed for ${chart}/README.md"
+            else
+              echo "Changes needed for ${chart}/README.md"
+              changes_needed=true
+            fi
+          done
+          
+          # If changes are needed, fail the check
+          if [ "$changes_needed" = true ]; then
+            echo "README changes are needed. Please update the README files as instructed in the PR comment."
+            exit 1
+          fi
