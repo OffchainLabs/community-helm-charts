@@ -5,25 +5,43 @@ on:
     workflows: ["Test Charts (Check)"]
     types:
       - completed
-  # Also allow manual triggering for maintainers
+  # Allow manual triggering for maintainers with inputs
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number'
+        required: true
+      head_sha:
+        description: 'Head SHA'
+        required: true
+      head_ref:
+        description: 'Head ref (branch name)'
+        required: true
+      base_ref:
+        description: 'Base ref (target branch)'
+        required: true
+      is_fork:
+        description: 'Is fork PR (true/false)'
+        required: true
+        default: 'true'
 
 # Limit permissions to only what's needed
 permissions:
   contents: read
   pull-requests: write  # Needed to comment on PR results
 
-
 jobs:
+  # For workflow_run trigger, extract PR info from artifact
   check-workflow-result:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
     outputs:
       pr_number: ${{ steps.get-pr-info.outputs.pr_number }}
-      pr_head_sha: ${{ steps.get-pr-info.outputs.pr_head_sha }}
-      pr_head_ref: ${{ steps.get-pr-info.outputs.pr_head_ref }}
-      pr_base_ref: ${{ steps.get-pr-info.outputs.pr_base_ref }}
+      head_sha: ${{ steps.get-pr-info.outputs.head_sha }}
+      head_ref: ${{ steps.get-pr-info.outputs.head_ref }}
+      base_ref: ${{ steps.get-pr-info.outputs.base_ref }}
       changed: ${{ steps.get-pr-info.outputs.changed }}
+      is_fork: ${{ steps.get-pr-info.outputs.is_fork }}
       
     steps:
       - name: Get PR information
@@ -69,34 +87,74 @@ jobs:
             
             // Set outputs
             core.setOutput('pr_number', prInfo.number);
-            core.setOutput('pr_head_sha', prInfo.head_sha);
-            core.setOutput('pr_head_ref', prInfo.head_ref);
-            core.setOutput('pr_base_ref', prInfo.base_ref);
+            core.setOutput('head_sha', prInfo.head_sha);
+            core.setOutput('head_ref', prInfo.head_ref);
+            core.setOutput('base_ref', prInfo.base_ref);
             core.setOutput('changed', prInfo.changed);
             
+            // Get PR details to determine if it's a fork
+            const prDetails = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prInfo.number
+            });
+            
+            const isFork = prDetails.data.head.repo.fork ? 'true' : 'false';
+            core.setOutput('is_fork', isFork);
+            
             console.log(`PR #${prInfo.number} from ${prInfo.head_ref} to ${prInfo.base_ref}`);
+            console.log(`Is fork: ${isFork}`);
             console.log(`Changed: ${prInfo.changed}`);
 
+  # For workflow_dispatch trigger, use inputs directly
+  prepare-workflow-dispatch:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ github.event.inputs.pr_number }}
+      head_sha: ${{ github.event.inputs.head_sha }}
+      head_ref: ${{ github.event.inputs.head_ref }}
+      base_ref: ${{ github.event.inputs.base_ref }}
+      is_fork: ${{ github.event.inputs.is_fork }}
+      changed: 'true'  # If manually triggered, we assume changes exist
+    steps:
+      - name: Log inputs
+        run: |
+          echo "PR #${{ github.event.inputs.pr_number }} from ${{ github.event.inputs.head_ref }} to ${{ github.event.inputs.base_ref }}"
+          echo "Is fork: ${{ github.event.inputs.is_fork }}"
+
   test-install:
-    needs: check-workflow-result
-    if: needs.check-workflow-result.outputs.changed == 'true'
+    needs: [check-workflow-result, prepare-workflow-dispatch]
+    if: always() && (needs.check-workflow-result.result == 'success' || needs.prepare-workflow-dispatch.result == 'success')
     runs-on: ubuntu-8
-    # To enable required approvals:
-    # 1. Create an environment named 'chart-testing' in repository settings
-    # 2. Configure required reviewers for the environment
-    # 3. Uncomment the environment configuration below:
-    #
-    # environment:
-    #   name: chart-testing
-    #   url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    # Use environment for approval if this is a fork PR
+    environment: ${{ (needs.check-workflow-result.outputs.is_fork == 'true' || needs.prepare-workflow-dispatch.outputs.is_fork == 'true') && 'chart-testing' || '' }}
 
     steps:
+      - name: Set PR variables
+        id: pr-vars
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "pr_number=${{ needs.prepare-workflow-dispatch.outputs.pr_number }}" >> $GITHUB_OUTPUT
+            echo "head_sha=${{ needs.prepare-workflow-dispatch.outputs.head_sha }}" >> $GITHUB_OUTPUT
+            echo "head_ref=${{ needs.prepare-workflow-dispatch.outputs.head_ref }}" >> $GITHUB_OUTPUT
+            echo "base_ref=${{ needs.prepare-workflow-dispatch.outputs.base_ref }}" >> $GITHUB_OUTPUT
+            echo "is_fork=${{ needs.prepare-workflow-dispatch.outputs.is_fork }}" >> $GITHUB_OUTPUT
+          else
+            echo "pr_number=${{ needs.check-workflow-result.outputs.pr_number }}" >> $GITHUB_OUTPUT
+            echo "head_sha=${{ needs.check-workflow-result.outputs.head_sha }}" >> $GITHUB_OUTPUT
+            echo "head_ref=${{ needs.check-workflow-result.outputs.head_ref }}" >> $GITHUB_OUTPUT
+            echo "base_ref=${{ needs.check-workflow-result.outputs.base_ref }}" >> $GITHUB_OUTPUT
+            echo "is_fork=${{ needs.check-workflow-result.outputs.is_fork }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           # Use the PR head SHA
-          ref: ${{ needs.check-workflow-result.outputs.pr_head_sha }}
+          ref: ${{ steps.pr-vars.outputs.head_sha }}
+          persist-credentials: ${{ steps.pr-vars.outputs.is_fork == 'true' && 'false' || 'true' }}
 
       - name: Set up Helm
         uses: azure/setup-helm@v3
@@ -109,23 +167,8 @@ jobs:
       - name: Create kind cluster
         uses: helm/kind-action@v1.9.0
 
-      - name: Check if PR is from a fork
-        id: check-fork
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "is_fork=false" >> "$GITHUB_OUTPUT"
-          else
-            # Get PR details using GitHub API
-            PR_NUMBER="${{ needs.check-workflow-result.outputs.pr_number }}"
-            PR_INFO=$(curl -s -H "Authorization: token ${{ github.token }}" \
-              "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}")
-            
-            IS_FORK=$(echo "$PR_INFO" | jq -r '.head.repo.fork')
-            echo "is_fork=${IS_FORK}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Prepare CI secrets for Helm as a single quoted string
-        if: steps.check-fork.outputs.is_fork == 'false'
+        if: steps.pr-vars.outputs.is_fork == 'false'
         env:
           CI_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.CI_TEST_ACCOUNT_PRIVATE_KEY }}
           CI_PARENT_CHAIN_URL_SEPOLIA: ${{ secrets.CI_PARENT_CHAIN_URL_SEPOLIA }}
@@ -161,12 +204,14 @@ jobs:
         
       - name: Run chart-testing (install)
         run: |
-          if [[ "${{ steps.check-fork.outputs.is_fork }}" == "true" ]]; then
+          if [[ "${{ steps.pr-vars.outputs.is_fork }}" == "true" ]]; then
             # For fork PRs, run without secrets
-            ct install --target-branch ${{ needs.check-workflow-result.outputs.pr_base_ref }} --config ct.yaml
+            echo "Running chart-testing for fork PR without secrets"
+            ct install --target-branch ${{ steps.pr-vars.outputs.base_ref }} --config ct.yaml
           else
             # For internal PRs, run with secrets
-            ct install --target-branch ${{ needs.check-workflow-result.outputs.pr_base_ref }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
+            echo "Running chart-testing for internal PR with secrets"
+            ct install --target-branch ${{ steps.pr-vars.outputs.base_ref }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
           fi
 
       - name: Update PR with test results
@@ -176,7 +221,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
-            const pr_number = ${{ needs.check-workflow-result.outputs.pr_number }};
+            const pr_number = ${{ steps.pr-vars.outputs.pr_number }};
             
             if (!pr_number) {
               console.log('No PR number found. Skipping comment.');
