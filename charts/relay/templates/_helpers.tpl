@@ -64,7 +64,8 @@ Create the name of the service account to use
 {{- define "relay.env" -}}
 {{- end -}}
 
-
+{{- define "relay.lifecycle" -}}
+{{- end -}}
 
 
 
