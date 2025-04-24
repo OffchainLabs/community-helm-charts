@@ -291,7 +291,7 @@ configmap:
 ## @section Stateless Validator
 validator:
   ## @param validator.enabled Enable the stateless validator
-  enabled: true
+  enabled: false
 
   splitvalidator:
     ## @param validator.splitvalidator.deployments List of deployments for the split validator. Each deploymeny can have its own image, config, etc.
