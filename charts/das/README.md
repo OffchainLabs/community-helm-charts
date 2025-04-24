@@ -159,7 +159,7 @@ extraEnv:
 
 | Name                                            | Description                                                                 | Value                       |
 | ----------------------------------------------- | --------------------------------------------------------------------------- | --------------------------- |
-| `replicaCount`                                  | Number of replicas                                                          | `1`                         |
+| `replicaCount`                                  | Number of replicas                                                          | `2`                         |
 | `image.repository`                              | Docker image repository                                                     | `offchainlabs/nitro-node`   |
 | `image.pullPolicy`                              | Docker image pull policy                                                    | `Always`                    |
 | `image.tag`                                     | Docker image tag ovverrides the chart appVersion                            | `""`                        |
