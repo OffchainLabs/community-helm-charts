@@ -181,7 +181,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 
 | Name                                                                                | Description                                                                                       | Value                         |
 | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `validator.enabled`                                                                 | Enable the stateless validator                                                                    | `true`                        |
+| `validator.enabled`                                                                 | Enable the stateless validator                                                                    | `false`                       |
 | `validator.splitvalidator.deployments`                                              | List of deployments for the split validator. Each deploymeny can have its own image, config, etc. | `[]`                          |
 | `validator.splitvalidator.global.replicaCount`                                      | Number of replicas for the split validator                                                        | `1`                           |
 | `validator.splitvalidator.global.nodeSelector`                                      | Node selector for the split validator                                                             | `{kubernetes.io/arch: amd64}` |
