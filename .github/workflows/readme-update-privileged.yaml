@@ -81,13 +81,13 @@ jobs:
         with:
           commit_message: Update README for modified charts
 
-      # Prepare comment content based on whether changes are needed
+      # Prepare comment content for fork PRs only
       - name: Prepare Comment Content
-        if: env.HAS_CHANGES == 'true'
+        if: env.HAS_CHANGES == 'true' && env.IS_FORK == 'true'
         id: prepare-comment
         run: |
           # Create a temporary file for the comment
-          if [[ "$IS_FORK" == "true" && "$CHANGES_NEEDED" == "true" ]]; then
+          if [[ "$CHANGES_NEEDED" == "true" ]]; then
             # Fork PR with changes needed - create instructions
             echo "## README Update Required" > comment.md
             echo "" >> comment.md
@@ -122,7 +122,7 @@ jobs:
             done
             
             echo '```' >> comment.md
-          elif [[ "$IS_FORK" == "true" && "$CHANGES_NEEDED" == "false" ]]; then
+          else
             # Fork PR with no changes needed - create success message
             echo "## README Check Passed" > comment.md
             echo "" >> comment.md
@@ -134,40 +134,10 @@ jobs:
             for chart in "${ADDR[@]}"; do
               echo "- ${chart}/README.md" >> comment.md
             done
-          elif [[ "$IS_FORK" == "false" && "$CHANGES_NEEDED" == "true" ]]; then
-            # Internal PR with changes - create update message
-            echo "## README Update Required" > comment.md
-            echo "" >> comment.md
-            echo "The README files need to be updated and will be automatically updated for the modified charts." >> comment.md
-            echo "" >> comment.md
-            echo "The following README files were updated:" >> comment.md
-            
-            # Parse CHANGES_DETAILS to get charts that were updated
-            IFS=',' read -ra DETAILS <<< "$CHANGES_DETAILS"
-            for detail in "${DETAILS[@]}"; do
-              chart=$(echo $detail | cut -d':' -f1)
-              status=$(echo $detail | cut -d':' -f2)
-              
-              if [[ "$status" == "needs_update" ]]; then
-                echo "- ${chart}/README.md" >> comment.md
-              fi
-            done
-          else
-            # Internal PR with no changes needed
-            echo "## README Check Passed" > comment.md
-            echo "" >> comment.md
-            echo "The README generator has checked the README files and no changes are needed." >> comment.md
-            echo "" >> comment.md
-            echo "The following README files were checked:" >> comment.md
-            
-            IFS=' ' read -ra ADDR <<< "$MODIFIED_CHARTS"
-            for chart in "${ADDR[@]}"; do
-              echo "- ${chart}/README.md" >> comment.md
-            done
           fi
 
       - name: Find Existing README Comment
-        if: env.HAS_CHANGES == 'true'
+        if: env.HAS_CHANGES == 'true' && env.IS_FORK == 'true'
         uses: peter-evans/find-comment@v3
         id: find-comment
         with:
@@ -177,7 +147,7 @@ jobs:
           body-regex: '^## README (Update Required|Check Passed)'
 
       - name: Create or Update PR Comment
-        if: env.HAS_CHANGES == 'true'
+        if: env.HAS_CHANGES == 'true' && env.IS_FORK == 'true'
         uses: peter-evans/create-or-update-comment@v4
         with:
           # If comment-id exists, update that comment; otherwise create a new one
