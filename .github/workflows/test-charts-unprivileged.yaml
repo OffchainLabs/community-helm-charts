@@ -11,7 +11,6 @@ on:
 # Limit permissions to only what's needed
 permissions:
   contents: read
-  checks: write  # Needed to create initial status check
 
 jobs:
   identify-changes:
