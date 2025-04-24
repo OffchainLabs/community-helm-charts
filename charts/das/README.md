@@ -183,6 +183,7 @@ extraEnv:
 | `readinessProbe.timeoutSeconds`                 | Timeout for the readiness probe                                             | `5`                         |
 | `readinessProbe.failureThreshold`               | Failure threshold for the readiness probe                                   | `3`                         |
 | `readinessProbe.successThreshold`               | Success threshold for the readiness probe                                   | `1`                         |
+| `readinessProbe.blah`                           | Blah for the readiness probe                                                | `blah2`                     |
 | `startupProbe`                                  | startupProbe                                                                |                             |
 | `startupProbe.enabled`                          | Enable startup probe                                                        | `false`                     |
 | `updateStrategy.type`                           | Update strategy type                                                        | `RollingUpdate`             |
