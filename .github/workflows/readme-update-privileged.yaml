@@ -158,15 +158,9 @@ jobs:
           # Replace the entire comment when updating
           edit-mode: replace
 
-      # Fail the check if changes are needed for fork PRs
-      - name: Fail if README changes are needed (Fork PR)
-        if: env.HAS_CHANGES == 'true' && env.CHANGES_NEEDED == 'true' && env.IS_FORK == 'true'
-        run: |
-          echo "README changes are needed. Please update the README files as instructed in the PR comment."
-          exit 1
-          
       # Update status check
       - name: Update status check
+        id: update-status
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -217,3 +211,10 @@ jobs:
               console.error(`Error updating status check: ${error.message}`);
               core.setFailed(`Failed to update status check: ${error.message}`);
             }
+
+      # Fail the check if changes are needed for fork PRs
+      - name: Fail if README changes are needed (Fork PR)
+        if: env.HAS_CHANGES == 'true' && env.CHANGES_NEEDED == 'true' && env.IS_FORK == 'true'
+        run: |
+          echo "README changes are needed. Please update the README files as instructed in the PR comment."
+          exit 1
