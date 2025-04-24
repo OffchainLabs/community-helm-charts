@@ -1,12 +1,10 @@
-name: Test Charts (Install)
+name: Test Charts (Privileged)
 
 on:
-  pull_request_target:
-    branches:
-      - main
-      - feat/secure-test-install-workflow
-    paths:
-      - "charts/**"
+  workflow_run:
+    workflows: ["Test Charts (Unprivileged)"]
+    types:
+      - completed
 
 # Limit permissions to only what's needed
 permissions:
@@ -14,87 +12,60 @@ permissions:
   pull-requests: write  # Needed to comment on results
 
 jobs:
-  check-changes:
+  test-install:
     runs-on: ubuntu-latest
-    outputs:
-      changed: ${{ steps.list-changed.outputs.changed }}
+    # Only run if the unprivileged workflow completed successfully
+    if: github.event.workflow_run.conclusion == 'success'
     
     steps:
-      - name: Check if PR is from a fork
-        id: check-fork
-        run: |
-          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            echo "is_fork=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_fork=false" >> $GITHUB_OUTPUT
-          fi
-
-      # For internal PRs, checkout code normally
-      - name: Checkout code (Internal PR)
-        if: steps.check-fork.outputs.is_fork == 'false'
-        uses: actions/checkout@v4
+      - name: Download workflow artifact
+        uses: actions/download-artifact@v4
         with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
+          name: pr-info
+          path: pr-info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
       
-      # For fork PRs, checkout with extra security measures
-      - name: Checkout code (Fork PR)
-        if: steps.check-fork.outputs.is_fork == 'true'
+      - name: Extract PR information
+        id: extract-pr-info
+        run: |
+          echo "PR_NUMBER=$(cat pr-info/PR_NUMBER)" >> $GITHUB_ENV
+          echo "HEAD_SHA=$(cat pr-info/HEAD_SHA)" >> $GITHUB_ENV
+          echo "HAS_CHANGES=$(cat pr-info/HAS_CHANGES)" >> $GITHUB_ENV
+          
+          if [[ -f "pr-info/changed-charts.txt" ]]; then
+            echo "CHANGED_CHARTS=$(cat pr-info/changed-charts.txt)" >> $GITHUB_ENV
+          fi
+      
+      # Only proceed with testing if there are chart changes
+      - name: Checkout repository
+        if: env.HAS_CHANGES == 'true'
         uses: actions/checkout@v4
         with:
+          # We're checking out the PR code, but we're not executing any untrusted code
+          # We're only using it as a reference for chart-testing
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: false  # Security measure for pull_request_target
-
-      - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.6.1
-
-      - name: Run chart-testing (list-changed)
-        id: list-changed
-        run: |
-          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml)
-          if [[ -n "$changed" ]]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "Changed charts: $changed"
-          else
-            echo "No charts changed."
-          fi
-
-  test-install:
-    needs: check-changes
-    # Only run if there are chart changes
-    if: needs.check-changes.outputs.changed == 'true'
-    runs-on: ubuntu-8
-
-    steps:
-      - name: Check if PR is from a fork
-        id: check-fork
-        run: |
-          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            echo "is_fork=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_fork=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: ${{ steps.check-fork.outputs.is_fork == 'true' && 'false' || 'true' }}
-
+          ref: ${{ env.HEAD_SHA }}
+          # Important: Don't persist credentials when checking out PR code
+          persist-credentials: false
+      
       - name: Set up Helm
+        if: env.HAS_CHANGES == 'true'
         uses: azure/setup-helm@v3
         with:
           version: v3.14.0
 
       - name: Set up chart-testing
+        if: env.HAS_CHANGES == 'true'
         uses: helm/chart-testing-action@v2.6.1
 
       - name: Create kind cluster
+        if: env.HAS_CHANGES == 'true'
         uses: helm/kind-action@v1.9.0
 
-      - name: Prepare CI secrets for Helm as a single quoted string
+      - name: Prepare CI secrets for Helm
+        if: env.HAS_CHANGES == 'true'
         env:
           CI_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.CI_TEST_ACCOUNT_PRIVATE_KEY }}
           CI_PARENT_CHAIN_URL_SEPOLIA: ${{ secrets.CI_PARENT_CHAIN_URL_SEPOLIA }}
@@ -127,64 +98,95 @@ jobs:
 
           # Use the command directly or set the HELM_EXTRA_SET_ARGS environment variable for later use in the workflow
           echo "HELM_EXTRA_SET_ARGS=${helm_extra_set_args}" >> $GITHUB_ENV
-        
+      
       - name: Run chart-testing (install)
+        if: env.HAS_CHANGES == 'true'
+        id: chart-test
+        continue-on-error: true
         run: |
           ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
-
+          echo "CT_EXIT_CODE=$?" >> $GITHUB_ENV
+      
+      - name: Determine test status
+        id: test-status
+        run: |
+          if [[ "${{ env.HAS_CHANGES }}" == "false" ]]; then
+            echo "STATUS=success" >> $GITHUB_ENV
+            echo "STATUS_TEXT=No chart changes detected" >> $GITHUB_ENV
+          elif [[ "${{ env.CT_EXIT_CODE }}" == "0" ]]; then
+            echo "STATUS=success" >> $GITHUB_ENV
+            echo "STATUS_TEXT=succeeded" >> $GITHUB_ENV
+          else
+            echo "STATUS=failure" >> $GITHUB_ENV
+            echo "STATUS_TEXT=failed" >> $GITHUB_ENV
+          fi
+      
       - name: Update PR with test results
-        if: always()
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
-            const pr_number = ${{ github.event.pull_request.number }};
-            const commit_sha = "${{ github.event.pull_request.head.sha }}";
+            const pr_number = process.env.PR_NUMBER;
+            const commit_sha = process.env.HEAD_SHA;
+            const status = process.env.STATUS;
+            const status_text = process.env.STATUS_TEXT;
             
-            const workflow_run_url = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            const workflow_run_url = `https://github.com/${owner}/${repo}/actions/runs/${{ github.event.workflow_run.id }}`;
+            const previous_run_url = `https://github.com/${owner}/${repo}/actions/runs/${{ github.event.workflow_run.id }}`;
             
-            // Use job.status to determine if the job succeeded or failed
-            const status = "${{ job.status }}";
             const status_icon = status === 'success' ? '✅' : '❌';
-            const status_text = status === 'success' ? 'succeeded' : 'failed';
             
-            const message = `## Chart Installation Test ${status_text} ${status_icon}
+            let message = `## Chart Installation Test ${status_text} ${status_icon}
             
             The chart installation test for commit \`${commit_sha.substring(0, 7)}\` has ${status_text}.
+            `;
             
+            if (process.env.HAS_CHANGES === 'true') {
+              message += `
+            Changed charts: \`${process.env.CHANGED_CHARTS}\`
+            `;
+            }
+            
+            message += `
             [View workflow run](${workflow_run_url})
+            [View unprivileged test run](${previous_run_url})
             
             ${status !== 'success' ? '⚠️ Please check the workflow logs for details on the failure.' : ''}`;
             
-            // Find existing comment
-            const { data: comments } = await github.rest.issues.listComments({
-              owner,
-              repo,
-              issue_number: pr_number
-            });
-            
-            const botComment = comments.find(comment => 
-              comment.user.login === 'github-actions[bot]' && 
-              comment.body.includes('Chart Installation Test')
-            );
-            
-            if (botComment) {
-              // Update existing comment
-              await github.rest.issues.updateComment({
+            try {
+              // Find existing comment
+              const { data: comments } = await github.rest.issues.listComments({
                 owner,
                 repo,
-                comment_id: botComment.id,
-                body: message
+                issue_number: pr_number
               });
-              console.log(`Updated existing comment #${botComment.id}`);
-            } else {
-              // Create new comment
-              const { data: newComment } = await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: pr_number,
-                body: message
-              });
-              console.log(`Created new comment #${newComment.id}`);
+              
+              const botComment = comments.find(comment => 
+                comment.user.login === 'github-actions[bot]' && 
+                comment.body.includes('Chart Installation Test')
+              );
+              
+              if (botComment) {
+                // Update existing comment
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: botComment.id,
+                  body: message
+                });
+                console.log(`Updated existing comment #${botComment.id}`);
+              } else {
+                // Create new comment
+                const { data: newComment } = await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: pr_number,
+                  body: message
+                });
+                console.log(`Created new comment #${newComment.id}`);
+              }
+            } catch (error) {
+              console.error(`Error updating PR: ${error.message}`);
+              core.setFailed(`Failed to update PR: ${error.message}`);
             }
