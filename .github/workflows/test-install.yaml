@@ -122,71 +122,45 @@ jobs:
             echo "STATUS_TEXT=failed" >> $GITHUB_ENV
           fi
       
-      - name: Update PR with test results
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'Chart Installation Test'
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          body: |
+            ## Chart Installation Test ${{ env.STATUS_TEXT }} ${{ env.STATUS == 'success' && '✅' || '❌' }}
+            
+            The chart installation test for commit `${{ env.HEAD_SHA }}` has ${{ env.STATUS_TEXT }}.
+            
+            ${{ env.HAS_CHANGES == 'true' && format('Changed charts: `{0}`', env.CHANGED_CHARTS) || '' }}
+            
+            [View workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [View unprivileged test run](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})
+            
+            ${{ env.STATUS != 'success' && '⚠️ Please check the workflow logs for details on the failure.' || '' }}
+          edit-mode: replace
+          reactions: ${{ env.STATUS == 'success' && 'rocket' || 'eyes' }}
+      
+      - name: Report status check
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { owner, repo } = context.repo;
-            const pr_number = process.env.PR_NUMBER;
-            const commit_sha = process.env.HEAD_SHA;
-            const status = process.env.STATUS;
-            const status_text = process.env.STATUS_TEXT;
-            
-            const workflow_run_url = `https://github.com/${owner}/${repo}/actions/runs/${{ github.event.workflow_run.id }}`;
-            const previous_run_url = `https://github.com/${owner}/${repo}/actions/runs/${{ github.event.workflow_run.id }}`;
-            
-            const status_icon = status === 'success' ? '✅' : '❌';
-            
-            let message = `## Chart Installation Test ${status_text} ${status_icon}
-            
-            The chart installation test for commit \`${commit_sha.substring(0, 7)}\` has ${status_text}.
-            `;
-            
-            if (process.env.HAS_CHANGES === 'true') {
-              message += `
-            Changed charts: \`${process.env.CHANGED_CHARTS}\`
-            `;
-            }
-            
-            message += `
-            [View workflow run](${workflow_run_url})
-            [View unprivileged test run](${previous_run_url})
-            
-            ${status !== 'success' ? '⚠️ Please check the workflow logs for details on the failure.' : ''}`;
-            
             try {
-              // Find existing comment
-              const { data: comments } = await github.rest.issues.listComments({
-                owner,
-                repo,
-                issue_number: pr_number
-              });
+              const { owner, repo } = context.repo;
+              const commit_sha = process.env.HEAD_SHA;
+              const status = process.env.STATUS;
+              const status_text = process.env.STATUS_TEXT;
               
-              const botComment = comments.find(comment => 
-                comment.user.login === 'github-actions[bot]' && 
-                comment.body.includes('Chart Installation Test')
-              );
-              
-              if (botComment) {
-                // Update existing comment
-                await github.rest.issues.updateComment({
-                  owner,
-                  repo,
-                  comment_id: botComment.id,
-                  body: message
-                });
-                console.log(`Updated existing comment #${botComment.id}`);
-              } else {
-                // Create new comment
-                const { data: newComment } = await github.rest.issues.createComment({
-                  owner,
-                  repo,
-                  issue_number: pr_number,
-                  body: message
-                });
-                console.log(`Created new comment #${newComment.id}`);
-              }
+              const workflow_run_url = `https://github.com/${owner}/${repo}/actions/runs/${{ github.run_id }}`;
               
               // Report status check
               await github.rest.checks.create({
@@ -198,13 +172,12 @@ jobs:
                 conclusion: status === 'success' ? 'success' : 'failure',
                 output: {
                   title: `Chart Installation ${status_text}`,
-                  summary: `The chart installation test has ${status_text}.`,
-                  text: message
+                  summary: `The chart installation test has ${status_text}.`
                 },
                 details_url: workflow_run_url
               });
               console.log(`Created status check for commit ${commit_sha}`);
             } catch (error) {
-              console.error(`Error updating PR: ${error.message}`);
-              core.setFailed(`Failed to update PR: ${error.message}`);
+              console.error(`Error creating status check: ${error.message}`);
+              core.setFailed(`Failed to create status check: ${error.message}`);
             }
