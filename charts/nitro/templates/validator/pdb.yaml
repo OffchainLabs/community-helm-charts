@@ -15,7 +15,7 @@ metadata:
   labels:
     {{- $labels | nindent 4 }}
 spec:
-  {{- $rc := .replicas | default $mergedValues.replicaCount }}
+  {{- $rc := int (.replicas | default $mergedValues.replicaCount) }}
   {{- if and (eq $rc 1) (not $mergedValues.pdb.minAvailable) (not $mergedValues.pdb.maxUnavailable) }}
   maxUnavailable: "100%"
   {{- else if and ($mergedValues.pdb.minAvailable) (not $mergedValues.pdb.maxUnavailable) }}
