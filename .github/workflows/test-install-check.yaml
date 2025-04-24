@@ -109,13 +109,5 @@ jobs:
             4. Select the branch with the changes
             5. Click "Run workflow"
             
-            ### Repository Setup (One-time):
-            
-            For enhanced security with required approvals:
-            
-            1. Go to repository Settings > Environments
-            2. Create a new environment named "chart-testing"
-            3. Add required reviewers who can approve workflow runs
-            4. Update the test-install-run.yaml workflow to use this environment
           edit-mode: replace
           reactions: eyes

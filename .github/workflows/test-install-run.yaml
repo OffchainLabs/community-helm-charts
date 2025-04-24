@@ -12,18 +12,7 @@ on:
 permissions:
   contents: read
   pull-requests: write  # Needed to comment on PR results
-  # Explicitly deny access to secrets and other permissions
-  id-token: none
-  actions: none
-  checks: none
-  deployments: none
-  discussions: none
-  issues: none
-  packages: none
-  pages: none
-  repository-projects: none
-  security-events: none
-  statuses: none
+
 
 jobs:
   check-workflow-result:
