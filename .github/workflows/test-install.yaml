@@ -1,0 +1,214 @@
+name: Test Charts (Install)
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    paths:
+      - "charts/**"
+
+# Limit permissions to only what's needed
+permissions:
+  contents: read
+  pull-requests: write  # Needed to comment on results
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.list-changed.outputs.changed }}
+    
+    steps:
+      - name: Check if PR is from a fork
+        id: check-fork
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "is_fork=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_fork=false" >> $GITHUB_OUTPUT
+          fi
+
+      # For internal PRs, checkout code normally
+      - name: Checkout code (Internal PR)
+        if: steps.check-fork.outputs.is_fork == 'false'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      
+      # For fork PRs, checkout with extra security measures
+      - name: Checkout code (Fork PR)
+        if: steps.check-fork.outputs.is_fork == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false  # Security measure for pull_request_target
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml)
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Changed charts: $changed"
+          else
+            echo "No charts changed."
+          fi
+
+      # For fork PRs without approval label, add a comment and fail the check
+      - name: Check for approval label
+        if: steps.list-changed.outputs.changed == 'true' && steps.check-fork.outputs.is_fork == 'true' && !contains(github.event.pull_request.labels.*.name, 'approved-for-ci')
+        id: check-approval
+        run: |
+          echo "approved=false" >> $GITHUB_OUTPUT
+
+      - name: Find existing approval request comment
+        if: steps.check-approval.outputs.approved == 'false'
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '## Chart Installation Approval Required'
+
+      - name: Create or update approval request comment
+        if: steps.check-approval.outputs.approved == 'false'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Chart Installation Approval Required
+            
+            This PR contains changes to Helm charts that need to be tested.
+            
+            A maintainer needs to add the `approved-for-ci` label to this PR to run the installation tests.
+          edit-mode: replace
+          reactions: eyes
+          
+      - name: Fail check for unapproved fork PRs
+        if: steps.check-approval.outputs.approved == 'false'
+        run: |
+          echo "::error::This PR is from a fork and requires approval to run chart installation tests."
+          echo "Please ask a maintainer to add the 'approved-for-ci' label to this PR."
+          exit 1
+
+  test-install:
+    needs: check-changes
+    # Only run if:
+    # 1. There are chart changes AND
+    # 2. Either it's an internal PR OR it's a fork PR with the approval label
+    if: needs.check-changes.outputs.changed == 'true' && 
+        (!github.event.pull_request.head.repo.fork || contains(github.event.pull_request.labels.*.name, 'approved-for-ci'))
+    runs-on: ubuntu-8
+
+    steps:
+      - name: Check if PR is from a fork
+        id: check-fork
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "is_fork=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_fork=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: ${{ steps.check-fork.outputs.is_fork == 'true' && 'false' || 'true' }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.14.0
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.9.0
+
+      - name: Prepare CI secrets for Helm as a single quoted string
+        if: steps.check-fork.outputs.is_fork == 'false'
+        env:
+          CI_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.CI_TEST_ACCOUNT_PRIVATE_KEY }}
+          CI_PARENT_CHAIN_URL_SEPOLIA: ${{ secrets.CI_PARENT_CHAIN_URL_SEPOLIA }}
+          CI_BASELINE_RPC_KEY_SEPOLIA: ${{ secrets.CI_BASELINE_RPC_KEY_SEPOLIA }}
+          CI_PARENT_CHAIN_BLOB_CLIENT_URL: ${{ secrets.CI_PARENT_CHAIN_BLOB_CLIENT_URL }}
+          # Map additional secrets as needed
+        run: |
+          secrets_for_helm=""
+          # Capture all 'CI_' prefixed environment variables into an array
+          IFS=$'\n' read -r -d '' -a secret_names < <(env | grep '^CI_' | sed 's/=.*//' && printf '\0')
+          
+          for secret_name in "${secret_names[@]}"; do
+            # Extract the variable name without the CI_ prefix for Helm values
+            variable_name=$(echo $secret_name | sed 's/^CI_//')
+            # Get the value of the dynamic variable name
+            secret_value=${!secret_name}
+            # Append to the secrets string in the required format
+            if [ -z "$secrets_for_helm" ]; then
+              secrets_for_helm="ci.secrets.${variable_name}=${secret_value}"
+            else
+              secrets_for_helm="${secrets_for_helm},ci.secrets.${variable_name}=${secret_value}"
+            fi
+          done
+          
+          # Remove the initial comma to clean up the format
+          secrets_for_helm=${secrets_for_helm#,}
+          
+          # Format the entire string for --helm-extra-set-args, ensuring it's properly quoted
+          helm_extra_set_args="--set ${secrets_for_helm}"
+
+          # Use the command directly or set the HELM_EXTRA_SET_ARGS environment variable for later use in the workflow
+          echo "HELM_EXTRA_SET_ARGS=${helm_extra_set_args}" >> $GITHUB_ENV
+        
+      - name: Run chart-testing (install)
+        run: |
+          if [[ "${{ steps.check-fork.outputs.is_fork }}" == "true" ]]; then
+            # For fork PRs, run without secrets
+            echo "Running chart-testing for fork PR without secrets"
+            ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml
+          else
+            # For internal PRs, run with secrets
+            echo "Running chart-testing for internal PR with secrets"
+            ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
+          fi
+
+      - name: Update PR with test results
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pr_number = ${{ github.event.pull_request.number }};
+            
+            const workflow_run_url = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            
+            let status_icon = '✅';
+            let status_text = 'succeeded';
+            
+            if (context.job.status !== 'success') {
+              status_icon = '❌';
+              status_text = 'failed';
+            }
+            
+            const message = `## Chart Installation Test ${status_text} ${status_icon}
+            
+            The chart installation test has ${status_text}. [View workflow run](${workflow_run_url})
+            
+            ${context.job.status !== 'success' ? '⚠️ Please check the workflow logs for details on the failure.' : ''}`;
+            
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: pr_number,
+              body: message
+            });
