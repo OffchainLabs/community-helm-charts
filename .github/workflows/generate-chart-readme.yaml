@@ -14,9 +14,11 @@ jobs:
     runs-on: ubuntu-4
     permissions:
       contents: write
+      pull-requests: write  # Add permission to write to pull requests for commenting
     steps:
       - name: Install readme-generator-for-helm
         run: npm install -g @bitnami/readme-generator-for-helm
+        
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Necessary for getting a complete history for diffs
@@ -24,9 +26,15 @@ jobs:
       - name: Get modified charts
         id: get-modified-charts
         run: |
-          paths=$(git diff --name-only origin/main... --name-only | grep 'charts/.*/values.yaml' | cut -d/ -f1,2 | uniq | tr '\n' ' ')
+          # GitHub Actions checks out a merge commit by default
+          # We can use git diff against the PR base to find changed files
+          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} HEAD)
+          
+          # Get all modified values.yaml files
+          paths=$(git diff --name-only $BASE_SHA HEAD | grep 'charts/.*/values.yaml' | cut -d/ -f1,2 | uniq | tr '\n' ' ')
+          
           echo "Modified charts: $paths"
-          echo "paths=${paths}" >> $GITHUB_ENV  # Using ENV as this is now within the same job
+          echo "paths=${paths}" >> $GITHUB_ENV
 
       - name: Execute readme-generator-for-helm
         if: env.paths != ''  # Ensure there are paths to proceed
@@ -46,8 +54,53 @@ jobs:
           
 
 
-      - name: Commit and Push Changes
-        if: env.paths != ''  # Only commit if there are changes
+      - name: Check if PR is from a fork
+        id: check-fork
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "is_fork=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_fork=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and Push Changes (Internal PR)
+        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'false'  # Only commit if there are changes and it's not a fork
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Update README and values.schema.json for modified charts
+
+      - name: Prepare Comment Content
+        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
+        id: prepare-comment
+        run: |
+          # Create a temporary file for the comment
+          echo "## README Update Required" > comment.md
+          echo "" >> comment.md
+          echo "This PR is from a fork. The README generator has detected changes that need to be made to the README files." >> comment.md
+          echo "" >> comment.md
+          echo "Please update the following README files manually:" >> comment.md
+          
+          IFS=' ' read -ra ADDR <<< "$paths"
+          for chart in "${ADDR[@]}"; do
+            echo "- ${chart}/README.md" >> comment.md
+          done
+          
+          echo "" >> comment.md
+          echo "You can use the readme-generator tool to generate the updated README content:" >> comment.md
+          echo "" >> comment.md
+          echo '```bash' >> comment.md
+          echo "npm install -g @bitnami/readme-generator-for-helm" >> comment.md
+          
+          for chart in "${ADDR[@]}"; do
+            echo "readme-generator --values ${chart}/values.yaml --readme ${chart}/README.md" >> comment.md
+          done
+          
+          echo '```' >> comment.md
+
+      - name: Create PR Comment with README Changes (External PR)
+        if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'  # Only create comment if there are changes and it's a fork
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: comment.md
+          reactions: 'eyes'
