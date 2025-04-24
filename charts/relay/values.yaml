@@ -106,7 +106,7 @@ headlessService:
 ## @param pdb.maxUnavailable Maximum number of unavailable pods
 pdb:
   enabled: false
-  minAvailable: "75%"
+  minAvailable: "50%"
   maxUnavailable: ""
 
 ## @param serviceAccount.create Create a service account
