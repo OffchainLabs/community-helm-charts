@@ -135,10 +135,10 @@ jobs:
               echo "- ${chart}/README.md" >> comment.md
             done
           elif [[ "$IS_FORK" == "false" && "$CHANGES_NEEDED" == "true" ]]; then
-            # Internal PR with changes - create success message
-            echo "## README Update Completed" > comment.md
+            # Internal PR with changes - create update message
+            echo "## README Update Required" > comment.md
             echo "" >> comment.md
-            echo "The README files have been automatically updated for the modified charts." >> comment.md
+            echo "The README files need to be updated and will be automatically updated for the modified charts." >> comment.md
             echo "" >> comment.md
             echo "The following README files were updated:" >> comment.md
             
@@ -212,13 +212,15 @@ jobs:
               
               if (process.env.HAS_CHANGES === 'true') {
                 if (process.env.CHANGES_NEEDED === 'true') {
+                  // Always mark as failure if README updates are required
+                  status = 'failure';
+                  
                   if (process.env.IS_FORK === 'true') {
-                    status = 'failure';
                     title = 'README Update Required';
                     summary = 'README updates are needed. Please see PR comment for details.';
                   } else {
-                    title = 'README Update Completed';
-                    summary = 'README files have been automatically updated.';
+                    title = 'README Update Required';
+                    summary = 'README updates are needed and will be automatically applied.';
                   }
                 }
               }
