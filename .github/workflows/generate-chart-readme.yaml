@@ -81,19 +81,30 @@ jobs:
         with:
           commit_message: Update README and values.schema.json for modified charts
 
-      # For fork PRs, verify what changes would be needed but don't commit them
+      # For fork PRs, just check if changes are needed without modifying files
       - name: Check README changes needed (Fork PR)
         if: env.paths != '' && steps.check-fork.outputs.is_fork == 'true'
         id: check-changes
         run: |
-          # Create a directory to store the generated README files
+          # Create a temporary directory
           mkdir -p temp_readme_files
           
           IFS=' ' read -ra ADDR <<< "$paths"
           for chart in "${ADDR[@]}"; do
             echo "Checking README changes for ${chart}"
-            # Generate README to a temporary file to see what changes would be needed
-            readme-generator --values "${chart}/values.yaml" --readme "temp_readme_files/${chart##*/}_README.md"
+            
+            # Copy the existing README to a temporary file
+            cp "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md"
+            
+            # Try to generate README to a temporary location
+            readme-generator --values "${chart}/values.yaml" --readme "temp_readme_files/$(basename ${chart})_README.md" || true
+            
+            # Check if there are differences
+            if diff -q "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md" > /dev/null; then
+              echo "No changes needed for ${chart}/README.md"
+            else
+              echo "Changes needed for ${chart}/README.md"
+            fi
           done
 
       # For fork PRs, create a comment with instructions
