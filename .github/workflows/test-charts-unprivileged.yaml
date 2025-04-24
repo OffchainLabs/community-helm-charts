@@ -32,7 +32,10 @@ jobs:
           changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml)
           if [[ -n "$changed" ]]; then
             echo "Changed charts: $changed"
+            
+            # Save the original multi-line output
             echo "$changed" > ./changed-charts.txt
+            
             echo "has_changes=true" >> $GITHUB_OUTPUT
           else
             echo "No charts changed."

@@ -31,12 +31,30 @@ jobs:
       - name: Extract PR information
         id: extract-pr-info
         run: |
+          # List all files in the pr-info directory for debugging
+          echo "Contents of pr-info directory:"
+          ls -la pr-info/
+          
+          # Debug: Show the content of each file
+          echo "PR_NUMBER content: $(cat pr-info/PR_NUMBER 2>/dev/null || echo 'File not found')"
+          echo "HEAD_SHA content: $(cat pr-info/HEAD_SHA 2>/dev/null || echo 'File not found')"
+          echo "HAS_CHANGES content: $(cat pr-info/HAS_CHANGES 2>/dev/null || echo 'File not found')"
+          
+          if [[ -f "pr-info/changed-charts.txt" ]]; then
+            echo "changed-charts.txt content: $(cat pr-info/changed-charts.txt)"
+          fi
+          
+          # Set environment variables
           echo "PR_NUMBER=$(cat pr-info/PR_NUMBER)" >> $GITHUB_ENV
           echo "HEAD_SHA=$(cat pr-info/HEAD_SHA)" >> $GITHUB_ENV
           echo "HAS_CHANGES=$(cat pr-info/HAS_CHANGES)" >> $GITHUB_ENV
           
+          # Convert multi-line chart list to space-separated for environment variable
           if [[ -f "pr-info/changed-charts.txt" ]]; then
-            echo "CHANGED_CHARTS=$(cat pr-info/changed-charts.txt)" >> $GITHUB_ENV
+            # Replace newlines with spaces and trim whitespace
+            formatted_changes=$(cat pr-info/changed-charts.txt | tr '\n' ' ' | xargs)
+            echo "Formatted changed charts: $formatted_changes"
+            echo "CHANGED_CHARTS=$formatted_changes" >> $GITHUB_ENV
           fi
       
       # Only proceed with testing if there are chart changes
