@@ -75,6 +75,8 @@ helm install xai offchainlabs/nitro -f values.yaml
 
 | Name                                                       | Description                                                                     | Value                                                               |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `lifecycle`                                                | Lifecycle hooks configuration                                                   | `{}`                                                                |
+| `extraEnv`                                                 | Additional environment variables for the container                              | `{}`                                                                |
 | `replicaCount`                                             | Number of replicas to deploy                                                    | `1`                                                                 |
 | `image.repository`                                         | Docker image repository                                                         | `offchainlabs/nitro-node`                                           |
 | `image.pullPolicy`                                         | Docker image pull policy                                                        | `Always`                                                            |
@@ -183,6 +185,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.splitvalidator.deployments`                                              | List of deployments for the split validator. Each deploymeny can have its own image, config, etc. | `[]`                          |
 | `validator.splitvalidator.global.replicaCount`                                      | Number of replicas for the split validator                                                        | `1`                           |
 | `validator.splitvalidator.global.nodeSelector`                                      | Node selector for the split validator                                                             | `{kubernetes.io/arch: amd64}` |
+| `validator.splitvalidator.global.lifecycle`                                         | Lifecycle hooks configuration                                                                     | `{}`                          |
 | `validator.splitvalidator.global.image.repository`                                  | Docker image repository for the split validator                                                   | `""`                          |
 | `validator.splitvalidator.global.image.tag`                                         | Docker image tag for the split validator                                                          | `""`                          |
 | `validator.splitvalidator.global.useConfigmap`                                      | Use the configmap for the validator container                                                     | `true`                        |
