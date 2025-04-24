@@ -2,7 +2,7 @@
 
 ## @param replicaCount Number of replicas to deploy
 ##
-replicaCount: 2
+replicaCount: 1
 
 ## @param image.repository Docker image repository
 ## @param image.pullPolicy Docker image pull policy
