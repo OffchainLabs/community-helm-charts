@@ -57,6 +57,7 @@ spec:
             {{- range $key, $value := .Values.customArgs }}
             - --{{ $key }}={{ $value | quote }}
             {{- end }}
+          {{- end }}
           ports:
             {{- if and .Values.configmap.data.node .Values.configmap.data.node.feed .Values.configmap.data.node.feed.output .Values.configmap.data.node.feed.output.port }}
             - name: feed
@@ -73,7 +74,6 @@ spec:
               containerPort: {{ index .Values "configmap" "data" "pprof-cfg" "port" }}
               protocol: TCP
             {{- end }}
-          {{- end }}
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             {{- if and .Values.livenessProbe.exec (kindIs "string" .Values.livenessProbe.exec.command) }}
