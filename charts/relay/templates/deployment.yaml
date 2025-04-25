@@ -43,12 +43,8 @@ spec:
           command: ["sleep"]
           args: ["infinity"]
           {{- else if .Values.commandOverride.enabled }}
-          {{- with .Values.commandOverride.command }}
-          command: {{- toYaml . | nindent 8}}
-          {{- end }}
-          {{- with .Values.commandOverride.args }}
-          args: {{- toYaml . | nindent 8 }}
-          {{- end }}
+          command: {{ .Values.commandOverride.command | toJson }}
+          args: {{ .Values.commandOverride.args | toJson }}
           {{- else }}
           command: [/usr/local/bin/relay]
           args:
