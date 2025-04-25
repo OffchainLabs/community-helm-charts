@@ -73,6 +73,7 @@ spec:
               containerPort: {{ index .Values "configmap" "data" "pprof-cfg" "port" }}
               protocol: TCP
             {{- end }}
+          {{- end }}
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             {{- if and .Values.livenessProbe.exec (kindIs "string" .Values.livenessProbe.exec.command) }}
@@ -96,7 +97,6 @@ spec:
           {{- include "relay.env" . | nindent 8 }}
           {{- with .Values.extraEnv }}
           {{- toYaml . | nindent 8 }}
-          {{- end }}
           {{- end }}
           lifecycle:
           {{- include "relay.lifecycle" . | nindent 12 }}

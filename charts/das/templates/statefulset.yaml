@@ -83,6 +83,7 @@ spec:
             {{- range $key, $value := .Values.customArgs }}
             - --{{ $key }}={{ $value | quote }}
             {{- end }}
+          {{- end }}
           ports:
             {{- if and .Values.configmap.data.http .Values.configmap.data.http.port}}
             - name: http-rpc
@@ -184,7 +185,6 @@ spec:
                 - |
                   {{- include "startupProbe" . | nindent 18 }}
             {{- end }}
-          {{- end }}
           {{- end }}
           env:
           {{- include "das.env" . | nindent 10 }}

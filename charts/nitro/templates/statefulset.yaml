@@ -77,6 +77,7 @@ spec:
             {{- if .Values.customArgs }}
             {{- include "nitro.customArgs" . | nindent 12 }}
             {{- end }}
+          {{- end }}
           ports:
             {{- if and .Values.configmap.data.http .Values.configmap.data.http.port}}
             - name: http-rpc
@@ -133,7 +134,6 @@ spec:
                   {{- include "startupProbe" . | nindent 18 }}
             failureThreshold: {{ .Values.startupProbe.failureThreshold }}
             periodSeconds: {{ .Values.startupProbe.periodSeconds }}
-          {{- end }}
           {{- end }}
           env:
             - name: POD_NAME
