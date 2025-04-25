@@ -185,11 +185,11 @@ spec:
                   {{- include "startupProbe" . | nindent 18 }}
             {{- end }}
           {{- end }}
+          {{- end }}
           env:
           {{- include "das.env" . | nindent 10 }}
           {{- with .Values.extraEnv }}
           {{- toYaml . | nindent 10 }}
-          {{- end }}
           {{- end }}
           lifecycle:
           {{- include "das.lifecycle" . | nindent 12 }}
