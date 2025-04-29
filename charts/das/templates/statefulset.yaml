@@ -69,12 +69,8 @@ spec:
           command: ["sleep"]
           args: ["infinity"]
           {{- else if .Values.commandOverride.enabled }}
-          {{- with .Values.commandOverride.command }}
-          command: {{- toYaml . | nindent 8}}
-          {{- end }}
-          {{- with .Values.commandOverride.args }}
-          args: {{- toYaml . | nindent 8 }}
-          {{- end }}
+          command: {{ .Values.commandOverride.command | toJson }}
+          args: {{ .Values.commandOverride.args | toJson }}
           {{- else }}
           command: [/usr/local/bin/daserver]
           args:
@@ -87,6 +83,7 @@ spec:
             {{- range $key, $value := .Values.customArgs }}
             - --{{ $key }}={{ $value | quote }}
             {{- end }}
+          {{- end }}
           ports:
             {{- if and .Values.configmap.data.http .Values.configmap.data.http.port}}
             - name: http-rpc
@@ -193,7 +190,6 @@ spec:
           {{- include "das.env" . | nindent 10 }}
           {{- with .Values.extraEnv }}
           {{- toYaml . | nindent 10 }}
-          {{- end }}
           {{- end }}
           lifecycle:
           {{- include "das.lifecycle" . | nindent 12 }}

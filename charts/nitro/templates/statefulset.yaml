@@ -63,12 +63,8 @@ spec:
           command: ["sleep"]
           args: ["infinity"]
           {{- else if .Values.commandOverride.enabled }}
-          {{- with .Values.commandOverride.command }}
-          command: {{- toYaml . | nindent 8}}
-          {{- end }}
-          {{- with .Values.commandOverride.args }}
-          args: {{- toYaml . | nindent 8 }}
-          {{- end }}
+          command: {{ .Values.commandOverride.command | toJson }}
+          args: {{ .Values.commandOverride.args | toJson }}
           {{- else }}
           command: [/usr/local/bin/nitro]
           args:
@@ -81,6 +77,7 @@ spec:
             {{- if .Values.customArgs }}
             {{- include "nitro.customArgs" . | nindent 12 }}
             {{- end }}
+          {{- end }}
           ports:
             {{- if and .Values.configmap.data.http .Values.configmap.data.http.port}}
             - name: http-rpc
@@ -137,7 +134,6 @@ spec:
                   {{- include "startupProbe" . | nindent 18 }}
             failureThreshold: {{ .Values.startupProbe.failureThreshold }}
             periodSeconds: {{ .Values.startupProbe.periodSeconds }}
-          {{- end }}
           {{- end }}
           env:
             - name: POD_NAME
