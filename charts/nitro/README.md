@@ -256,12 +256,11 @@ Option | Description | Default
 `auth.jwtsecret` | string                                                                                  Path to file holding JWT secret (32B hex) | None
 `auth.origins` | strings                                                                                   Origins from which to accept AUTH requests | `[localhost]`
 `auth.port` | int                                                                                          AUTH-RPC server listening port | `8549`
+`blocks-reexecutor.blocks` | string                                                                        json encoded list of block ranges in the form of start and end block numbers in a list of size 2 | `[[0,0]]`
 `blocks-reexecutor.enable` | enables re-execution of a range of blocks against historic state | None
-`blocks-reexecutor.end-block` | uint                                                                       last block number of the block range for re-execution | None
 `blocks-reexecutor.min-blocks-per-thread` | uint                                                           minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
 `blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `10`
-`blocks-reexecutor.start-block` | uint                                                                     first block number of the block range for re-execution | None
 `blocks-reexecutor.trie-clean-limit` | int                                                                 memory allowance (MB) to use for caching trie nodes in memory | None
 `chain.dev-wallet.account` | string                                                                        account to use | `is first account in keystore`
 `chain.dev-wallet.only-create-key` | if true, creates new key then exits | None
@@ -301,6 +300,7 @@ Option | Description | Default
 `execution.caching.trie-clean-cache` | int                                                                 amount of memory in megabytes to cache unchanged state trie nodes with | `600`
 `execution.caching.trie-dirty-cache` | int                                                                 amount of memory in megabytes to cache state diffs against disk with (larger cache lowers database growth) | `1024`
 `execution.caching.trie-time-limit` | duration                                                             maximum block processing time before trie is written to hard-disk | `1h0m0s`
+`execution.caching.trie-time-limit-random-offset` | duration                                               if greater then 0, the block processing time period of each trie write to hard-disk is shortened by a random value from range [0, trie-time-limit-random-offset) | None
 `execution.enable-prefetch-block` | enable prefetching of blocks | `true`
 `execution.forwarder.connection-timeout` | duration                                                        total time to wait before cancelling connection | `30s`
 `execution.forwarder.idle-connection-timeout` | duration                                                   time until idle connections are closed | `15s`
@@ -337,6 +337,7 @@ Option | Description | Default
 `execution.rpc.tx-allow-unprotected` | allow transactions that aren't EIP-155 replay protected to be submitted over the RPC | `true`
 `execution.rpc.tx-fee-cap` | float                                                                         cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
 `execution.secondary-forwarding-target` | strings                                                          secondary transaction forwarding target URL | None
+`execution.sequencer.dangerous.disable-seq-inbox-max-data-size-check` | DANGEROUS! disables nitro checks on sequencer MaxTxDataSize against the sequencer inbox MaxDataSize | None
 `execution.sequencer.enable` | act and post to l1 as sequencer | None
 `execution.sequencer.enable-profiling` | enable CPU profiling and tracing | None
 `execution.sequencer.expected-surplus-hard-threshold` | string                                             if expected surplus is lower than this value, new incoming transactions will be denied | `default`
@@ -414,6 +415,7 @@ Option | Description | Default
 `init.latest-base` | string                                                                                base url used when searching for the latest | `https://snapshot.arbitrum.foundation/`
 `init.prune` | string                                                                                      pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                             the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
+`init.prune-parallel-storage-traversal` | if true: use parallel pruning per account | None
 `init.prune-threads` | int                                                                                 the number of threads to use when pruning | `10`
 `init.prune-trie-clean-cache` | int                                                                        amount of memory in megabytes to cache unchanged state trie nodes with when traversing state database during pruning | `600`
 `init.rebuild-local-wasm` | string                                                                         rebuild local wasm database on boot if needed (otherwise-will be done lazily). Three modes are supported  "auto"- (enabled by default) if any previous rebuilding attempt was successful then rebuilding is disabled else continues to rebuild, "force"- force rebuilding which would commence rebuilding despite the status of previous attempts, "false"- do not rebuild on startup (default "auto") | None
@@ -434,6 +436,7 @@ Option | Description | Default
 `node.batch-poster.check-batch-correctness` | setting this to true will run the batch against an inbox multiplexer and verifies that it produces the correct set of messages | `true`
 `node.batch-poster.compression-level` | int                                                                batch compression level | `11`
 `node.batch-poster.dangerous.allow-posting-first-batch-when-sequencer-message-count-mismatch` | allow posting the first batch even if sequence number doesn't match chain (useful after force-inclusion) | None
+`node.batch-poster.dangerous.fixed-gas-limit` | uint                                                       use this gas limit for batch posting instead of estimating it | None
 `node.batch-poster.das-retention-period` | duration                                                        In AnyTrust mode, the period which DASes are requested to retain the stored batches. | `360h0m0s`
 `node.batch-poster.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
 `node.batch-poster.data-poster.blob-tx-replacement-times` | durationSlice                                  comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `[5m0s,10m0s,30m0s,1h0m0s,4h0m0s,8h0m0s,16h0m0s,22h0m0s]`
@@ -459,6 +462,7 @@ Option | Description | Default
 `node.batch-poster.data-poster.min-blob-tx-tip-cap-gwei` | float                                           the minimum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.batch-poster.data-poster.min-tip-cap-gwei` | float                                                   the minimum tip cap to post transactions at | `0.05`
 `node.batch-poster.data-poster.nonce-rbf-soft-confs` | uint                                                the maximum probable reorg depth, used to determine when a transaction will no longer likely need replaced-by-fee | `1`
+`node.batch-poster.data-poster.post-4844-blobs` | if the parent chain supports 4844 blobs and they're well priced, post EIP-4844 blobs | None
 `node.batch-poster.data-poster.redis-signer.dangerous.disable-signature-verification` | disable message signature verification | None
 `node.batch-poster.data-poster.redis-signer.fallback-verification-key` | string                            a fallback key used for message verification | None
 `node.batch-poster.data-poster.redis-signer.signing-key` | string                                          a 32-byte (64-character) hex string used to sign messages, or a path to a file containing it | None
@@ -468,6 +472,7 @@ Option | Description | Default
 `node.batch-poster.data-poster.use-db-storage` | uses database storage when enabled | `true`
 `node.batch-poster.data-poster.use-noop-storage` | uses noop storage, it doesn't store anything | None
 `node.batch-poster.data-poster.wait-for-l1-finality` | only treat a transaction as confirmed after L1 finality has been achieved (recommended) | `true`
+`node.batch-poster.delay-buffer-always-updatable` | always treat delay buffer as updatable | `true`
 `node.batch-poster.delay-buffer-threshold-margin` | uint                                                   the number of blocks to post the batch before reaching the delay buffer threshold | `25`
 `node.batch-poster.disable-dap-fallback-store-data-on-chain` | If unable to batch to DA provider, disable fallback storing data on chain | None
 `node.batch-poster.enable` | enable posting batches to l1 | None
@@ -478,10 +483,11 @@ Option | Description | Default
 `node.batch-poster.ignore-blob-price` | if the parent chain supports 4844 blobs and ignore-blob-price is true, post 4844 blobs even if it's not price efficient | None
 `node.batch-poster.l1-block-bound` | string                                                                only post messages to batches when they're within the max future block/timestamp as of this L1 block tag ("safe", "finalized", "latest", or "ignore" to ignore this check) | None
 `node.batch-poster.l1-block-bound-bypass` | duration                                                       post batches even if not within the layer 1 future bounds if we're within this margin of the max delay | `1h0m0s`
-`node.batch-poster.max-4844-batch-size` | int                                                              maximum estimated compressed 4844 blob enabled batch size | `388144`
+`node.batch-poster.max-4844-batch-size` | int                                                              maximum estimated compressed 4844 blob enabled batch size | None
 `node.batch-poster.max-delay` | duration                                                                   maximum batch posting delay | `1h0m0s`
 `node.batch-poster.max-empty-batch-delay` | duration                                                       maximum empty batch posting delay, batch poster will only be able to post an empty batch if this time period building a batch has passed | `72h0m0s`
 `node.batch-poster.max-size` | int                                                                         maximum estimated compressed batch size | `100000`
+`node.batch-poster.parent-chain-eip7623` | string                                                          if parent chain uses EIP7623 ("yes", "no", "auto") | `auto`
 `node.batch-poster.parent-chain-wallet.account` | string                                                   account to use | `is first account in keystore`
 `node.batch-poster.parent-chain-wallet.only-create-key` | if true, creates new key then exits | None
 `node.batch-poster.parent-chain-wallet.password` | string                                                  wallet passphrase | `PASSWORD_NOT_SET`
@@ -499,8 +505,9 @@ Option | Description | Default
 `node.batch-poster.reorg-resistance-margin` | duration                                                     do not post batch if its within this duration from layer 1 minimum bounds. Requires l1-block-bound option not be set to "ignore" | `10m0s`
 `node.batch-poster.use-access-lists` | post batches with access lists to reduce gas usage (disabled for L3s) | `true`
 `node.batch-poster.wait-for-max-delay` | wait for the max batch delay, even if the batch is full | None
-`node.block-metadata-fetcher.api-blocks-limit` | uint                                                      maximum number of blocks allowed to be queried for blockMetadata per arb_getRawBlockMetadata query. This should be set lesser than or equal to the limit on the api provider side (default 100) | None
-`node.block-metadata-fetcher.enable` | enable syncing blockMetadata using a bulk blockMetadata api. If the source doesn't have the missing blockMetadata, we keep retyring in every sync-interval (default=5mins) duration | None
+`node.block-metadata-fetcher.api-blocks-limit` | uint                                                      maximum number of blocks per arb_getRawBlockMetadata query | `100`
+`node.block-metadata-fetcher.enable` | enable syncing blockMetadata using a bulk blockMetadata api | None
+`node.block-metadata-fetcher.max-sync-interval` | duration                                                 maximum time between blockMetadata requests | `32m0s`
 `node.block-metadata-fetcher.source.arg-log-limit` | uint                                                  limit size of arguments in log entries | `2048`
 `node.block-metadata-fetcher.source.connection-wait` | duration                                            how long to wait for initial connection | None
 `node.block-metadata-fetcher.source.jwtsecret` | string                                                    path to file with jwtsecret for validation - ignored if url is self or self-auth | None
@@ -510,7 +517,7 @@ Option | Description | Default
 `node.block-metadata-fetcher.source.timeout` | duration                                                    per-response timeout (0-disabled) | None
 `node.block-metadata-fetcher.source.url` | string                                                          url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
 `node.block-metadata-fetcher.source.websocket-message-size-limit` | int                                    websocket message size limit used by the RPC client. 0 means no limit | `268435456`
-`node.block-metadata-fetcher.sync-interval` | duration                                                     interval at which blockMetadata are synced regularly | `5m0s`
+`node.block-metadata-fetcher.sync-interval` | duration                                                     minimum time between blockMetadata requests | `1m0s`
 `node.block-validator.batch-cache-limit` | uint32                                                          limit number of old batches to keep in block-validator | `20`
 `node.block-validator.block-inputs-file-path` | string                                                     directory to write block validation inputs files | `./target/validation_inputs`
 `node.block-validator.current-module-root` | string                                                        current wasm module root ('current' read from chain, 'latest' from machines/latest dir, or provide hash) | `current`
@@ -553,10 +560,10 @@ Option | Description | Default
 `node.bold.check-staker-switch-interval` | duration                                                        how often to check if staker can switch to bold | `1m0s`
 `node.bold.delegated-staking.custom-withdrawal-address` | string                                           enable a custom withdrawal address for staking on the rollup contract, useful for delegated stakers | None
 `node.bold.delegated-staking.enable` | enable delegated staking by having the validator call newStake on startup | None
-`node.bold.enable` | enable bold challenge protocol | None
 `node.bold.enable-fast-confirmation` | enable fast confirmation | None
 `node.bold.max-get-log-blocks` | int                                                                       maximum size for chunk of blocks when using get logs rpc | `5000`
 `node.bold.minimum-gap-to-parent-assertion` | duration                                                     minimum duration to wait since the parent assertion was created to post a new assertion | `1m0s`
+`node.bold.parent-chain-block-time` | duration                                                             the average block time of the parent chain where assertions are posted | `12s`
 `node.bold.rpc-block-number` | string                                                                      define the block number to use for reading data onchain, either latest, safe, or finalized | `finalized`
 `node.bold.start-validation-from-staked` | assume staked nodes are valid | `true`
 `node.bold.state-provider-config.check-batch-finality` | check batch finality | `true`
@@ -564,6 +571,7 @@ Option | Description | Default
 `node.bold.state-provider-config.validator-name` | string                                                  name identifier for cosmetic purposes | `default-validator`
 `node.bold.strategy` | string                                                                              define the bold validator staker strategy, either watchtower, defensive, stakeLatest, or makeNodes | `Watchtower`
 `node.bold.track-challenge-parent-assertion-hashes` | strings                                              only track challenges/edges with these parent assertion hashes | None
+`node.consensus-execution-syncer.sync-interval` | duration                                                 Interval in which finality data is pushed from consensus to execution | `1s`
 `node.dangerous.disable-blob-reader` | DANGEROUS! disables the EIP-4844 blob reader, which is necessary to read batches | None
 `node.dangerous.no-l1-listener` | DANGEROUS! disables listening to L1. To be used in test nodes only | None
 `node.dangerous.no-sequencer-coordinator` | DANGEROUS! allows sequencing without sequencer-coordinator | None
@@ -585,7 +593,7 @@ Option | Description | Default
 `node.data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block` | uint                    when eagerly syncing, start indexing forward from this L1 block. Only used if there is no sync state | None
 `node.data-availability.rest-aggregator.sync-to-storage.ignore-write-errors` | log only on failures to write when syncing; otherwise treat it as an error | `true`
 `node.data-availability.rest-aggregator.sync-to-storage.parent-chain-blocks-per-read` | uint               when eagerly syncing, max l1 blocks to read per poll | `100`
-`node.data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                       period to request storage to retain synced data | `360h0m0s`
+`node.data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                       period to request storage to retain synced data (default 360h0Version: v3.6.0-fc07dd2, time: 2025-04-28T12:07:19+02:00 | None
 `node.data-availability.rest-aggregator.sync-to-storage.state-dir` | string                                directory to store the sync state in, ie the block number currently synced up to, so that we don't sync from scratch each time | None
 `node.data-availability.rest-aggregator.sync-to-storage.sync-expired-data` | sync even data that is expired; needed for mirror configuration | `true`
 `node.data-availability.rest-aggregator.urls` | strings                                                    list of URLs including 'http://' or 'https://' prefixes and port numbers to REST DAS endpoints; additive with the online-url-list option | None
@@ -719,6 +727,7 @@ Option | Description | Default
 `node.staker.data-poster.min-blob-tx-tip-cap-gwei` | float                                                 the minimum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.staker.data-poster.min-tip-cap-gwei` | float                                                         the minimum tip cap to post transactions at | `0.05`
 `node.staker.data-poster.nonce-rbf-soft-confs` | uint                                                      the maximum probable reorg depth, used to determine when a transaction will no longer likely need replaced-by-fee | `1`
+`node.staker.data-poster.post-4844-blobs` | if the parent chain supports 4844 blobs and they're well priced, post EIP-4844 blobs | None
 `node.staker.data-poster.redis-signer.dangerous.disable-signature-verification` | disable message signature verification | None
 `node.staker.data-poster.redis-signer.fallback-verification-key` | string                                  a fallback key used for message verification | None
 `node.staker.data-poster.redis-signer.signing-key` | string                                                a 32-byte (64-character) hex string used to sign messages, or a path to a file containing it | None
@@ -752,7 +761,8 @@ Option | Description | Default
 `node.transaction-streamer.execute-message-loop-delay` | duration                                          delay when polling calls to execute messages | `100ms`
 `node.transaction-streamer.max-broadcaster-queue-size` | int                                               maximum cache of pending broadcaster messages | `50000`
 `node.transaction-streamer.max-reorg-resequence-depth` | int                                               maximum number of messages to attempt to resequence on reorg (0 = never resequence, -1 = always resequence) | `1024`
-`node.transaction-streamer.track-block-metadata-from` | uint                                               this is the block number starting from which blockmetadata is being tracked in the local disk and is being published to the feed. This is also the starting position for bulk syncing of missing blockmetadata. Setting to zero (default value) disables this | None
+`node.transaction-streamer.sync-till-block` | uint                                                         node will not sync past this block | None
+`node.transaction-streamer.track-block-metadata-from` | uint                                               block number to start saving blockmetadata, 0 to disable | None
 `parent-chain.blob-client.authorization` | string                                                          Value to send with the HTTP Authorization: header for Beacon REST requests, must include both scheme and scheme parameters | None
 `parent-chain.blob-client.beacon-url` | string                                                             Beacon Chain RPC URL to use for fetching blobs (normally on port 3500) | None
 `parent-chain.blob-client.blob-directory` | string                                                         Full path of the directory to save fetched blobs | None
