@@ -98,7 +98,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `env.splitvalidator.goMaxProcs.multiplier`                 | The multiplier to use for CPU request (default 2)                               | `2`                                                                 |
 | `env.nitro.goMemLimit.enabled`                             | Enable setting the garbage cleanup limit in Go for nitro                        | `true`                                                              |
 | `env.nitro.goMemLimit.multiplier`                          | The multiplier of available memory to use for nitro                             | `0.9`                                                               |
-| `env.nitro.goMaxProcs.enabled`                             | Enable setting GOMAXPROCS for nitro                                             | `true`                                                              |
+| `env.nitro.goMaxProcs.enabled`                             | Enable setting GOMAXPROCS for nitro                                             | `false`                                                             |
 | `env.nitro.goMaxProcs.multiplier`                          | The multiplier to use for CPU request (default 2)                               | `2`                                                                 |
 | `env.resourceMgmtMemFreeLimit.enabled`                     | Enable nitro resource management                                                | `false`                                                             |
 | `env.resourceMgmtMemFreeLimit.multiplier`                  | The multiplier of available memory to use                                       | `0.05`                                                              |
