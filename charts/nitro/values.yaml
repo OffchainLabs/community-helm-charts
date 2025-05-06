@@ -74,7 +74,7 @@ env:
       enabled: true
       multiplier: 0.9
     goMaxProcs:
-      enabled: true
+      enabled: false
       multiplier: 2
   resourceMgmtMemFreeLimit:
     enabled: false
