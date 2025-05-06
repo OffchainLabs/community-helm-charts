@@ -45,19 +45,18 @@ jobs:
             echo "CHANGES_DETAILS=$(cat pr-info/CHANGES_DETAILS)" >> $GITHUB_ENV
           fi
       
-      # Only proceed if there are chart changes
+      # Only proceed if there are chart changes and it's not a fork PR
+      - name: Install readme-generator-for-helm
+        if: env.HAS_CHANGES == 'true' && env.CHANGES_NEEDED == 'true' && env.IS_FORK == 'false'
+        run: npm install -g @bitnami/readme-generator-for-helm
+      
       - name: Checkout repository
-        if: env.HAS_CHANGES == 'true'
+        if: env.HAS_CHANGES == 'true' && env.CHANGES_NEEDED == 'true' && env.IS_FORK == 'false'
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           ref: ${{ env.HEAD_SHA }}
-          # Important: For fork PRs, don't persist credentials
-          persist-credentials: ${{ env.IS_FORK == 'false' }}
-      
-      - name: Install readme-generator-for-helm
-        if: env.HAS_CHANGES == 'true'
-        run: npm install -g @bitnami/readme-generator-for-helm
+          fetch-depth: 0  # Necessary for getting a complete history for commits
+          persist-credentials: true  # Ensure we can push changes
       
       # For internal PRs, update READMEs and commit changes
       - name: Execute readme-generator-for-helm (Internal PR)
@@ -74,12 +73,27 @@ jobs:
             fi
           done
 
+      # Get the PR branch name for committing changes
+      - name: Get PR branch name
+        if: env.HAS_CHANGES == 'true' && env.CHANGES_NEEDED == 'true' && env.IS_FORK == 'false'
+        id: get-branch
+        run: |
+          # Use GitHub API to get the PR details and extract the branch name
+          PR_DETAILS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ env.PR_NUMBER }}")
+          
+          # Extract the branch name
+          PR_BRANCH=$(echo "$PR_DETAILS" | jq -r .head.ref)
+          echo "PR branch: $PR_BRANCH"
+          echo "pr_branch=$PR_BRANCH" >> $GITHUB_OUTPUT
+
       # Only commit changes for internal PRs
       - name: Commit and Push Changes (Internal PR)
         if: env.HAS_CHANGES == 'true' && env.CHANGES_NEEDED == 'true' && env.IS_FORK == 'false'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Update README for modified charts
+          branch: ${{ steps.get-branch.outputs.pr_branch }}
 
       # Prepare comment content for fork PRs only
       - name: Prepare Comment Content
