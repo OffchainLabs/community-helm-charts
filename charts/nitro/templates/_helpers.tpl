@@ -120,6 +120,64 @@ nitro args
   value: {{ printf "%dB" (int (mulf $valueMi ($.Values.env.blockValidatorMemFreeLimit.multiplier | default 0.05) 1048576)) }}
 {{- end }}
 {{- end -}}
+
+{{/* Calculate GOMAXPROCS based on CPU resources */}}
+{{- if $.Values.env.nitro.goMaxProcs.enabled }}
+{{- $cpuRequest := 0.0 -}}
+{{- $cpuLimit := 0.0 -}}
+{{- $multiplier := $.Values.env.nitro.goMaxProcs.multiplier | default 2 -}}
+
+{{/* Get CPU request if set */}}
+{{- if and .Values.resources .Values.resources.requests .Values.resources.requests.cpu -}}
+  {{- $cpuRequestStr := .Values.resources.requests.cpu -}}
+  {{/* Handle different CPU formats: cores (1), millicores (1000m), or decimal (0.5) */}}
+  {{- if contains "m" $cpuRequestStr -}}
+    {{/* Convert millicores to cores (e.g., 500m -> 0.5) */}}
+    {{- $milliCores := regexFind "^\\d+" $cpuRequestStr | int -}}
+    {{- $cpuRequest = mulf (divf $milliCores 1000.0) $multiplier -}}
+  {{- else -}}
+    {{/* Handle decimal or whole cores */}}
+    {{- $cpuRequestVal := regexFind "^\\d*\\.?\\d+" $cpuRequestStr | float64 -}}
+    {{- $cpuRequest = mulf $cpuRequestVal $multiplier -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* Get CPU limit if set */}}
+{{- if and .Values.resources .Values.resources.limits .Values.resources.limits.cpu -}}
+  {{- $cpuLimitStr := .Values.resources.limits.cpu -}}
+  {{/* Handle different CPU formats: cores (1), millicores (1000m), or decimal (0.5) */}}
+  {{- if contains "m" $cpuLimitStr -}}
+    {{/* Convert millicores to cores (e.g., 500m -> 0.5) */}}
+    {{- $milliCores := regexFind "^\\d+" $cpuLimitStr | int -}}
+    {{- $cpuLimit = divf $milliCores 1000.0 -}}
+  {{- else -}}
+    {{/* Handle decimal or whole cores */}}
+    {{- $cpuLimit = regexFind "^\\d*\\.?\\d+" $cpuLimitStr | float64 -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* Use the higher value between CPU request*multiplier and CPU limit */}}
+{{- $maxProcs := 1 -}}
+{{- if gt $cpuRequest $cpuLimit -}}
+  {{- $maxProcs = ceil $cpuRequest -}}
+{{- else if gt $cpuLimit 0.0 -}}
+  {{- $maxProcs = ceil $cpuLimit -}}
+{{- else if gt $cpuRequest 0.0 -}}
+  {{- $maxProcs = ceil $cpuRequest -}}
+{{- end -}}
+
+{{/* Ensure GOMAXPROCS is at least 1 */}}
+{{- if lt $maxProcs 1 -}}
+  {{- $maxProcs = 1 -}}
+{{- end -}}
+
+{{/* Convert to integer */}}
+{{- $maxProcsInt := int $maxProcs -}}
+
+- name: GOMAXPROCS
+  value: {{ $maxProcsInt | quote }}
+{{- end }}
+{{- end -}}
 {{- end -}}
 
 {{- define "nitro.splitvalidator.env" -}}
@@ -138,6 +196,63 @@ nitro args
   value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.splitvalidator.goMemLimit.multiplier | default 0.75))) }}
 {{- end }}
 {{- end -}}
+
+{{/* Calculate GOMAXPROCS for splitvalidator based on CPU resources */}}
+{{- if $.Values.env.splitvalidator.goMaxProcs.enabled }}
+{{- $cpuRequest := 0.0 -}}
+{{- $cpuLimit := 0.0 -}}
+{{- $multiplier := $.Values.env.splitvalidator.goMaxProcs.multiplier | default 2 -}}
+
+{{/* Get CPU request if set */}}
+{{- if and .Values.validator.splitvalidator.global.resources .Values.validator.splitvalidator.global.resources.requests .Values.validator.splitvalidator.global.resources.requests.cpu -}}
+  {{- $cpuRequestStr := .Values.validator.splitvalidator.global.resources.requests.cpu -}}
+  {{/* Handle different CPU formats: cores (1), millicores (1000m), or decimal (0.5) */}}
+  {{- if contains "m" $cpuRequestStr -}}
+    {{/* Convert millicores to cores (e.g., 500m -> 0.5) */}}
+    {{- $milliCores := regexFind "^\\d+" $cpuRequestStr | int -}}
+    {{- $cpuRequest = mulf (divf $milliCores 1000.0) $multiplier -}}
+  {{- else -}}
+    {{/* Handle decimal or whole cores */}}
+    {{- $cpuRequestVal := regexFind "^\\d*\\.?\\d+" $cpuRequestStr | float64 -}}
+    {{- $cpuRequest = mulf $cpuRequestVal $multiplier -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* Get CPU limit if set */}}
+{{- if and .Values.validator.splitvalidator.global.resources .Values.validator.splitvalidator.global.resources.limits .Values.validator.splitvalidator.global.resources.limits.cpu -}}
+  {{- $cpuLimitStr := .Values.validator.splitvalidator.global.resources.limits.cpu -}}
+  {{/* Handle different CPU formats: cores (1), millicores (1000m), or decimal (0.5) */}}
+  {{- if contains "m" $cpuLimitStr -}}
+    {{/* Convert millicores to cores (e.g., 500m -> 0.5) */}}
+    {{- $milliCores := regexFind "^\\d+" $cpuLimitStr | int -}}
+    {{- $cpuLimit = divf $milliCores 1000.0 -}}
+  {{- else -}}
+    {{/* Handle decimal or whole cores */}}
+    {{- $cpuLimit = regexFind "^\\d*\\.?\\d+" $cpuLimitStr | float64 -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* Use the higher value between CPU request*multiplier and CPU limit */}}
+{{- $maxProcs := 1 -}}
+{{- if gt $cpuRequest $cpuLimit -}}
+  {{- $maxProcs = ceil $cpuRequest -}}
+{{- else if gt $cpuLimit 0.0 -}}
+  {{- $maxProcs = ceil $cpuLimit -}}
+{{- else if gt $cpuRequest 0.0 -}}
+  {{- $maxProcs = ceil $cpuRequest -}}
+{{- end -}}
+
+{{/* Ensure GOMAXPROCS is at least 1 */}}
+{{- if lt $maxProcs 1 -}}
+  {{- $maxProcs = 1 -}}
+{{- end -}}
+
+{{/* Convert to integer */}}
+{{- $maxProcsInt := int $maxProcs -}}
+
+- name: GOMAXPROCS
+  value: {{ $maxProcsInt | quote }}
+{{- end }}
 {{- end -}}
 
 {{/*
