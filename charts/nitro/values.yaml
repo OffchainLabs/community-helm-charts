@@ -239,7 +239,7 @@ configmap:
     ## @param configmap.data.http.vhosts Vhosts to allow
     http:
       addr: "0.0.0.0"
-      api: ["arb", "personal", "eth", "net", "web3", "txpool", "arbdebug"]
+      api: ["arb", "eth", "net", "web3", "txpool", "arbdebug"]
       corsdomain: "*"
       port: 8547
       rpcprefix: "/rpc"
