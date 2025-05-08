@@ -74,7 +74,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 ### Nitro Deployment Options
 
 | Name                                                       | Description                                                                     | Value                                                               |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+|------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------|
 | `lifecycle`                                                | Lifecycle hooks configuration                                                   | `{}`                                                                |
 | `extraEnv`                                                 | Additional environment variables for the container                              | `{}`                                                                |
 | `replicaCount`                                             | Number of replicas to deploy                                                    | `1`                                                                 |
@@ -180,7 +180,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 ### Stateless Validator
 
 | Name                                                                                | Description                                                                                       | Value                         |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------- |
+|-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|-------------------------------|
 | `validator.enabled`                                                                 | Enable the stateless validator                                                                    | `false`                       |
 | `validator.splitvalidator.deployments`                                              | List of deployments for the split validator. Each deploymeny can have its own image, config, etc. | `[]`                          |
 | `validator.splitvalidator.global.replicaCount`                                      | Number of replicas for the split validator                                                        | `1`                           |
@@ -289,6 +289,7 @@ Option | Description | Default
 `execution.caching.block-count` | uint                                                                     minimum number of recent blocks to keep in memory | `128`
 `execution.caching.database-cache` | int                                                                   amount of memory in megabytes to cache database contents with | `2048`
 `execution.caching.disable-stylus-cache-metrics-collection` | disable metrics collection for the stylus cache | None
+`execution.caching.head-rewind-blocks-limit` | uint                                                        maximum number of blocks rolled back to recover chain head (0 = use geth default limit) | `2419200`
 `execution.caching.max-amount-of-gas-to-skip-state-saving` | uint                                          maximum amount of gas in blocks to skip saving state to Persistent storage (archive node only) -- warning: this option seems to cause issues | None
 `execution.caching.max-number-of-blocks-to-skip-state-saving` | uint32                                     maximum number of blocks to skip state saving to persistent storage (archive node only) -- warning: this option seems to cause issues | None
 `execution.caching.snapshot-cache` | int                                                                   amount of memory in megabytes to cache state snapshots with | `400`
@@ -378,6 +379,8 @@ Option | Description | Default
 `execution.tx-pre-checker.required-state-age` | int                                                        how long ago should the storage conditions from eth_SendRawTransactionConditional be true, 0 = don't check old state | `2`
 `execution.tx-pre-checker.required-state-max-blocks` | uint                                                maximum number of blocks to look back while looking for the <required-state-age> seconds old state, 0 = don't limit the search | `4`
 `execution.tx-pre-checker.strictness` | uint                                                               how strict to be when checking txs before forwarding them. 0 = accept anything, 10 = should never reject anything that'd succeed, 20 = likely won't reject anything that'd succeed, 30 = full validation which may reject txs that would succeed | `20`
+`execution.vmtrace.json-config` | string                                                                   (experimental) Tracer configuration in JSON format | `{}`
+`execution.vmtrace.tracer-name` | string                                                                   (experimental) Name of tracer which should record internal VM operations (costly) | None
 `file-logging.buf-size` | int                                                                              size of intermediate log records buffer | `512`
 `file-logging.compress` | enable compression of old log files | `true`
 `file-logging.enable` | enable logging to file | `true`
@@ -404,7 +407,7 @@ Option | Description | Default
 `init.dev-init-address` | string                                                                           Address of dev-account. Leave empty to use the dev-wallet. | None
 `init.dev-init-blocknum` | uint                                                                            Number of preinit blocks. Must exist in ancient database. | None
 `init.dev-max-code-size` | uint                                                                            Max code size for dev accounts | None
-`init.download-path` | string                                                                              path to save temp downloaded file | `/tmp/`
+`init.download-path` | string                                                                              path to save temp downloaded file | None
 `init.download-poll` | duration                                                                            how long to wait between polling attempts | `1m0s`
 `init.empty` | init with empty state | None
 `init.force` | if true: in case database exists init code will be reexecuted and genesis block compared to database | None
@@ -522,6 +525,9 @@ Option | Description | Default
 `node.block-validator.block-inputs-file-path` | string                                                     directory to write block validation inputs files | `./target/validation_inputs`
 `node.block-validator.current-module-root` | string                                                        current wasm module root ('current' read from chain, 'latest' from machines/latest dir, or provide hash) | `current`
 `node.block-validator.dangerous.reset-block-validation` | resets block-by-block validation, starting again at genesis | None
+`node.block-validator.dangerous.revalidation.end-block` | uint                                             end revalidation at this block | None
+`node.block-validator.dangerous.revalidation.quit-after-revalidation` | exit node after revalidation is done | None
+`node.block-validator.dangerous.revalidation.start-block` | uint                                           start revalidation from this block | None
 `node.block-validator.enable` | enable block-by-block validation | None
 `node.block-validator.failure-is-fatal` | failing a validation is treated as a fatal error | `true`
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (stores batch-copy per block) | `128`
@@ -538,6 +544,7 @@ Option | Description | Default
 `node.block-validator.redis-validation-client-config.stream-prefix` | string                               prefix for stream name | None
 `node.block-validator.redis-validation-client-config.stylus-archs` | strings                               archs required for stylus workers | `[wavm]`
 `node.block-validator.validation-poll` | duration                                                          poll time to check validations | `1s`
+`node.block-validator.validation-sent-limit` | uint                                                        limit on block validations to keep in validation sent state | `1024`
 `node.block-validator.validation-server-configs-list` | string                                             array of execution rpc configs given as a json string. time duration should be supplied in number indicating nanoseconds | `default`
 `node.block-validator.validation-server.arg-log-limit` | uint                                              limit size of arguments in log entries | `2048`
 `node.block-validator.validation-server.connection-wait` | duration                                        how long to wait for initial connection | None
@@ -593,7 +600,7 @@ Option | Description | Default
 `node.data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block` | uint                    when eagerly syncing, start indexing forward from this L1 block. Only used if there is no sync state | None
 `node.data-availability.rest-aggregator.sync-to-storage.ignore-write-errors` | log only on failures to write when syncing; otherwise treat it as an error | `true`
 `node.data-availability.rest-aggregator.sync-to-storage.parent-chain-blocks-per-read` | uint               when eagerly syncing, max l1 blocks to read per poll | `100`
-`node.data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                       period to request storage to retain synced data (default 360h0Version: v3.6.0-fc07dd2, time: 2025-04-28T12:07:19+02:00 | None
+`node.data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                       period to request storage to retain synced data | `360h0m0s`
 `node.data-availability.rest-aggregator.sync-to-storage.state-dir` | string                                directory to store the sync state in, ie the block number currently synced up to, so that we don't sync from scratch each time | None
 `node.data-availability.rest-aggregator.sync-to-storage.sync-expired-data` | sync even data that is expired; needed for mirror configuration | `true`
 `node.data-availability.rest-aggregator.urls` | strings                                                    list of URLs including 'http://' or 'https://' prefixes and port numbers to REST DAS endpoints; additive with the online-url-list option | None
