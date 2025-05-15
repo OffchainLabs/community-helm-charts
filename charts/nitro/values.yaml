@@ -51,8 +51,12 @@ updateStrategy:
 
 ## @param env.splitvalidator.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for the split validator
 ## @param env.splitvalidator.goMemLimit.multiplier The multiplier of available memory to use for the split validator
+## @param env.splitvalidator.goMaxProcs.enabled Enable setting GOMAXPROCS for the split validator
+## @param env.splitvalidator.goMaxProcs.multiplier The multiplier to use for CPU request (default 2)
 ## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
 ## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
+## @param env.nitro.goMaxProcs.enabled Enable setting GOMAXPROCS for nitro
+## @param env.nitro.goMaxProcs.multiplier The multiplier to use for CPU request (default 2)
 ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
 ## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
 ## @param env.blockValidatorMemFreeLimit.enabled Enable block validator memory management
@@ -62,10 +66,16 @@ env:
     goMemLimit:
       enabled: true
       multiplier: 0.75
+    goMaxProcs:
+      enabled: true
+      multiplier: 2
   nitro:
     goMemLimit:
       enabled: true
       multiplier: 0.9
+    goMaxProcs:
+      enabled: false
+      multiplier: 2
   resourceMgmtMemFreeLimit:
     enabled: false
     multiplier: 0.05

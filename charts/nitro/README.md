@@ -74,7 +74,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 ### Nitro Deployment Options
 
 | Name                                                       | Description                                                                     | Value                                                               |
-|------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------|
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | `lifecycle`                                                | Lifecycle hooks configuration                                                   | `{}`                                                                |
 | `extraEnv`                                                 | Additional environment variables for the container                              | `{}`                                                                |
 | `replicaCount`                                             | Number of replicas to deploy                                                    | `1`                                                                 |
@@ -94,8 +94,12 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `updateStrategy.type`                                      | Update strategy type                                                            | `RollingUpdate`                                                     |
 | `env.splitvalidator.goMemLimit.enabled`                    | Enable setting the garbage cleanup limit in Go for the split validator          | `true`                                                              |
 | `env.splitvalidator.goMemLimit.multiplier`                 | The multiplier of available memory to use for the split validator               | `0.75`                                                              |
+| `env.splitvalidator.goMaxProcs.enabled`                    | Enable setting GOMAXPROCS for the split validator                               | `true`                                                              |
+| `env.splitvalidator.goMaxProcs.multiplier`                 | The multiplier to use for CPU request (default 2)                               | `2`                                                                 |
 | `env.nitro.goMemLimit.enabled`                             | Enable setting the garbage cleanup limit in Go for nitro                        | `true`                                                              |
 | `env.nitro.goMemLimit.multiplier`                          | The multiplier of available memory to use for nitro                             | `0.9`                                                               |
+| `env.nitro.goMaxProcs.enabled`                             | Enable setting GOMAXPROCS for nitro                                             | `false`                                                             |
+| `env.nitro.goMaxProcs.multiplier`                          | The multiplier to use for CPU request (default 2)                               | `2`                                                                 |
 | `env.resourceMgmtMemFreeLimit.enabled`                     | Enable nitro resource management                                                | `false`                                                             |
 | `env.resourceMgmtMemFreeLimit.multiplier`                  | The multiplier of available memory to use                                       | `0.05`                                                              |
 | `env.blockValidatorMemFreeLimit.enabled`                   | Enable block validator memory management                                        | `false`                                                             |
@@ -180,7 +184,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 ### Stateless Validator
 
 | Name                                                                                | Description                                                                                       | Value                         |
-|-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|-------------------------------|
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------- |
 | `validator.enabled`                                                                 | Enable the stateless validator                                                                    | `false`                       |
 | `validator.splitvalidator.deployments`                                              | List of deployments for the split validator. Each deploymeny can have its own image, config, etc. | `[]`                          |
 | `validator.splitvalidator.global.replicaCount`                                      | Number of replicas for the split validator                                                        | `1`                           |
