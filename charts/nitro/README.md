@@ -74,7 +74,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 ### Nitro Deployment Options
 
 | Name                                                       | Description                                                                     | Value                                                               |
-|------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------|
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | `lifecycle`                                                | Lifecycle hooks configuration                                                   | `{}`                                                                |
 | `extraEnv`                                                 | Additional environment variables for the container                              | `{}`                                                                |
 | `replicaCount`                                             | Number of replicas to deploy                                                    | `1`                                                                 |
@@ -184,7 +184,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 ### Stateless Validator
 
 | Name                                                                                | Description                                                                                       | Value                         |
-|-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|-------------------------------|
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------- |
 | `validator.enabled`                                                                 | Enable the stateless validator                                                                    | `false`                       |
 | `validator.splitvalidator.deployments`                                              | List of deployments for the split validator. Each deploymeny can have its own image, config, etc. | `[]`                          |
 | `validator.splitvalidator.global.replicaCount`                                      | Number of replicas for the split validator                                                        | `1`                           |
