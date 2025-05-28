@@ -583,13 +583,24 @@ Option | Description | Default
 `node.bold.strategy` | string                                                                              define the bold validator staker strategy, either watchtower, defensive, stakeLatest, or makeNodes | `Watchtower`
 `node.bold.track-challenge-parent-assertion-hashes` | strings                                              only track challenges/edges with these parent assertion hashes | None
 `node.consensus-execution-syncer.sync-interval` | duration                                                 Interval in which finality data is pushed from consensus to execution | `1s`
+`node.da-provider.enable` | enable daprovider client | None
+`node.da-provider.rpc.arg-log-limit` | uint                                                                limit size of arguments in log entries | `2048`
+`node.da-provider.rpc.connection-wait` | duration                                                          how long to wait for initial connection | None
+`node.da-provider.rpc.jwtsecret` | string                                                                  path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`node.da-provider.rpc.retries` | uint                                                                      number of retries in case of failure(0 mean one attempt) | `3`
+`node.da-provider.rpc.retry-delay` | duration                                                              delay between retries | None
+`node.da-provider.rpc.retry-errors` | string                                                               Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`node.da-provider.rpc.timeout` | duration                                                                  per-response timeout (0-disabled) | None
+`node.da-provider.rpc.url` | string                                                                        url of server, use self for loopback websocket, self-auth for loopback with authentication | None
+`node.da-provider.rpc.websocket-message-size-limit` | int                                                  websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`node.da-provider.with-writer` | implies if the daprovider rpc server supports writer interface | None
 `node.dangerous.disable-blob-reader` | DANGEROUS! disables the EIP-4844 blob reader, which is necessary to read batches | None
 `node.dangerous.no-l1-listener` | DANGEROUS! disables listening to L1. To be used in test nodes only | None
 `node.dangerous.no-sequencer-coordinator` | DANGEROUS! allows sequencing without sequencer-coordinator | None
 `node.data-availability.enable` | enable Anytrust Data Availability mode | None
 `node.data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
 `node.data-availability.parent-chain-connection-attempts` | int                                            parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
-`node.data-availability.parent-chain-node-url` | string                                                    URL for parent chain node, only used in standalone daserver; when running as part of a node that node's L1 configuration is used | None
+`node.data-availability.parent-chain-node-url` | string                                                    URL for parent chain node, only used in standalone daserver and daprovider; when running as part of a node that node's L1 configuration is used | None
 `node.data-availability.request-timeout` | duration                                                        Data Availability Service timeout duration for Store requests | `5s`
 `node.data-availability.rest-aggregator.enable` | enable retrieval of sequencer batch data from a list of remote REST endpoints; if other DAS storage types are enabled, this mode is used as a fallback | None
 `node.data-availability.rest-aggregator.max-per-endpoint-stats` | int                                      number of stats entries (latency and success rate) to keep for each REST endpoint; controls whether strategy is faster or slower to respond to changing conditions | `20`

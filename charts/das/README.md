@@ -311,7 +311,7 @@ Option | Description | Default
 `data-availability.migrate-local-db-to-file-storage` | daserver will migrate all data on startup from local-db-storage to local-file-storage, then mark local-db-storage as unusable | None
 `data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
 `data-availability.parent-chain-connection-attempts` | int                                        parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
-`data-availability.parent-chain-node-url` | string                                                URL for parent chain node, only used in standalone daserver; when running as part of a node that node's L1 configuration is used | None
+`data-availability.parent-chain-node-url` | string                                                URL for parent chain node, only used in standalone daserver and daprovider; when running as part of a node that node's L1 configuration is used | None
 `data-availability.redis-cache.enable` | enable Redis caching of sequencer batch data | None
 `data-availability.redis-cache.expiration` | duration                                             Redis expiration | `1h0m0s`
 `data-availability.redis-cache.key-config` | string                                               Redis key config | None
