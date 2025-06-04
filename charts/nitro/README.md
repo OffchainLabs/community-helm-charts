@@ -123,6 +123,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `perReplicaService.annotations`                            | Annotations for the per replica service                                         | `{}`                                                                |
 | `perReplicaService.type`                                   | Service type for per replica services. If not set, uses service.type            | `nil`                                                               |
 | `perReplicaService.loadBalancerClass`                      | Load balancer class for per replica services                                    | `nil`                                                               |
+| `perReplicaService.loadBalancerSourceRanges`               | Load balancer source ranges for per replica services                            | `nil`                                                               |
 | `perReplicaHeadlessService.enabled`                        | Enable a headless service for each sts replica                                  | `false`                                                             |
 | `perReplicaHeadlessService.publishNotReadyAddresses`       | Publish not ready addresses                                                     | `true`                                                              |
 | `perReplicaHeadlessService.annotations`                    | Annotations for the per replica headless service                                | `{}`                                                                |
@@ -150,6 +151,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `service.type`                                             | Service type                                                                    | `ClusterIP`                                                         |
 | `service.publishNotReadyAddresses`                         | Publish not ready addresses                                                     | `false`                                                             |
 | `service.loadBalancerClass`                                | Load balancer class for the service                                             | `nil`                                                               |
+| `service.loadBalancerSourceRanges`                         | Load balancer source ranges for the service                                     | `nil`                                                               |
 | `resources`                                                | Resources for the container                                                     | `{}`                                                                |
 | `nodeSelector`                                             | Node selector for the pod                                                       | `{}`                                                                |
 | `tolerations`                                              | Tolerations for the pod                                                         | `[]`                                                                |
