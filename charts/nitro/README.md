@@ -121,6 +121,8 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `perReplicaService.enabled`                                | Enable a service for each sts replica                                           | `false`                                                             |
 | `perReplicaService.publishNotReadyAddresses`               | Publish not ready addresses                                                     | `true`                                                              |
 | `perReplicaService.annotations`                            | Annotations for the per replica service                                         | `{}`                                                                |
+| `perReplicaService.type`                                   | Service type for per replica services. If not set, uses service.type            | `nil`                                                               |
+| `perReplicaService.loadBalancerClass`                      | Load balancer class for per replica services                                    | `nil`                                                               |
 | `perReplicaHeadlessService.enabled`                        | Enable a headless service for each sts replica                                  | `false`                                                             |
 | `perReplicaHeadlessService.publishNotReadyAddresses`       | Publish not ready addresses                                                     | `true`                                                              |
 | `perReplicaHeadlessService.annotations`                    | Annotations for the per replica headless service                                | `{}`                                                                |
@@ -147,6 +149,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `priorityClassName`                                        | Priority class name                                                             | `""`                                                                |
 | `service.type`                                             | Service type                                                                    | `ClusterIP`                                                         |
 | `service.publishNotReadyAddresses`                         | Publish not ready addresses                                                     | `false`                                                             |
+| `service.loadBalancerClass`                                | Load balancer class for the service                                             | `nil`                                                               |
 | `resources`                                                | Resources for the container                                                     | `{}`                                                                |
 | `nodeSelector`                                             | Node selector for the pod                                                       | `{}`                                                                |
 | `tolerations`                                              | Tolerations for the pod                                                         | `[]`                                                                |
