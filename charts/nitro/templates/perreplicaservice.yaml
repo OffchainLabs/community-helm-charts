@@ -10,7 +10,9 @@ metadata:
     {{- include "nitro.labels" $ | nindent 4 }}
   annotations:
     {{- if $.Values.perReplicaService.annotations }}
-    {{- toYaml $.Values.perReplicaService.annotations | nindent 4 }}
+    {{- range $key, $value := $.Values.perReplicaService.annotations }}
+    {{ $key }}: {{ tpl ($value | toString) (dict "Values" $.Values "Chart" $.Chart "Release" $.Release "ordinal" $i) | quote }}
+    {{- end }}
     {{- end }}
 spec:
   type: {{ $.Values.perReplicaService.type | default $.Values.service.type }}
