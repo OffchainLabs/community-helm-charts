@@ -17,6 +17,9 @@ spec:
   {{- if $.Values.perReplicaService.loadBalancerClass }}
   loadBalancerClass: {{ $.Values.perReplicaService.loadBalancerClass }}
   {{- end }}
+  {{- if $.Values.perReplicaService.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{ $.Values.perReplicaService.loadBalancerSourceRanges | toYaml | nindent 4 }}
+  {{- end }}
   ports:
     {{- if and $.Values.configmap.data.http $.Values.configmap.data.http.port }}
     - port: {{ index $.Values.configmap.data.http.port }}

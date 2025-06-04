@@ -124,12 +124,14 @@ serviceMonitor:
 ## @param perReplicaService.annotations Annotations for the per replica service
 ## @param perReplicaService.type [string, nullable] Service type for per replica services. If not set, uses service.type
 ## @param perReplicaService.loadBalancerClass [string, nullable] Load balancer class for per replica services
+## @param perReplicaService.loadBalancerSourceRanges [array, nullable] Load balancer source ranges for per replica services
 perReplicaService:
   enabled: false
   publishNotReadyAddresses: true
   annotations: {}
   type: null
   loadBalancerClass: null
+  loadBalancerSourceRanges: null
 
 ## @param perReplicaHeadlessService.enabled Enable a headless service for each sts replica
 ## @param perReplicaHeadlessService.publishNotReadyAddresses Publish not ready addresses
@@ -200,10 +202,12 @@ priorityClassName: ""
 ## @param service.type Service type
 ## @param service.publishNotReadyAddresses Publish not ready addresses
 ## @param service.loadBalancerClass [string, nullable] Load balancer class for the service
+## @param service.loadBalancerSourceRanges [array, nullable] Load balancer source ranges for the service
 service:
   type: ClusterIP
   publishNotReadyAddresses: false
   loadBalancerClass: null
+  loadBalancerSourceRanges: null
 
 ## @param resources Resources for the container
 resources: {}
