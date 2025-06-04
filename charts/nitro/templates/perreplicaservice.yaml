@@ -13,6 +13,10 @@ metadata:
     {{- toYaml $.Values.perReplicaService.annotations | nindent 4 }}
     {{- end }}
 spec:
+  type: {{ $.Values.perReplicaService.type | default $.Values.service.type }}
+  {{- if $.Values.perReplicaService.loadBalancerClass }}
+  loadBalancerClass: {{ $.Values.perReplicaService.loadBalancerClass }}
+  {{- end }}
   ports:
     {{- if and $.Values.configmap.data.http $.Values.configmap.data.http.port }}
     - port: {{ index $.Values.configmap.data.http.port }}
@@ -40,7 +44,6 @@ spec:
     {{- end }}
   selector:
     statefulset.kubernetes.io/pod-name: {{ include "nitro.fullname" $ }}-{{ . }}
-  type: {{ $.Values.service.type }}
   publishNotReadyAddresses: {{ $.Values.perReplicaService.publishNotReadyAddresses }}
 {{- end }}
 {{- end }}
