@@ -159,7 +159,6 @@ Option | Description | Default
 `node.feed.output.connection-limits.per-ipv6-cidr-48-limit` | int           limit ipv6 clients, as identified by IPv6 address masked with /48, to this many connections to this relay | `20`
 `node.feed.output.connection-limits.per-ipv6-cidr-64-limit` | int           limit ipv6 clients, as identified by IPv6 address masked with /64, to this many connections to this relay | `10`
 `node.feed.output.connection-limits.reconnect-cooldown-period` | duration   time to wait after a relay client disconnects before the disconnect is registered with respect to the limit for this client | None
-`node.feed.output.disable-signing` | don't sign feed messages | `true`
 `node.feed.output.enable` | enable broadcaster | None
 `node.feed.output.enable-compression` | enable per message deflate compression support | None
 `node.feed.output.handshake-timeout` | duration                             duration to wait before timing out HTTP to WS upgrade | `1s`

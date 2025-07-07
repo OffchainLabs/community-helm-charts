@@ -298,6 +298,7 @@ Option | Description | Default
 `execution.caching.block-count` | uint                                                                     minimum number of recent blocks to keep in memory | `128`
 `execution.caching.database-cache` | int                                                                   amount of memory in megabytes to cache database contents with | `2048`
 `execution.caching.disable-stylus-cache-metrics-collection` | disable metrics collection for the stylus cache | None
+`execution.caching.enable-preimages` | enable recording of preimages | None
 `execution.caching.head-rewind-blocks-limit` | uint                                                        maximum number of blocks rolled back to recover chain head (0 = use geth default limit) | `2419200`
 `execution.caching.max-amount-of-gas-to-skip-state-saving` | uint                                          maximum amount of gas in blocks to skip saving state to Persistent storage (archive node only) -- warning: this option seems to cause issues | None
 `execution.caching.max-number-of-blocks-to-skip-state-saving` | uint32                                     maximum number of blocks to skip state saving to persistent storage (archive node only) -- warning: this option seems to cause issues | None
@@ -315,7 +316,7 @@ Option | Description | Default
 `execution.forwarder.connection-timeout` | duration                                                        total time to wait before cancelling connection | `30s`
 `execution.forwarder.idle-connection-timeout` | duration                                                   time until idle connections are closed | `15s`
 `execution.forwarder.max-idle-connections` | int                                                           maximum number of idle connections to keep open | `1`
-`execution.forwarder.redis-url` | string                                                                   the Redis URL to recomend target via | None
+`execution.forwarder.redis-url` | string                                                                   the Redis URL to recommend target via | None
 `execution.forwarder.retry-interval` | duration                                                            minimal time between update retries | `100ms`
 `execution.forwarder.update-interval` | duration                                                           forwarding target update interval | `1s`
 `execution.forwarding-target` | string                                                                     transaction forwarding target URL, or "null" to disable forwarding (iff not sequencer) | None
@@ -334,6 +335,7 @@ Option | Description | Default
 `execution.rpc.allow-method` | strings                                                                     list of whitelisted rpc methods | None
 `execution.rpc.arbdebug.block-range-bound` | uint                                                          bounds the number of blocks arbdebug calls may return | `256`
 `execution.rpc.arbdebug.timeout-queue-bound` | uint                                                        bounds the length of timeout queues arbdebug calls may return | `512`
+`execution.rpc.block-redirects-list` | string                                                              array of node configs to redirect block requests given as a json string. time duration should be supplied in number indicating nanoseconds | `default`
 `execution.rpc.bloom-bits-blocks` | uint                                                                   number of blocks a single bloom bit section vector holds | `16384`
 `execution.rpc.bloom-confirms` | uint                                                                      number of confirmation blocks before a bloom section is considered final | `256`
 `execution.rpc.classic-redirect` | string                                                                  url to redirect classic requests, use "error:[CODE:]MESSAGE" to return specified error instead of redirecting | None
@@ -347,6 +349,7 @@ Option | Description | Default
 `execution.rpc.tx-allow-unprotected` | allow transactions that aren't EIP-155 replay protected to be submitted over the RPC | `true`
 `execution.rpc.tx-fee-cap` | float                                                                         cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
 `execution.secondary-forwarding-target` | strings                                                          secondary transaction forwarding target URL | None
+`execution.sequencer.dangerous.disable-blob-base-fee-check` | DANGEROUS! disables nitro checks on sequencer for blob base fee | None
 `execution.sequencer.dangerous.disable-seq-inbox-max-data-size-check` | DANGEROUS! disables nitro checks on sequencer MaxTxDataSize against the sequencer inbox MaxDataSize | None
 `execution.sequencer.enable` | act and post to l1 as sequencer | None
 `execution.sequencer.enable-profiling` | enable CPU profiling and tracing | None
@@ -355,7 +358,7 @@ Option | Description | Default
 `execution.sequencer.forwarder.connection-timeout` | duration                                              total time to wait before cancelling connection | `30s`
 `execution.sequencer.forwarder.idle-connection-timeout` | duration                                         time until idle connections are closed | `1m0s`
 `execution.sequencer.forwarder.max-idle-connections` | int                                                 maximum number of idle connections to keep open | `100`
-`execution.sequencer.forwarder.redis-url` | string                                                         the Redis URL to recomend target via | None
+`execution.sequencer.forwarder.redis-url` | string                                                         the Redis URL to recommend target via | None
 `execution.sequencer.forwarder.retry-interval` | duration                                                  minimal time between update retries | `100ms`
 `execution.sequencer.forwarder.update-interval` | duration                                                 forwarding target update interval | `1s`
 `execution.sequencer.max-acceptable-timestamp-delta` | duration                                            maximum acceptable time difference between the local time and the latest L1 block's timestamp | `1h0m0s`
@@ -564,6 +567,7 @@ Option | Description | Default
 `node.block-validator.validation-server.timeout` | duration                                                per-response timeout (0-disabled) | None
 `node.block-validator.validation-server.url` | string                                                      url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
 `node.block-validator.validation-server.websocket-message-size-limit` | int                                websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`node.block-validator.validation-spawning-allowed-attempts` | uint                                         number of attempts allowed when trying to spawn a validation before erroring out | `1`
 `node.bold.api` | enable api | None
 `node.bold.api-db-path` | string                                                                           bold api db path | `bold-api-db`
 `node.bold.api-host` | string                                                                              bold api host | `127.0.0.1`
@@ -656,7 +660,6 @@ Option | Description | Default
 `node.feed.output.connection-limits.per-ipv6-cidr-48-limit` | int                                          limit ipv6 clients, as identified by IPv6 address masked with /48, to this many connections to this relay | `20`
 `node.feed.output.connection-limits.per-ipv6-cidr-64-limit` | int                                          limit ipv6 clients, as identified by IPv6 address masked with /64, to this many connections to this relay | `10`
 `node.feed.output.connection-limits.reconnect-cooldown-period` | duration                                  time to wait after a relay client disconnects before the disconnect is registered with respect to the limit for this client | None
-`node.feed.output.disable-signing` | don't sign feed messages | `true`
 `node.feed.output.enable` | enable broadcaster | None
 `node.feed.output.enable-compression` | enable per message deflate compression support | None
 `node.feed.output.handshake-timeout` | duration                                                            duration to wait before timing out HTTP to WS upgrade | `1s`
@@ -701,21 +704,23 @@ Option | Description | Default
 `node.parent-chain-reader.subscribe-err-interval` | duration                                               interval for subscribe error | `5m0s`
 `node.parent-chain-reader.tx-timeout` | duration                                                           timeout when waiting for a transaction | `5m0s`
 `node.parent-chain-reader.use-finality-data` | use l1 data about finalized/safe blocks | `true`
-`node.seq-coordinator.block-metadata-duration` | duration | `240h0m0s`
+`node.resource-mgmt.mem-free-limit` | string                                                               Decline RPC calls if free memory excluding the page cache is below this amount | None
+`node.seq-coordinator.block-metadata-duration` | duration                                                  expiration duration for block metadata keys in Redis | `240h0m0s`
 `node.seq-coordinator.chosen-healthcheck-addr` | string                                                    if non-empty, launch an HTTP service binding to this address that returns status code 200 when chosen and 503 otherwise | None
 `node.seq-coordinator.delete-finalized-msgs` | enable deleting of finalized messages from redis | `true`
 `node.seq-coordinator.enable` | enable sequence coordinator | None
 `node.seq-coordinator.handoff-timeout` | duration                                                          the maximum amount of time to spend waiting for another sequencer to accept the lockout when handing it off on shutdown or db compaction | `30s`
-`node.seq-coordinator.lockout-duration` | duration | `1m0s`
-`node.seq-coordinator.lockout-spare` | duration | `30s`
+`node.seq-coordinator.lockout-duration` | duration                                                         duration to hold the sequencer lockout after acquiring it | `1m0s`
+`node.seq-coordinator.lockout-spare` | duration                                                            time to subtract from lockout duration to ensure timely renewal | `30s`
 `node.seq-coordinator.msg-per-poll` | uint                                                                 will only be marked as wanting the lockout if not too far behind | `2000`
 `node.seq-coordinator.my-url` | string                                                                     url for this sequencer if it is the chosen | `<?INVALID-URL?>`
 `node.seq-coordinator.new-redis-url` | string                                                              switch to the new Redis URL to coordinate via | None
+`node.seq-coordinator.redis-quorum-size` | uint                                                            the quorum size needed to qualify a redis GET as valid | `1`
 `node.seq-coordinator.redis-url` | string                                                                  the Redis URL to coordinate via | None
 `node.seq-coordinator.release-retries` | int                                                               the number of times to retry releasing the wants lockout and chosen one status on shutdown | `4`
-`node.seq-coordinator.retry-interval` | duration | `50ms`
+`node.seq-coordinator.retry-interval` | duration                                                           interval to wait before retrying after an error | `50ms`
 `node.seq-coordinator.safe-shutdown-delay` | duration                                                      if non-zero will add delay after transferring control | `5s`
-`node.seq-coordinator.seq-num-duration` | duration | `240h0m0s`
+`node.seq-coordinator.seq-num-duration` | duration                                                         expiration duration for message count keys in Redis | `240h0m0s`
 `node.seq-coordinator.signer.ecdsa.accept-sequencer` | accept verified message from sequencer | `true`
 `node.seq-coordinator.signer.ecdsa.allowed-addresses` | strings                                            a list of allowed addresses | None
 `node.seq-coordinator.signer.ecdsa.dangerous.accept-missing` | accept empty as valid signature | `true`
@@ -724,7 +729,7 @@ Option | Description | Default
 `node.seq-coordinator.signer.symmetric.dangerous.disable-signature-verification` | disable message signature verification | None
 `node.seq-coordinator.signer.symmetric.fallback-verification-key` | string                                 a fallback key used for message verification | None
 `node.seq-coordinator.signer.symmetric.signing-key` | string                                               a 32-byte (64-character) hex string used to sign messages, or a path to a file containing it | None
-`node.seq-coordinator.update-interval` | duration | `250ms`
+`node.seq-coordinator.update-interval` | duration                                                          interval between sequencer coordinator update attempts | `250ms`
 `node.sequencer` | enable sequencer | None
 `node.staker.confirmation-blocks` | int                                                                    confirmation blocks | `12`
 `node.staker.contract-wallet-address` | string                                                             validator smart contract wallet public address | None
