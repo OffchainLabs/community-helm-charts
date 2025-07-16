@@ -98,6 +98,12 @@ nitro args
 {{- fail "configmap.data.conf.env-prefix must be set when goMemLimit is enabled" -}}
 {{- end -}}
 
+{{/* Validate env-prefix doesn't conflict with service names */}}
+{{- $fullName := include "nitro.fullname" . -}}
+{{- if and $envPrefix (hasPrefix (upper $envPrefix) (upper $fullName)) -}}
+{{- fail (printf "configmap.data.conf.env-prefix '%s' conflicts with service name '%s'. This will cause Kubernetes service environment variables like %s_SERVICE_HOST to be interpreted as configuration keys. Use a different env-prefix or release name." $envPrefix $fullName (upper $fullName)) -}}
+{{- end -}}
+
 {{/* Memory-based environment variables */}}
 {{- if and .Values.resources .Values.resources.limits .Values.resources.limits.memory .Values.env.nitro.goMemLimit.enabled -}}
 {{- $memory := .Values.resources.limits.memory -}}
