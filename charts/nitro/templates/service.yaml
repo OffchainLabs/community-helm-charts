@@ -7,6 +7,12 @@ metadata:
     function: nitro-svc
 spec:
   type: {{ .Values.service.type }}
+  {{- if .Values.service.loadBalancerClass }}
+  loadBalancerClass: {{ .Values.service.loadBalancerClass }}
+  {{- end }}
+  {{- if .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{ .Values.service.loadBalancerSourceRanges | toYaml | nindent 4 }}
+  {{- end }}
   ports:
     {{- if and .Values.configmap.data.http .Values.configmap.data.http.port }}
     - port: {{ index .Values.configmap.data.http.port }}

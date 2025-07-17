@@ -160,6 +160,8 @@ extraEnv:
 | Name                                            | Description                                                                 | Value                       |
 | ----------------------------------------------- | --------------------------------------------------------------------------- | --------------------------- |
 | `replicaCount`                                  | Number of replicas                                                          | `1`                         |
+| `lifecycle`                                     | Lifecycle hooks configuration                                               | `{}`                        |
+| `extraEnv`                                      | Additional environment variables for the container                          | `{}`                        |
 | `image.repository`                              | Docker image repository                                                     | `offchainlabs/nitro-node`   |
 | `image.pullPolicy`                              | Docker image pull policy                                                    | `Always`                    |
 | `image.tag`                                     | Docker image tag ovverrides the chart appVersion                            | `""`                        |
@@ -287,7 +289,7 @@ Option | Description | Default
 `data-availability.google-cloud-storage.access-token-file` | string                               Google Cloud Storage access token (JSON file path) | None
 `data-availability.google-cloud-storage.bucket` | string                                          Google Cloud Storage bucket | None
 `data-availability.google-cloud-storage.discard-after-timeout` | discard data after its expiry timeout | None
-`data-availability.google-cloud-storage.enable` | EXPERIMENTAL/unsupported - enable storage/retrieval of sequencer batch data from an Google Cloud Storage bucket | None
+`data-availability.google-cloud-storage.enable` | EXPERIMENTAL/unsupported - enable storage/retrieval of sequencer batch data from a Google Cloud Storage bucket | None
 `data-availability.google-cloud-storage.object-prefix` | string                                   prefix to add to Google Cloud Storage objects | None
 `data-availability.key.key-dir` | string                                                          the directory to read the bls keypair ('das_bls.pub' and 'das_bls') from; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
 `data-availability.key.priv-key` | string                                                         the base64 BLS private key to use for signing DAS certificates; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
@@ -309,7 +311,7 @@ Option | Description | Default
 `data-availability.migrate-local-db-to-file-storage` | daserver will migrate all data on startup from local-db-storage to local-file-storage, then mark local-db-storage as unusable | None
 `data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
 `data-availability.parent-chain-connection-attempts` | int                                        parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
-`data-availability.parent-chain-node-url` | string                                                URL for parent chain node, only used in standalone daserver; when running as part of a node that node's L1 configuration is used | None
+`data-availability.parent-chain-node-url` | string                                                URL for parent chain node, only used in standalone daserver and daprovider; when running as part of a node that node's L1 configuration is used | None
 `data-availability.redis-cache.enable` | enable Redis caching of sequencer batch data | None
 `data-availability.redis-cache.expiration` | duration                                             Redis expiration | `1h0m0s`
 `data-availability.redis-cache.key-config` | string                                               Redis key config | None
@@ -334,7 +336,7 @@ Option | Description | Default
 `data-availability.rest-aggregator.wait-before-try-next` | duration                               time to wait until trying the next set of REST endpoints while waiting for a response; the next set of REST endpoints is determined by the strategy selected | `2s`
 `data-availability.s3-storage.access-key` | string                                                S3 access key | None
 `data-availability.s3-storage.bucket` | string                                                    S3 bucket | None
-`data-availability.s3-storage.discard-after-timeout` | discard data after its expiry timeout | None
+`data-availability.s3-storage.discard-after-timeout` | this config option is deprecated | None
 `data-availability.s3-storage.enable` | enable storage/retrieval of sequencer batch data from an AWS S3 bucket | None
 `data-availability.s3-storage.object-prefix` | string                                             prefix to add to S3 objects | None
 `data-availability.s3-storage.region` | string                                                    S3 region | None

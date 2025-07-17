@@ -1,5 +1,11 @@
 ## @section Relay
 
+## @param lifecycle Lifecycle hooks configuration
+lifecycle: {}
+
+## @param extraEnv Additional environment variables for the container
+extraEnv: {}
+
 ## @param replicaCount Number of replicas to deploy
 replicaCount: 1
 
@@ -76,12 +82,14 @@ startupProbe:
   enabled: false
 
 ## @param serviceMonitor.enabled Enable prometheus service monitor
+## @param serviceMonitor.fallbackScrapeProtocol Set the fallback scrape protocol
 ## @param serviceMonitor.portName Port name for prometheus service monitor
 ## @param serviceMonitor.path Path for prometheus service monitor
 ## @param serviceMonitor.interval Interval for prometheus service monitor
 ## @param serviceMonitor.relabelings Add relabelings for the metrics being scraped
 serviceMonitor:
   enabled: false
+  fallbackScrapeProtocol: PrometheusText0.0.4
   portName: metrics
   path: /debug/metrics/prometheus
   interval: 5s
@@ -104,7 +112,7 @@ headlessService:
 ## @param pdb.maxUnavailable Maximum number of unavailable pods
 pdb:
   enabled: false
-  minAvailable: "75%"
+  minAvailable: "50%"
   maxUnavailable: ""
 
 ## @param serviceAccount.create Create a service account

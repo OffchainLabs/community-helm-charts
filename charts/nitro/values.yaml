@@ -1,5 +1,11 @@
 ## @section Nitro Deployment Options
 
+## @param lifecycle Lifecycle hooks configuration
+lifecycle: {}
+
+## @param extraEnv Additional environment variables for the container
+extraEnv: {}
+
 ## @param replicaCount Number of replicas to deploy
 ##
 replicaCount: 1
@@ -70,8 +76,12 @@ updateStrategy:
 
 ## @param env.splitvalidator.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for the split validator
 ## @param env.splitvalidator.goMemLimit.multiplier The multiplier of available memory to use for the split validator
+## @param env.splitvalidator.goMaxProcs.enabled Enable setting GOMAXPROCS for the split validator
+## @param env.splitvalidator.goMaxProcs.multiplier The multiplier to use for CPU request (default 2)
 ## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
 ## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
+## @param env.nitro.goMaxProcs.enabled Enable setting GOMAXPROCS for nitro
+## @param env.nitro.goMaxProcs.multiplier The multiplier to use for CPU request (default 2)
 ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
 ## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
 ## @param env.blockValidatorMemFreeLimit.enabled Enable block validator memory management
@@ -81,10 +91,16 @@ env:
     goMemLimit:
       enabled: true
       multiplier: 0.75
+    goMaxProcs:
+      enabled: true
+      multiplier: 2
   nitro:
     goMemLimit:
       enabled: true
       multiplier: 0.9
+    goMaxProcs:
+      enabled: false
+      multiplier: 2
   resourceMgmtMemFreeLimit:
     enabled: false
     multiplier: 0.05
@@ -130,11 +146,20 @@ serviceMonitor:
 
 ## @param perReplicaService.enabled Enable a service for each sts replica
 ## @param perReplicaService.publishNotReadyAddresses Publish not ready addresses
-## @param perReplicaService.annotations Annotations for the per replica service
+## @param perReplicaService.annotations Annotations for the per replica service. Supports templating with .ordinal for pod index
+## @param perReplicaService.type [string, nullable] Service type for per replica services. If not set, uses service.type
+## @param perReplicaService.loadBalancerClass [string, nullable] Load balancer class for per replica services
+## @param perReplicaService.loadBalancerSourceRanges [array, nullable] Load balancer source ranges for per replica services
 perReplicaService:
   enabled: false
   publishNotReadyAddresses: true
   annotations: {}
+  # Example with ordinal templating:
+  # annotations:
+  #   service.beta.kubernetes.io/aws-load-balancer-name: "custom-name-{{ .ordinal }}"
+  type: null
+  loadBalancerClass: null
+  loadBalancerSourceRanges: null
 
 ## @param perReplicaHeadlessService.enabled Enable a headless service for each sts replica
 ## @param perReplicaHeadlessService.publishNotReadyAddresses Publish not ready addresses
@@ -204,9 +229,13 @@ priorityClassName: ""
 
 ## @param service.type Service type
 ## @param service.publishNotReadyAddresses Publish not ready addresses
+## @param service.loadBalancerClass [string, nullable] Load balancer class for the service
+## @param service.loadBalancerSourceRanges [array, nullable] Load balancer source ranges for the service
 service:
   type: ClusterIP
   publishNotReadyAddresses: false
+  loadBalancerClass: null
+  loadBalancerSourceRanges: null
 
 ## @param resources Resources for the container
 resources: {}
@@ -258,7 +287,7 @@ configmap:
     ## @param configmap.data.http.vhosts Vhosts to allow
     http:
       addr: "0.0.0.0"
-      api: ["arb", "personal", "eth", "net", "web3", "txpool", "arbdebug"]
+      api: ["arb", "eth", "net", "web3", "txpool", "arbdebug"]
       corsdomain: "*"
       port: 8547
       rpcprefix: "/rpc"
@@ -324,6 +353,9 @@ validator:
       nodeSelector:
         ## @skip validator.splitvalidator.global.nodeSelector.kubernetes.io/arch
         kubernetes.io/arch: amd64
+
+      ## @param validator.splitvalidator.global.lifecycle Lifecycle hooks configuration
+      lifecycle: {}
 
       image:
         ## @param validator.splitvalidator.global.image.repository Docker image repository for the split validator

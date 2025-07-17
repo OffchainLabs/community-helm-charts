@@ -7,6 +7,7 @@ maintainers:
 
 type: application
 
-version: 0.7.0
 
-appVersion: "v3.5.2-33d30c0"
+version: 0.7.9
+
+appVersion: "v3.6.8-d6c96a5"

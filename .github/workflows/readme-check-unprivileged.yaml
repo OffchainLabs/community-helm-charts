@@ -1,0 +1,104 @@
+name: 'Check README Updates (Unprivileged)'
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "charts/**"
+
+# Limit permissions to only what's needed
+permissions:
+  contents: read
+
+jobs:
+  check-readme-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # No need to specify ref, as pull_request automatically checks out the PR
+
+      - name: Install readme-generator-for-helm
+        run: npm install -g @bitnami/readme-generator-for-helm
+        
+      - name: Get modified charts
+        id: get-modified-charts
+        run: |
+          # GitHub Actions checks out a merge commit by default
+          # We can use git diff against the PR base to find changed files
+          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} HEAD)
+          
+          # Get all modified values.yaml files
+          paths=$(git diff --name-only $BASE_SHA HEAD | grep 'charts/.*/values.yaml' | cut -d/ -f1,2 | uniq | tr '\n' ' ')
+          
+          echo "Modified charts: $paths"
+          echo "paths=${paths}" >> $GITHUB_ENV
+          
+          if [[ -n "$paths" ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Check if README updates are needed
+      - name: Check README changes needed
+        if: env.paths != ''
+        id: check-changes
+        run: |
+          # Create a temporary directory
+          mkdir -p temp_readme_files
+          
+          changes_needed=false
+          changes_details=()
+          
+          IFS=' ' read -ra ADDR <<< "$paths"
+          for chart in "${ADDR[@]}"; do
+            echo "Checking README changes for ${chart}"
+            
+            # Copy the existing README to a temporary file
+            cp "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md"
+            
+            # Try to generate README to a temporary location
+            readme-generator --values "${chart}/values.yaml" --readme "temp_readme_files/$(basename ${chart})_README.md" || true
+            
+            # Check if there are differences
+            if diff -q "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md" > /dev/null; then
+              echo "No changes needed for ${chart}/README.md"
+              changes_details+=("${chart}:no_changes")
+            else
+              echo "Changes needed for ${chart}/README.md"
+              changes_needed=true
+              changes_details+=("${chart}:needs_update")
+            fi
+          done
+          
+          # Join the array with commas
+          changes_details_str=$(IFS=,; echo "${changes_details[*]}")
+          
+          # Set outputs for use in later steps
+          echo "changes_needed=${changes_needed}" >> $GITHUB_OUTPUT
+          echo "changes_details=${changes_details_str}" >> $GITHUB_OUTPUT
+
+      - name: Save PR information
+        run: |
+          mkdir -p ./pr-info
+          echo "${{ github.event.pull_request.number }}" > ./pr-info/PR_NUMBER
+          echo "${{ github.event.pull_request.head.sha }}" > ./pr-info/HEAD_SHA
+          echo "${{ github.event.pull_request.head.repo.fork }}" > ./pr-info/IS_FORK
+          echo "${{ steps.get-modified-charts.outputs.has_changes }}" > ./pr-info/HAS_CHANGES
+          echo "${{ steps.check-changes.outputs.changes_needed }}" > ./pr-info/CHANGES_NEEDED
+          echo "${{ steps.check-changes.outputs.changes_details }}" > ./pr-info/CHANGES_DETAILS
+          
+          # If there are modified charts, include them in the artifacts
+          if [[ -n "$paths" ]]; then
+            echo "$paths" > ./pr-info/MODIFIED_CHARTS
+          fi
+
+      - name: Upload PR information
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-readme-info
+          path: pr-info/
