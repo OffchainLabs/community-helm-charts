@@ -1,6 +1,6 @@
 # Arbitrum Nitro
 
-A Helm chart for Arbitrum Nitro. For full details on running a node, please see the official [Arbitrum Documentation](https://docs.arbitrum.io/node-running/quickstart-running-a-node).
+A Helm chart for Arbitrum Nitro. For full details on running a node, please see the official [Arbitrum Documentation](https://docs.arbitrum.io/run-arbitrum-node/run-full-node).
 
 ## Quickstart
 
