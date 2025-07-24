@@ -47,6 +47,12 @@ env:
     enabled: true
 
 configmap:
+  # Test removeKeys feature - remove bogus/test fields that don't affect functionality
+  removeKeys:
+    - "test-section"
+    - "deprecated-feature"
+    - "node.legacy-option"
+
   data:
     conf:
       env-prefix: "NITROCI"
@@ -58,6 +64,8 @@ configmap:
         parent-chain-wallet:
           account: "44a2864f7e5fc6ac1704ffae163730ad66d02fc1"
           password: "test123"
+      # Add bogus field to test removal
+      legacy-option: "should-be-removed"
     parent-chain:
       id: 11155111
       blob-client:
@@ -66,6 +74,11 @@ configmap:
     execution:
       tx-pre-checker:
         strictness: 0
+    # Add bogus sections to test removal
+    test-section:
+      dummy: "value"
+      another: "field"
+    deprecated-feature: true
 
 wallet:
   files:

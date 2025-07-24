@@ -322,6 +322,40 @@ Currently primarily used for stateless validator configuration
   {{- end -}}
 {{- end -}}
 
+{{- /* Process removals if specified */ -}}
+{{- if .Values.configmap.removeKeys -}}
+  {{- /* Process each removal key */ -}}
+  {{- range .Values.configmap.removeKeys -}}
+    {{- $keyPath := . -}}
+    {{- $keys := splitList "." $keyPath -}}
+    
+    {{- /* Navigate to the parent of the key to remove */ -}}
+    {{- $current := $values.configmap.data -}}
+    {{- $parent := dict -}}
+    {{- $parentKey := "" -}}
+    
+    {{- /* Navigate through the path */ -}}
+    {{- range $index, $key := $keys -}}
+      {{- if lt $index (sub (len $keys) 1) -}}
+        {{- /* Not the last key - navigate deeper */ -}}
+        {{- if hasKey $current $key -}}
+          {{- $parent = $current -}}
+          {{- $parentKey = $key -}}
+          {{- $current = index $current $key -}}
+        {{- else -}}
+          {{- /* Path doesn't exist, break */ -}}
+          {{- break -}}
+        {{- end -}}
+      {{- else -}}
+        {{- /* This is the last key - remove it */ -}}
+        {{- if hasKey $current $key -}}
+          {{- $_ := unset $current $key -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
 {{- /* Process the final configmap data into pretty JSON format */ -}}
 {{- $processed := $values.configmap.data | toPrettyJson | replace "\\u0026" "&" | replace "\\u003c" "<" | replace "\\u003e" ">" -}}
 
