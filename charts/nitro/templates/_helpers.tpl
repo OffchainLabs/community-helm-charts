@@ -36,9 +36,6 @@ Common labels
 {{- define "nitro.labels" -}}
 helm.sh/chart: {{ include "nitro.chart" . }}
 {{ include "nitro.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
