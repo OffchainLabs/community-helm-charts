@@ -270,7 +270,7 @@ Option | Description | Default
 `blocks-reexecutor.enable` | enables re-execution of a range of blocks against historic state | None
 `blocks-reexecutor.min-blocks-per-thread` | uint                                                           minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
-`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `10`
+`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `14`
 `blocks-reexecutor.trie-clean-limit` | int                                                                 memory allowance (MB) to use for caching trie nodes in memory | None
 `chain.dev-wallet.account` | string                                                                        account to use | `is first account in keystore`
 `chain.dev-wallet.only-create-key` | if true, creates new key then exits | None
@@ -312,6 +312,7 @@ Option | Description | Default
 `execution.caching.trie-clean-cache` | int                                                                 amount of memory in megabytes to cache unchanged state trie nodes with | `600`
 `execution.caching.trie-dirty-cache` | int                                                                 amount of memory in megabytes to cache state diffs against disk with (larger cache lowers database growth) | `1024`
 `execution.caching.trie-time-limit` | duration                                                             maximum block processing time before trie is written to hard-disk | `1h0m0s`
+`execution.caching.trie-time-limit-before-flush-maintenance` | duration                                    Execution will suggest that maintenance is run if the block processing time required to reach trie-time-limit is smaller or equal than trie-time-limit-before-flush-maintenance | None
 `execution.caching.trie-time-limit-random-offset` | duration                                               if greater then 0, the block processing time period of each trie write to hard-disk is shortened by a random value from range [0, trie-time-limit-random-offset) | None
 `execution.enable-prefetch-block` | enable prefetching of blocks | `true`
 `execution.forwarder.connection-timeout` | duration                                                        total time to wait before cancelling connection | `30s`
@@ -337,8 +338,6 @@ Option | Description | Default
 `execution.rpc.arbdebug.block-range-bound` | uint                                                          bounds the number of blocks arbdebug calls may return | `256`
 `execution.rpc.arbdebug.timeout-queue-bound` | uint                                                        bounds the length of timeout queues arbdebug calls may return | `512`
 `execution.rpc.block-redirects-list` | string                                                              array of node configs to redirect block requests given as a json string. time duration should be supplied in number indicating nanoseconds | `default`
-`execution.rpc.bloom-bits-blocks` | uint                                                                   number of blocks a single bloom bit section vector holds | `16384`
-`execution.rpc.bloom-confirms` | uint                                                                      number of confirmation blocks before a bloom section is considered final | `256`
 `execution.rpc.classic-redirect` | string                                                                  url to redirect classic requests, use "error:[CODE:]MESSAGE" to return specified error instead of redirecting | None
 `execution.rpc.classic-redirect-timeout` | duration                                                        timeout for forwarded classic requests, where 0 = no timeout | None
 `execution.rpc.evm-timeout` | duration                                                                     timeout used for eth_call (0=infinite) | `5s`
@@ -346,7 +345,11 @@ Option | Description | Default
 `execution.rpc.filter-log-cache-size` | int                                                                log filter system maximum number of cached blocks | `32`
 `execution.rpc.filter-timeout` | duration                                                                  log filter system maximum time filters stay active | `5m0s`
 `execution.rpc.gas-cap` | uint                                                                             cap on computation gas that can be used in eth_call/estimateGas (0=infinite) | `50000000`
+`execution.rpc.log-export-checkpoints` | string                                                            export log index checkpoints to file | None
+`execution.rpc.log-history` | uint                                                                         maximum number of blocks from head where a log search index is maintained | `9400000`
+`execution.rpc.log-no-history` | no log search index is maintained | None
 `execution.rpc.max-recreate-state-depth` | int                                                             maximum depth for recreating state, measured in l2 gas (0=don't recreate state, -1=infinite, -2=use default value for archive or non-archive node (whichever is configured)) | `-2`
+`execution.rpc.state-scheme` | string                                                                      state scheme used to store states and trie nodes on top | `hash`
 `execution.rpc.tx-allow-unprotected` | allow transactions that aren't EIP-155 replay protected to be submitted over the RPC | `true`
 `execution.rpc.tx-fee-cap` | float                                                                         cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
 `execution.secondary-forwarding-target` | strings                                                          secondary transaction forwarding target URL | None
@@ -354,6 +357,7 @@ Option | Description | Default
 `execution.sequencer.dangerous.disable-seq-inbox-max-data-size-check` | DANGEROUS! disables nitro checks on sequencer MaxTxDataSize against the sequencer inbox MaxDataSize | None
 `execution.sequencer.enable` | act and post to l1 as sequencer | None
 `execution.sequencer.enable-profiling` | enable CPU profiling and tracing | None
+`execution.sequencer.expected-surplus-gas-price-mode` | string                                             gas price setting to be used in calculating estimated surplus. Allowed values- CalldataPrice, BlobPrice and CalldataPrice7523 | `BlobPrice`
 `execution.sequencer.expected-surplus-hard-threshold` | string                                             if expected surplus is lower than this value, new incoming transactions will be denied | `default`
 `execution.sequencer.expected-surplus-soft-threshold` | string                                             if expected surplus is lower than this value, warnings are posted | `default`
 `execution.sequencer.forwarder.connection-timeout` | duration                                              total time to wait before cancelling connection | `30s`
@@ -371,6 +375,7 @@ Option | Description | Default
 `execution.sequencer.nonce-failure-cache-size` | int                                                       number of transactions with too high of a nonce to keep in memory while waiting for their predecessor | `1024`
 `execution.sequencer.queue-size` | int                                                                     size of the pending tx queue | `1024`
 `execution.sequencer.queue-timeout` | duration                                                             maximum amount of time transaction can wait in queue | `12s`
+`execution.sequencer.read-from-tx-queue-timeout` | duration                                                timeout for reading new messages | `10ms`
 `execution.sequencer.sender-whitelist` | strings                                                           comma separated whitelist of authorized senders (if empty, everyone is allowed) | None
 `execution.sequencer.timeboost.auction-contract-address` | string                                          Address of the proxy pointing to the ExpressLaneAuction contract | None
 `execution.sequencer.timeboost.auctioneer-address` | string                                                Address of the Timeboost Autonomous Auctioneer | None
@@ -388,7 +393,10 @@ Option | Description | Default
 `execution.stylus-target.host` | string                                                                    stylus programs compilation target for system other than 64-bit ARM or 64-bit x86 | None
 `execution.sync-monitor.finalized-block-wait-for-block-validator` | wait for block validator to complete before returning finalized block number | None
 `execution.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
-`execution.tx-lookup-limit` | uint                                                                         retain the ability to lookup transactions by hash for the past N blocks (0 = all blocks) | `126230400`
+`execution.tx-indexer.enable` | enables transaction indexer | `true`
+`execution.tx-indexer.min-batch-delay` | duration                                                          minimum delay between transaction indexing/unindexing batches; the bigger the delay, the more blocks can be included in each batch | `1s`
+`execution.tx-indexer.threads` | int                                                                       number of threads used to RLP decode blocks during indexing/unindexing of historical transactions | `14`
+`execution.tx-indexer.tx-lookup-limit` | uint                                                              retain the ability to lookup transactions by hash for the past N blocks (0 = all blocks) | `126230400`
 `execution.tx-pre-checker.required-state-age` | int                                                        how long ago should the storage conditions from eth_SendRawTransactionConditional be true, 0 = don't check old state | `2`
 `execution.tx-pre-checker.required-state-max-blocks` | uint                                                maximum number of blocks to look back while looking for the <required-state-age> seconds old state, 0 = don't limit the search | `4`
 `execution.tx-pre-checker.strictness` | uint                                                               how strict to be when checking txs before forwarding them. 0 = accept anything, 10 = should never reject anything that'd succeed, 20 = likely won't reject anything that'd succeed, 30 = full validation which may reject txs that would succeed | `20`
@@ -432,7 +440,7 @@ Option | Description | Default
 `init.prune` | string                                                                                      pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                             the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
 `init.prune-parallel-storage-traversal` | if true: use parallel pruning per account | None
-`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `10`
+`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `14`
 `init.prune-trie-clean-cache` | int                                                                        amount of memory in megabytes to cache unchanged state trie nodes with when traversing state database during pruning | `600`
 `init.rebuild-local-wasm` | string                                                                         rebuild local wasm database on boot if needed (otherwise-will be done lazily). Three modes are supported  "auto"- (enabled by default) if any previous rebuilding attempt was successful then rebuilding is disabled else continues to rebuild, "force"- force rebuilding which would commence rebuilding despite the status of previous attempts, "false"- do not rebuild on startup (default "auto") | None
 `init.recreate-missing-state-from` | uint                                                                  block number to start recreating missing states from (0 = disabled) | None
@@ -511,7 +519,7 @@ Option | Description | Default
 `node.batch-poster.parent-chain-wallet.private-key` | string                                               private key for wallet | None
 `node.batch-poster.poll-interval` | duration                                                               how long to wait after no batches are ready to be posted before checking again | `10s`
 `node.batch-poster.post-4844-blobs` | if the parent chain supports 4844 blobs and they're well priced, post EIP-4844 blobs | None
-`node.batch-poster.redis-lock.background-lock` | should node always try grabing lock in background | None
+`node.batch-poster.redis-lock.background-lock` | should node always try grabbing lock in background | None
 `node.batch-poster.redis-lock.enable` | if false, always treat this as locked and don't write the lock to redis | `true`
 `node.batch-poster.redis-lock.key` | string                                                                key for lock | None
 `node.batch-poster.redis-lock.lockout-duration` | duration                                                 how long lock is held | `1m0s`
@@ -546,7 +554,7 @@ Option | Description | Default
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (stores batch-copy per block) | `128`
 `node.block-validator.memory-free-limit` | string                                                          minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                                pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
-`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `20`
+`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `28`
 `node.block-validator.recording-iter-limit` | uint                                                         limit on block recordings sent per iteration | `20`
 `node.block-validator.redis-validation-client-config.create-streams` | create redis streams if it does not exist | `true`
 `node.block-validator.redis-validation-client-config.name` | string                                        validation client name | `redis validation client`
@@ -685,14 +693,14 @@ Option | Description | Default
 `node.inbox-reader.min-blocks-to-read` | uint                                                              the minimum number of blocks to read at once (when caught up lowers load on L1) | `1`
 `node.inbox-reader.read-mode` | string                                                                     mode to only read latest or safe or finalized L1 blocks. Enabling safe or finalized disables feed input and output. Defaults to latest. Takes string input, valid strings- latest, safe, finalized | `latest`
 `node.inbox-reader.target-messages-read` | uint                                                            if adjust-blocks-to-read is enabled, the target number of messages to read at once | `500`
-`node.maintenance.lock.background-lock` | should node always try grabing lock in background | None
+`node.maintenance.check-interval` | duration                                                               how often to check if maintenance should be run | `1m0s`
+`node.maintenance.enable` | enable maintenance runner | None
+`node.maintenance.lock.background-lock` | should node always try grabbing lock in background | None
 `node.maintenance.lock.enable` | if false, always treat this as locked and don't write the lock to redis | `true`
 `node.maintenance.lock.key` | string                                                                       key for lock | None
 `node.maintenance.lock.lockout-duration` | duration                                                        how long lock is held | `1m0s`
 `node.maintenance.lock.my-id` | string                                                                     this node's id prefix when acquiring the lock (optional) | None
 `node.maintenance.lock.refresh-duration` | duration                                                        how long between consecutive calls to redis | `10s`
-`node.maintenance.time-of-day` | string                                                                    UTC 24-hour time of day to run maintenance at (e.g. 15:00) | None
-`node.maintenance.triggerable` | maintenance is triggerable via rpc | None
 `node.message-pruner.enable` | enable message pruning | `true`
 `node.message-pruner.min-batches-left` | uint                                                              min number of batches not pruned | `1000`
 `node.message-pruner.prune-interval` | duration                                                            interval for running message pruner | `1m0s`
@@ -837,7 +845,7 @@ Option | Description | Default
 `persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | None
 `persistent.pebble.experimental.wal-dir` | string                                                          absolute path of directory to store write-ahead logs (WALs) in. If empty, WALs will be stored in the same directory as sstables | None
 `persistent.pebble.experimental.wal-min-sync-interval` | int                                               minimum duration in microseconds between syncs of the WAL. If WAL syncs are requested faster than this interval, they will be artificially delayed. | None
-`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `10`
+`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `14`
 `persistent.pebble.sync-mode` | if true sync mode is used (data needs to be written to WAL before the write is marked as completed) | None
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                                  pprof server address | `127.0.0.1`
@@ -860,11 +868,12 @@ Option | Description | Default
 `validation.arbitrator.redis-validation-server-config.workers` | int                                       number of validation threads (0 to use number of CPUs) | None
 `validation.arbitrator.workers` | int                                                                      number of concurrent validation threads | None
 `validation.jit.cranelift` | use Cranelift instead of LLVM when validating blocks using the jit-accelerated block validator | `true`
+`validation.jit.jit-path` | string                                                                         path to jit executable, if empty, attempts to find jit executable relative to nitro binary or in PATH | None
 `validation.jit.max-execution-time` | duration                                                             if execution time used by a jit wasm exceeds this limit, a rpc error is returned | `10m0s`
 `validation.jit.wasm-memory-usage-limit` | int                                                             if memory used by a jit wasm exceeds this limit, a warning is logged | `4294967296`
 `validation.jit.workers` | int                                                                             number of concurrent validation threads | None
 `validation.use-jit` | use jit for validation | `true`
-`validation.wasm.allowed-wasm-module-roots` | strings                                                      list of WASM module roots or mahcine base paths to match against on-chain WasmModuleRoot | None
+`validation.wasm.allowed-wasm-module-roots` | strings                                                      list of WASM module roots or machine base paths to match against on-chain WasmModuleRoot | None
 `validation.wasm.enable-wasmroots-check` | enable check for compatibility of on-chain WASM module root with node | `true`
 `validation.wasm.root-path` | string                                                                       path to machine folders, each containing wasm files (machine.wavm.br, replay.wasm) | None
 `ws.addr` | string                                                                                         WS-RPC server listening interface | None
