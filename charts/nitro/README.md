@@ -779,7 +779,7 @@ Option | Description | Default
 `node.staker.data-poster.use-noop-storage` | uses noop storage, it doesn't store anything | None
 `node.staker.data-poster.wait-for-l1-finality` | only treat a transaction as confirmed after L1 finality has been achieved (recommended) | `true`
 `node.staker.disable-challenge` | disable validator challenge | None
-`node.staker.enable` | enable validator | `true`
+`node.staker.enable` | Version: v3.7.1-926f1ab, time: 2025-08-27T10:08:27-03:00  enable validator (default true) | None
 `node.staker.enable-fast-confirmation` | enable fast confirmation | None
 `node.staker.extra-gas` | uint                                                                             use this much more gas than estimation says is necessary to post transactions | `50000`
 `node.staker.gas-refunder-address` | string                                                                The gas refunder contract address (optional) | None
