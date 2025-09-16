@@ -213,7 +213,11 @@ service:
   loadBalancerSourceRanges: null
 
 ## @param resources Resources for the container
-resources: {}
+resources:
+  ## @param resources.requests Resource requests for the container
+  requests:
+    ephemeral-storage: 100Mi
+
 
 ## @param nodeSelector Node selector for the pod
 nodeSelector: {}
