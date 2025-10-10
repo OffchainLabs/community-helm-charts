@@ -188,10 +188,6 @@ extraEnv:
 | `startupProbe`                                  | startupProbe                                                                |                             |
 | `startupProbe.enabled`                          | Enable startup probe                                                        | `false`                     |
 | `updateStrategy.type`                           | Update strategy type                                                        | `RollingUpdate`             |
-| `persistence.localdbstorage`                    | This will only be created if local db storage is enabled in the configmap   |                             |
-| `persistence.localdbstorage.size`               | Size of the persistent volume claim                                         | `100Gi`                     |
-| `persistence.localdbstorage.storageClassName`   | Storage class of the persistent volume claim                                | `nil`                       |
-| `persistence.localdbstorage.accessModes`        | Access modes of the persistent volume claim                                 | `["ReadWriteOnce"]`         |
 | `persistence.localfilestorage`                  | This will only be created if local file storage is enabled in the configmap |                             |
 | `persistence.localfilestorage.size`             | Size of the persistent volume claim                                         | `100Gi`                     |
 | `persistence.localfilestorage.storageClassName` | Storage class of the persistent volume claim                                | `nil`                       |
@@ -244,9 +240,6 @@ extraEnv:
 | `configmap.data.rpc-port`                                                                  | rpc api port                                                                             | `9876`    |
 | `configmap.data.data-availability.parent-chain-node-url`                                   | Parent chain node url                                                                    | `""`      |
 | `configmap.data.data-availability.sequencer-inbox-address`                                 | Sequencer inbox address                                                                  | `""`      |
-| `configmap.data.data-availability.local-db-storage.enable`                                 | Enable local db storage                                                                  | `false`   |
-| `configmap.data.data-availability.local-db-storage.data-dir`                               | Data directory                                                                           | `""`      |
-| `configmap.data.data-availability.local-db-storage.discard-after-timeout`                  | Discard after timeout                                                                    | `""`      |
 | `configmap.data.data-availability.local-file-storage.enable`                               | Enable local file storage                                                                | `false`   |
 | `configmap.data.data-availability.local-file-storage.data-dir`                             |                                                                                          | `""`      |
 | `configmap.data.data-availability.s3-storage.enable`                                       | Enable s3 storage                                                                        | `false`   |
