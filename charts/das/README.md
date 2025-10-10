@@ -295,20 +295,10 @@ Option | Description | Default
 `data-availability.key.priv-key` | string                                                         the base64 BLS private key to use for signing DAS certificates; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
 `data-availability.local-cache.capacity` | int                                                    Maximum number of entries (up to 64KB each) to store in the cache. | `20000`
 `data-availability.local-cache.enable` | Enable local in-memory caching of sequencer batch data | None
-`data-availability.local-db-storage.base-table-size` | int                                        BadgerDB option: sets the maximum size in bytes for LSM table or file in the base level | `2097152`
-`data-availability.local-db-storage.data-dir` | string                                            directory in which to store the database | None
-`data-availability.local-db-storage.discard-after-timeout` | discard data after its expiry timeout | None
-`data-availability.local-db-storage.enable` | !!!DEPRECATED, USE local-file-storage!!! enable storage/retrieval of sequencer batch data from a database on the local filesystem | None
-`data-availability.local-db-storage.num-compactors` | int                                         BadgerDB option: Sets the number of compaction workers to run concurrently | `4`
-`data-availability.local-db-storage.num-level-zero-tables` | int                                  BadgerDB option: sets the maximum number of Level 0 tables before compaction starts | `5`
-`data-availability.local-db-storage.num-level-zero-tables-stall` | int                            BadgerDB option: sets the number of Level 0 tables that once reached causes the DB to stall until compaction succeeds | `15`
-`data-availability.local-db-storage.num-memtables` | int                                          BadgerDB option: sets the maximum number of tables to keep in memory before stalling | `5`
-`data-availability.local-db-storage.value-log-file-size` | int                                    BadgerDB option: sets the maximum size of a single log file | `1073741823`
 `data-availability.local-file-storage.data-dir` | string                                          local data directory | None
 `data-availability.local-file-storage.enable` | enable storage/retrieval of sequencer batch data from a directory of files, one per batch | None
 `data-availability.local-file-storage.enable-expiry` | enable expiry of batches | None
 `data-availability.local-file-storage.max-retention` | duration                                   store requests with expiry times farther in the future than max-retention will be rejected | `504h0m0s`
-`data-availability.migrate-local-db-to-file-storage` | daserver will migrate all data on startup from local-db-storage to local-file-storage, then mark local-db-storage as unusable | None
 `data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
 `data-availability.parent-chain-connection-attempts` | int                                        parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
 `data-availability.parent-chain-node-url` | string                                                URL for parent chain node, only used in standalone daserver and daprovider; when running as part of a node that node's L1 configuration is used | None

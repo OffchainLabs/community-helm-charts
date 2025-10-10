@@ -270,7 +270,7 @@ Option | Description | Default
 `blocks-reexecutor.enable` | enables re-execution of a range of blocks against historic state | None
 `blocks-reexecutor.min-blocks-per-thread` | uint                                                           minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
-`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `14`
+`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `10`
 `blocks-reexecutor.trie-clean-limit` | int                                                                 memory allowance (MB) to use for caching trie nodes in memory | None
 `chain.dev-wallet.account` | string                                                                        account to use | `is first account in keystore`
 `chain.dev-wallet.only-create-key` | if true, creates new key then exits | None
@@ -315,6 +315,7 @@ Option | Description | Default
 `execution.caching.trie-time-limit-before-flush-maintenance` | duration                                    Execution will suggest that maintenance is run if the block processing time required to reach trie-time-limit is smaller or equal than trie-time-limit-before-flush-maintenance | None
 `execution.caching.trie-time-limit-random-offset` | duration                                               if greater then 0, the block processing time period of each trie write to hard-disk is shortened by a random value from range [0, trie-time-limit-random-offset) | None
 `execution.enable-prefetch-block` | enable prefetching of blocks | `true`
+`execution.expose-multi-gas` | experimental: expose multi-dimensional gas in transaction receipts | None
 `execution.forwarder.connection-timeout` | duration                                                        total time to wait before cancelling connection | `30s`
 `execution.forwarder.idle-connection-timeout` | duration                                                   time until idle connections are closed | `15s`
 `execution.forwarder.max-idle-connections` | int                                                           maximum number of idle connections to keep open | `1`
@@ -392,10 +393,11 @@ Option | Description | Default
 `execution.stylus-target.extra-archs` | strings                                                            Comma separated list of extra architectures to cross-compile stylus program to and cache in wasm store (additionally to local target). Currently must include at least wavm. (supported targets: wavm, arm64, amd64, host) | `[wavm]`
 `execution.stylus-target.host` | string                                                                    stylus programs compilation target for system other than 64-bit ARM or 64-bit x86 | None
 `execution.sync-monitor.finalized-block-wait-for-block-validator` | wait for block validator to complete before returning finalized block number | None
+`execution.sync-monitor.msg-lag` | duration                                                                allowed message lag while still considered in sync | `1s`
 `execution.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
 `execution.tx-indexer.enable` | enables transaction indexer | `true`
 `execution.tx-indexer.min-batch-delay` | duration                                                          minimum delay between transaction indexing/unindexing batches; the bigger the delay, the more blocks can be included in each batch | `1s`
-`execution.tx-indexer.threads` | int                                                                       number of threads used to RLP decode blocks during indexing/unindexing of historical transactions | `14`
+`execution.tx-indexer.threads` | int                                                                       number of threads used to RLP decode blocks during indexing/unindexing of historical transactions | `10`
 `execution.tx-indexer.tx-lookup-limit` | uint                                                              retain the ability to lookup transactions by hash for the past N blocks (0 = all blocks) | `126230400`
 `execution.tx-pre-checker.required-state-age` | int                                                        how long ago should the storage conditions from eth_SendRawTransactionConditional be true, 0 = don't check old state | `2`
 `execution.tx-pre-checker.required-state-max-blocks` | uint                                                maximum number of blocks to look back while looking for the <required-state-age> seconds old state, 0 = don't limit the search | `4`
@@ -440,7 +442,7 @@ Option | Description | Default
 `init.prune` | string                                                                                      pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                             the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
 `init.prune-parallel-storage-traversal` | if true: use parallel pruning per account | None
-`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `14`
+`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `10`
 `init.prune-trie-clean-cache` | int                                                                        amount of memory in megabytes to cache unchanged state trie nodes with when traversing state database during pruning | `600`
 `init.rebuild-local-wasm` | string                                                                         rebuild local wasm database on boot if needed (otherwise-will be done lazily). Three modes are supported  "auto"- (enabled by default) if any previous rebuilding attempt was successful then rebuilding is disabled else continues to rebuild, "force"- force rebuilding which would commence rebuilding despite the status of previous attempts, "false"- do not rebuild on startup (default "auto") | None
 `init.recreate-missing-state-from` | uint                                                                  block number to start recreating missing states from (0 = disabled) | None
@@ -450,6 +452,7 @@ Option | Description | Default
 `init.then-quit` | quit after init is done | None
 `init.url` | string                                                                                        url to download initialization data - will poll if download fails | None
 `init.validate-checksum` | if true: validate the checksum after downloading the snapshot | `true`
+`init.validate-genesis-assertion` | tests genesis assertion posted on parent chain against the genesis block created on init | `true`
 `ipc.path` | string                                                                                        Requested location to place the IPC endpoint. An empty path disables IPC. | None
 `log-level` | string                                                                                       log level, valid values are CRIT, ERROR, WARN, INFO, DEBUG, TRACE | `INFO`
 `log-type` | string                                                                                        log type (plaintext or json) | `plaintext`
@@ -468,6 +471,7 @@ Option | Description | Default
 `node.batch-poster.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.batch-poster.data-poster.elapsed-time-base` | duration                                               unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
 `node.batch-poster.data-poster.elapsed-time-importance` | float                                            weight given to the units of time elapsed used for maximum fee cap calculation | `10`
+`node.batch-poster.data-poster.enable-cell-proofs` | string                                                enable cell proofs in blob transactions for Fusaka compatibility. Valid values: "" or "auto" (auto-detect based on L1 Osaka fork), "force-enable", "force-disable" | None
 `node.batch-poster.data-poster.external-signer.address` | string                                           external signer address | None
 `node.batch-poster.data-poster.external-signer.client-cert` | string                                       rpc client cert | None
 `node.batch-poster.data-poster.external-signer.client-private-key` | string                                rpc client private key | None
@@ -554,7 +558,7 @@ Option | Description | Default
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (stores batch-copy per block) | `128`
 `node.block-validator.memory-free-limit` | string                                                          minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                                pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
-`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `28`
+`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `20`
 `node.block-validator.recording-iter-limit` | uint                                                         limit on block recordings sent per iteration | `20`
 `node.block-validator.redis-validation-client-config.create-streams` | create redis streams if it does not exist | `true`
 `node.block-validator.redis-validation-client-config.name` | string                                        validation client name | `redis validation client`
@@ -598,9 +602,15 @@ Option | Description | Default
 `node.bold.state-provider-config.check-batch-finality` | check batch finality | `true`
 `node.bold.state-provider-config.machine-leaves-cache-path` | string                                       path to machine cache | `machine-hashes-cache`
 `node.bold.state-provider-config.validator-name` | string                                                  name identifier for cosmetic purposes | `default-validator`
-`node.bold.strategy` | string                                                                              define the bold validator staker strategy, either watchtower, defensive, stakeLatest, or makeNodes | `Watchtower`
 `node.bold.track-challenge-parent-assertion-hashes` | strings                                              only track challenges/edges with these parent assertion hashes | None
-`node.consensus-execution-syncer.sync-interval` | duration                                                 Interval in which finality data is pushed from consensus to execution | `1s`
+`node.consensus-execution-syncer.sync-interval` | duration                                                 Interval in which finality and sync data is pushed from consensus to execution | `300ms`
+`node.da-provider.data-stream.base-retry-delay` | duration                                                 base delay for retrying failed RPC calls | `2s`
+`node.da-provider.data-stream.max-retry-attempts` | int                                                    maximum number of attempts for retrying failed RPC calls | `5`
+`node.da-provider.data-stream.max-retry-delay` | duration                                                  maximum delay for retrying failed RPC calls | `1m0s`
+`node.da-provider.data-stream.max-store-chunk-body-size` | int                                             maximum HTTP body size for chunked store requests | `5242880`
+`node.da-provider.data-stream.rpc-methods.finalize-stream` | string                                        name of the RPC method to finalize a chunked data stream | `daprovider_commitChunkedStore`
+`node.da-provider.data-stream.rpc-methods.start-stream` | string                                           name of the RPC method to start a chunked data stream | `daprovider_startChunkedStore`
+`node.da-provider.data-stream.rpc-methods.stream-chunk` | string                                           name of the RPC method to send a chunk of data | `daprovider_sendChunk`
 `node.da-provider.enable` | enable daprovider client | None
 `node.da-provider.rpc.arg-log-limit` | uint                                                                limit size of arguments in log entries | `2048`
 `node.da-provider.rpc.connection-wait` | duration                                                          how long to wait for initial connection | None
@@ -640,9 +650,16 @@ Option | Description | Default
 `node.data-availability.rest-aggregator.wait-before-try-next` | duration                                   time to wait until trying the next set of REST endpoints while waiting for a response; the next set of REST endpoints is determined by the strategy selected | `2s`
 `node.data-availability.rpc-aggregator.assumed-honest` | int                                               Number of assumed honest backends (H). If there are N backends, K=N+1-H valid responses are required to consider an Store request to be successful. | None
 `node.data-availability.rpc-aggregator.backends` | backendConfigList                                       JSON RPC backend configuration. This can be specified on the command line as a JSON array, eg: [{"url": "...", "pubkey": "..."},...], or as a JSON array in the config file. | `null`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.base-retry-delay` | duration             base delay for retrying failed RPC calls | `2s`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.max-retry-attempts` | int                maximum number of attempts for retrying failed RPC calls | `5`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.max-retry-delay` | duration              maximum delay for retrying failed RPC calls | `1m0s`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.max-store-chunk-body-size` | int         maximum HTTP body size for chunked store requests | `5242880`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.finalize-stream` | string    name of the RPC method to finalize a chunked data stream | `das_commitChunkedStore`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.start-stream` | string       name of the RPC method to start a chunked data stream | `das_startChunkedStore`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.stream-chunk` | string       name of the RPC method to send a chunk of data | `das_sendChunk`
+`node.data-availability.rpc-aggregator.das-rpc-client.enable-chunked-store` | enable data to be sent to DAS in chunks instead of all at once | `true`
+`node.data-availability.rpc-aggregator.das-rpc-client.server-url` | string                                 URL of DAS server to connect to | None
 `node.data-availability.rpc-aggregator.enable` | enable storage of sequencer batch data from a list of RPC endpoints; this should only be used by the batch poster and not in combination with other DAS storage types | None
-`node.data-availability.rpc-aggregator.enable-chunked-store` | enable data to be sent to DAS in chunks instead of all at once | `true`
-`node.data-availability.rpc-aggregator.max-store-chunk-body-size` | int                                    maximum HTTP POST body size to use for individual batch chunks, including JSON RPC overhead and an estimated overhead of 512B of headers | `524288`
 `node.data-availability.sequencer-inbox-address` | string                                                  parent chain address of SequencerInbox contract | None
 `node.delayed-sequencer.enable` | enable delayed sequencer | None
 `node.delayed-sequencer.finalize-distance` | int                                                           how many blocks in the past L1 block is considered final (ignored when using Merge finality) | `20`
@@ -661,6 +678,7 @@ Option | Description | Default
 `node.feed.input.verify.allowed-addresses` | strings                                                       a list of allowed addresses | None
 `node.feed.input.verify.dangerous.accept-missing` | accept empty as valid signature | `true`
 `node.feed.output.addr` | string                                                                           address to bind the relay feed output to | None
+`node.feed.output.backlog.enable-backlog-deep-copy` | enable deep copying of L2 messages for memory profiling (debug only) | None
 `node.feed.output.backlog.segment-limit` | int                                                             the maximum number of messages each segment within the backlog can contain | `240`
 `node.feed.output.client-delay` | duration                                                                 delay the first messages sent to each client by this amount | None
 `node.feed.output.client-timeout` | duration                                                               duration to wait before timing out connections to client | `15s`
@@ -750,6 +768,7 @@ Option | Description | Default
 `node.staker.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.staker.data-poster.elapsed-time-base` | duration                                                     unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
 `node.staker.data-poster.elapsed-time-importance` | float                                                  weight given to the units of time elapsed used for maximum fee cap calculation | `10`
+`node.staker.data-poster.enable-cell-proofs` | string                                                      enable cell proofs in blob transactions for Fusaka compatibility. Valid values: "" or "auto" (auto-detect based on L1 Osaka fork), "force-enable", "force-disable" | None
 `node.staker.data-poster.external-signer.address` | string                                                 external signer address | None
 `node.staker.data-poster.external-signer.client-cert` | string                                             rpc client cert | None
 `node.staker.data-poster.external-signer.client-private-key` | string                                      rpc client private key | None
@@ -833,19 +852,19 @@ Option | Description | Default
 `persistent.pebble.experimental.l-base-max-bytes` | int                                                    The maximum number of bytes for LBase. The base level is the level which L0 is compacted into. The base level is determined dynamically based on the existing data in the LSM. The maximum number of bytes for other levels is computed dynamically based on the base level's maximum size. When the maximum number of bytes for a level is exceeded, compaction is requested. | `67108864`
 `persistent.pebble.experimental.l0-compaction-concurrency` | int                                           threshold of L0 read-amplification at which compaction concurrency is enabled (if compaction-debt-concurrency was not already exceeded). Every multiple of this value enables another concurrent compaction up to max-concurrent-compactions. | `10`
 `persistent.pebble.experimental.l0-compaction-file-threshold` | int                                        count of L0 files necessary to trigger an L0 compaction | `500`
-`persistent.pebble.experimental.l0-compaction-threshold` | int                                             amount of L0 read-amplification necessary to trigger an L0 compaction | `4`
+`persistent.pebble.experimental.l0-compaction-threshold` | int                                             amount of L0 read-amplification necessary to trigger an L0 compaction | `2`
 `persistent.pebble.experimental.l0-stop-writes-threshold` | int                                            hard limit on L0 read-amplification, computed as the number of L0 sublevels. Writes are stopped when this threshold is reached | `12`
 `persistent.pebble.experimental.max-writer-concurrency` | int                                              maximum number of compression workers the compression queue is allowed to use. If max-writer-concurrency > 0, then the Writer will use parallelism, to compress and write blocks to disk. Otherwise, the writer will compress and write blocks to disk synchronously. | None
-`persistent.pebble.experimental.mem-table-stop-writes-threshold` | int                                     hard limit on the number of queued of MemTables | `2`
+`persistent.pebble.experimental.mem-table-stop-writes-threshold` | int                                     hard limit on the number of queued of MemTables | `4`
 `persistent.pebble.experimental.read-compaction-rate` | AllowedSeeks                                       controls the frequency of read triggered compactions by adjusting AllowedSeeks in manifest.FileMetadata: AllowedSeeks = FileSize / ReadCompactionRate | `16000`
 `persistent.pebble.experimental.read-sampling-multiplier` | int                                            a multiplier for the readSamplingPeriod in iterator.maybeSampleRead() to control the frequency of read sampling to trigger a read triggered compaction. A value of -1 prevents sampling and disables read triggered compactions. Geth default is -1. The pebble default is 1 << 4. which gets multiplied with a constant of 1 << 16 to yield 1 << 20 (1MB). | `-1`
 `persistent.pebble.experimental.target-byte-deletion-rate` | int                                           rate (in bytes per second) at which sstable file deletions are limited to (under normal circumstances). | None
 `persistent.pebble.experimental.target-file-size` | int                                                    target file size for the level 0 | `2097152`
 `persistent.pebble.experimental.target-file-size-equal-levels` | if true same target-file-size will be uses for all levels, otherwise target size for layer n = 2 * target size for layer n - 1 | None
-`persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | None
+`persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | `512000`
 `persistent.pebble.experimental.wal-dir` | string                                                          absolute path of directory to store write-ahead logs (WALs) in. If empty, WALs will be stored in the same directory as sstables | None
 `persistent.pebble.experimental.wal-min-sync-interval` | int                                               minimum duration in microseconds between syncs of the WAL. If WAL syncs are requested faster than this interval, they will be artificially delayed. | None
-`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `14`
+`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `10`
 `persistent.pebble.sync-mode` | if true sync mode is used (data needs to be written to WAL before the write is marked as completed) | None
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                                  pprof server address | `127.0.0.1`

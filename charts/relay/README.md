@@ -151,6 +151,7 @@ Option | Description | Default
 `node.feed.input.verify.allowed-addresses` | strings                        a list of allowed addresses | None
 `node.feed.input.verify.dangerous.accept-missing` | accept empty as valid signature | `true`
 `node.feed.output.addr` | string                                            address to bind the relay feed output to | None
+`node.feed.output.backlog.enable-backlog-deep-copy` | enable deep copying of L2 messages for memory profiling (debug only) | None
 `node.feed.output.backlog.segment-limit` | int                              the maximum number of messages each segment within the backlog can contain | `240`
 `node.feed.output.client-delay` | duration                                  delay the first messages sent to each client by this amount | None
 `node.feed.output.client-timeout` | duration                                duration to wait before timing out connections to client | `15s`
