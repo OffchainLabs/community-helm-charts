@@ -1,0 +1,35 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Renovate configuration for community Helm charts - watches offchainlabs/nitro-node Docker images (non-RC only)",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["helm-values"],
+  "helm-values": {
+    "fileMatch": [
+      "(^|/)charts/.+/values\\.ya?ml$"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Update offchainlabs/nitro-node image (excluding RC versions) with chart version bump",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["offchainlabs/nitro-node"],
+      "allowedVersions": "!/rc\\./",
+      "groupName": "nitro-node",
+      "postUpgradeTasks": {
+        "commands": [
+          ".github/renovate-update-chart.sh {{{packageFileDir}}}/Chart.yaml {{{newVersion}}}"
+        ],
+        "fileFilters": ["**/Chart.yaml"],
+        "executionMode": "branch"
+      },
+      "semanticCommits": "enabled",
+      "commitMessageTopic": "nitro-node Docker image",
+      "commitMessageExtra": "to {{{newVersion}}}",
+      "prTitle": "chore: update nitro-node to {{{newVersion}}} across all charts"
+    }
+  ],
+  "allowedPostUpgradeCommands": ["^\\.github/renovate-update-chart\\.sh.*"],
+  "labels": ["dependencies", "docker", "renovate", "nitro"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2
+}
