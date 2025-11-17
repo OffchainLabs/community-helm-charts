@@ -35,7 +35,6 @@ jobs:
 
       - name: Generate GitHub App Token (if using GitHub App)
         id: generate-token
-        if: ${{ secrets.RENOVATE_APP_ID != '' }}
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.RENOVATE_APP_ID }}
