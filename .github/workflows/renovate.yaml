@@ -1,0 +1,92 @@
+name: Renovate
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      repositories:
+        description: 'Comma-separated list of repositories to run on (optional)'
+        required: false
+        type: string
+        default: 'OffchainLabs/community-helm-charts'
+      log_level:
+        description: 'Log level'
+        required: false
+        default: 'info'
+        type: choice
+        options:
+          - debug
+          - info
+          - warn
+          - error
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate GitHub App Token (if using GitHub App)
+        id: generate-token
+        if: ${{ secrets.RENOVATE_APP_ID != '' }}
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: community-helm-charts
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v43.0.7
+        with:
+          token: ${{ steps.generate-token.outputs.token || secrets.RENOVATE_TOKEN || secrets.GITHUB_TOKEN }}
+          renovate-version: 41.59.0
+          docker-cmd-file: .github/renovate-entrypoint.sh
+          docker-user: root
+          env-regex: "^(?:RENOVATE_\\w+|LOG_LEVEL|GITHUB_COM_TOKEN)$"
+        env:
+          # Core configuration
+          RENOVATE_PLATFORM: github
+          RENOVATE_AUTODISCOVER: false
+
+          # Override with manual input if provided, default to this repo
+          RENOVATE_REPOSITORIES: ${{ github.event.inputs.repositories || 'OffchainLabs/community-helm-charts' }}
+
+          # Logging
+          LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
+          RENOVATE_LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
+
+          # GitHub.com token for changelog lookups (prevents rate limiting)
+          RENOVATE_GITHUB_COM_TOKEN: ${{ secrets.RENOVATE_GITHUB_COM_TOKEN || secrets.GITHUB_TOKEN }}
+
+          # Configuration file location
+          RENOVATE_CONFIG_FILE: .github/renovate-config.json
+
+          # Additional useful settings
+          RENOVATE_DEPENDENCY_DASHBOARD: true
+          RENOVATE_DEPENDENCY_DASHBOARD_TITLE: "Nitro Node Dependency Dashboard"
+
+          # Renovate app settings (when using GitHub App)
+          RENOVATE_USERNAME: ${{ github.repository_owner }}-renovate[bot]
+          RENOVATE_GIT_AUTHOR: ${{ github.repository_owner }}-renovate[bot] <${{ github.repository_owner }}-renovate[bot]@users.noreply.github.com>
+
+      - name: Renovate Summary
+        if: always()
+        run: |
+          echo "## Renovate Run Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository Owner**: ${{ github.repository_owner }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event.inputs.repositories }}" != "" ]; then
+            echo "- **Target Repositories**: ${{ github.event.inputs.repositories }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Target Repositories**: OffchainLabs/community-helm-charts" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- **Log Level**: ${{ github.event.inputs.log_level || 'info' }}" >> $GITHUB_STEP_SUMMARY
