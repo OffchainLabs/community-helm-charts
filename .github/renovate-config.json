@@ -26,9 +26,9 @@
       "groupName": "nitro-node",
       "postUpgradeTasks": {
         "commands": [
-          ".github/renovate-update-chart.sh {{{packageFileDir}}}/Chart.yaml {{{newVersion}}}"
+          ".github/renovate-update-all-charts.sh {{{newVersion}}}"
         ],
-        "fileFilters": ["**/Chart.yaml"],
+        "fileFilters": ["**/Chart.yaml", "**/README.md"],
         "executionMode": "branch"
       },
       "semanticCommits": "enabled",
@@ -37,7 +37,7 @@
       "prTitle": "chore: update nitro-node to {{{newVersion}}} across all charts"
     }
   ],
-  "allowedCommands": ["^\\.github/renovate-update-chart\\.sh.*"],
+  "allowedCommands": ["^\\.github/renovate-update-.*\\.sh.*"],
   "labels": ["dependencies", "docker", "renovate", "nitro"],
   "prConcurrentLimit": 5,
   "prHourlyLimit": 2
