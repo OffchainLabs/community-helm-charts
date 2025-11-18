@@ -13,19 +13,22 @@ Renovate is configured to:
 ## How It Works
 
 ### 1. Image Monitoring
-Renovate scans the `charts/nitro/values.yaml` file for Docker image references. When a new version of `offchainlabs/nitro-node` is published to Docker Hub:
+Renovate uses a custom regex manager to scan the `appVersion` field in `charts/*/Chart.yaml` files. When a new version of `offchainlabs/nitro-node` is published to Docker Hub:
 
-- **Stable versions** (e.g., `v3.8.0`, `v3.9.0`) → Renovate creates a PR
-- **RC versions** (e.g., `v3.8.0-rc.1`, `v3.8.0-rc.7-ef47e28`) → Skipped (filtered by `allowedVersions: "!/rc\\./"`)
+- **Stable versions with hash** (e.g., `v3.8.0-62c0aa7`, `v3.9.2-52e8959`) → Renovate creates a PR
+- **RC versions** (e.g., `v3.8.0-rc.1`, `v3.8.0-rc.7-ef47e28`) → Skipped (filtered by `allowedVersions` regex)
+
+**Design Note**: We monitor `Chart.yaml` instead of `values.yaml` because:
+- The chart templates default to using `appVersion` when `image.tag` is not set
+- This avoids duplicating version information in multiple files
+- Users can still override the tag in their own values if needed
 
 ### 2. Automatic Updates
 When a new stable version is detected, Renovate automatically:
 
-1. Updates the image tag in `charts/nitro/values.yaml` (if explicitly set)
-2. Runs `.github/renovate-update-chart.sh` which:
-   - Updates `appVersion` in `charts/nitro/Chart.yaml` to the new image version
-   - Increments the chart `version` (patch number)
-3. Creates a PR with all changes
+1. Updates `appVersion` in `charts/*/Chart.yaml` to the new image version
+2. Runs `.github/renovate-update-chart.sh` which increments the chart `version` (patch number)
+3. Creates a PR with all changes across all affected charts
 
 ### 3. PR Creation
 PRs are created with:
@@ -113,9 +116,15 @@ To avoid overwhelming the repository:
 ## Troubleshooting
 
 ### Renovate not detecting new versions
-1. Check the [nitro-node Docker Hub page](https://hub.docker.com/r/offchainlabs/nitro-node/tags) for new versions
-2. Verify the version doesn't contain `rc.` (which would exclude it)
-3. Review Renovate logs in the GitHub Actions run
+1. **Check the `appVersion` format**: Ensure each Chart.yaml has a valid appVersion matching the pattern:
+   ```yaml
+   appVersion: "v3.8.0-62c0aa7"  # Format: vX.Y.Z-HASH (7-char hex)
+   ```
+   The regex expects: `v` + major.minor.patch + `-` + 7-character hexadecimal hash
+
+2. Check the [nitro-node Docker Hub page](https://hub.docker.com/r/offchainlabs/nitro-node/tags) for new versions
+3. Verify the version matches the `allowedVersions` pattern (format: `vX.Y.Z-HASH`, no `rc.`)
+4. Review Renovate logs in the GitHub Actions run for specific errors
 
 ### Update script failures
 1. Ensure `yq` is installed (should be handled by entrypoint)
@@ -138,35 +147,29 @@ When a new stable version is released, Renovate will create **a single PR** that
 
 ## Example PR
 
-When `offchainlabs/nitro-node:v3.9.0` is released, Renovate will create a PR with changes like:
+When `offchainlabs/nitro-node:v3.9.2-52e8959` is released, Renovate will create a PR with changes like:
 
 ```yaml
 # charts/nitro/Chart.yaml
-- version: 0.8.0
-- appVersion: "v3.8.0-rc.7-ef47e28"
-+ version: 0.8.1
-+ appVersion: "v3.9.0"
+- version: 0.8.1
+- appVersion: "v3.8.0-62c0aa7"
++ version: 0.8.2
++ appVersion: "v3.9.2-52e8959"
 
 # charts/das/Chart.yaml
-- version: 0.7.0
-- appVersion: "v3.8.0-rc.7-ef47e28"
-+ version: 0.7.1
-+ appVersion: "v3.9.0"
+- version: 0.7.1
+- appVersion: "v3.8.0-62c0aa7"
++ version: 0.7.2
++ appVersion: "v3.9.2-52e8959"
 
 # charts/relay/Chart.yaml
-- version: 0.7.0
-- appVersion: "v3.8.0-rc.7-ef47e28"
-+ version: 0.7.1
-+ appVersion: "v3.9.0"
+- version: 0.7.1
+- appVersion: "v3.8.0-62c0aa7"
++ version: 0.7.2
++ appVersion: "v3.9.2-52e8959"
 ```
 
-```yaml
-# charts/*/values.yaml (if tag is explicitly set)
-image:
-  repository: offchainlabs/nitro-node
-- tag: "v3.8.0-rc.7-ef47e28"
-+ tag: "v3.9.0"
-```
+Note: The `values.yaml` files are **not** modified because `image.tag` is intentionally left unset (commented out), allowing the templates to use the `appVersion` from `Chart.yaml` automatically.
 
 ## Additional Resources
 
