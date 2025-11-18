@@ -26,8 +26,8 @@ Renovate uses a custom regex manager to scan the `appVersion` field in `charts/*
 ### 2. Automatic Updates
 When a new stable version is detected, Renovate automatically:
 
-1. Updates `appVersion` in `charts/*/Chart.yaml` to the new image version
-2. Runs `.github/renovate-update-chart.sh` which increments the chart `version` (patch number)
+1. Updates `appVersion` in all `charts/*/Chart.yaml` files to the new image version
+2. Runs `.github/renovate-update-all-charts.sh` which increments the chart `version` (patch number) for all charts
 3. Creates a PR with all changes across all affected charts
 
 ### 3. PR Creation
@@ -45,11 +45,17 @@ Main Renovate configuration that defines:
 - Version filtering (excluding RC versions)
 - Post-upgrade tasks to run
 
-### `.github/renovate-update-chart.sh`
-Bash script that:
-- Updates `appVersion` in Chart.yaml to match the new Docker image version
-- Bumps the chart `version` (patch number)
+### `.github/renovate-update-all-charts.sh`
+Bash script that updates all charts in the repository:
+- Finds all `Chart.yaml` files in the `charts/` directory
+- For charts using nitro-node (detected by appVersion pattern), bumps the chart `version` (patch number)
 - Requires `yq` to be installed (handled by the entrypoint script)
+- Note: Renovate automatically updates the `appVersion` field before running this script
+
+### `.github/renovate-update-chart.sh`
+Legacy single-chart update script (kept for reference):
+- Updates a single Chart.yaml file
+- Not currently used by the automated workflow
 
 ### `.github/renovate-entrypoint.sh`
 Setup script that runs before Renovate:
@@ -81,8 +87,11 @@ You can trigger Renovate manually:
 To test the update script locally:
 
 ```bash
-# Example: simulate updating to v3.9.0
-.github/renovate-update-chart.sh charts/nitro/Chart.yaml v3.9.0
+# Example: simulate updating all charts to v3.9.2-52e8959
+.github/renovate-update-all-charts.sh v3.9.2-52e8959
+
+# Or test the single-chart script:
+.github/renovate-update-chart.sh charts/nitro/Chart.yaml v3.9.2-52e8959
 ```
 
 ## Authentication
