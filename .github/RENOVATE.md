@@ -26,11 +26,11 @@ Renovate uses a custom regex manager to scan the `appVersion` field in `charts/*
 ### 2. Automatic Updates
 When a new stable version is detected, Renovate automatically:
 
-1. Updates `appVersion` in `charts/*/Chart.yaml` to the new image version
-2. Runs `.github/renovate-update-chart.sh` which:
-   - Increments the chart `version` (patch number)
+1. Updates `appVersion` in all `charts/*/Chart.yaml` files to the new image version
+2. Runs `.github/renovate-update-all-charts.sh` which:
+   - Increments the chart `version` (patch number) for all charts
    - Runs `scripts/readmecli.py` to regenerate README.md Configuration Options
-3. Creates a PR with all changes (Chart.yaml and README.md files)
+3. Creates a PR with all changes (Chart.yaml and README.md files for all charts)
 
 ### 3. PR Creation
 PRs are created with:
@@ -42,15 +42,15 @@ PRs are created with:
 
 ### `.github/renovate-config.json`
 Main Renovate configuration that defines:
-- Which files to monitor (`charts/*/values.yaml`)
+- Which files to monitor (`charts/*/Chart.yaml`)
 - Package rules for `offchainlabs/nitro-node`
 - Version filtering (excluding RC versions)
 - Post-upgrade tasks to run
 
-### `.github/renovate-update-chart.sh`
-Bash script that:
-- Updates `appVersion` in Chart.yaml to match the new Docker image version
-- Bumps the chart `version` (patch number)
+### `.github/renovate-update-all-charts.sh`
+Bash script that updates all charts in the repository:
+- Finds all `Chart.yaml` files in the `charts/` directory
+- For charts using nitro-node (detected by appVersion pattern), bumps the chart `version` (patch number)
 - Calls `scripts/readmecli.py` to regenerate README.md files
 - Requires `yq` to be installed (handled by the entrypoint script)
 - Note: Renovate automatically updates the `appVersion` field before running this script
@@ -59,14 +59,6 @@ Bash script that:
 Legacy single-chart update script (kept for reference):
 - Updates a single Chart.yaml file
 - Not currently used by the automated workflow
-
-### `scripts/readmecli.py`
-Python script that automatically generates the "Configuration Options" section in README.md:
-- Renders Helm chart templates to extract the entry command
-- Runs Docker container with `--help` flag to get CLI options
-- Parses the help output and formats it as a markdown table
-- Updates README.md with the configuration options
-- Requires: Python 3, PyYAML, Helm, and Docker
 
 ### `scripts/readmecli.py`
 Python script that automatically generates the "Configuration Options" section in README.md:

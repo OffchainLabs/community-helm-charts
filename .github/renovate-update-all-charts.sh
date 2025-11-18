@@ -57,3 +57,15 @@ for CHART_FILE in $CHART_FILES; do
 done
 
 echo "Successfully updated all nitro-node charts"
+echo ""
+
+# Update README with new configuration options (if script exists)
+if [ -f "scripts/readmecli.py" ]; then
+    echo "Updating README files with configuration options..."
+    cd scripts
+    python3 readmecli.py 2>&1 || echo "⚠ Warning: README update failed, continuing anyway"
+    cd ..
+    echo "✓ README update complete"
+else
+    echo "⚠ Info: scripts/readmecli.py not found, skipping README update"
+fi
