@@ -16,7 +16,7 @@ image:
   repository: offchainlabs/nitro-node
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  # tag: ""
+  tag: ""
 
 ## @param imagePullSecrets Docker registry pull secret
 imagePullSecrets: []
