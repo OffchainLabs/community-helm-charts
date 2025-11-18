@@ -490,7 +490,6 @@ Option | Description | Default
 `node.batch-poster.data-poster.min-blob-tx-tip-cap-gwei` | float                                           the minimum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.batch-poster.data-poster.min-tip-cap-gwei` | float                                                   the minimum tip cap to post transactions at | `0.05`
 `node.batch-poster.data-poster.nonce-rbf-soft-confs` | uint                                                the maximum probable reorg depth, used to determine when a transaction will no longer likely need replaced-by-fee | `1`
-`node.batch-poster.data-poster.post-4844-blobs` | if the parent chain supports 4844 blobs and they're well priced, post EIP-4844 blobs | None
 `node.batch-poster.data-poster.redis-signer.dangerous.disable-signature-verification` | disable message signature verification | None
 `node.batch-poster.data-poster.redis-signer.fallback-verification-key` | string                            a fallback key used for message verification | None
 `node.batch-poster.data-poster.redis-signer.signing-key` | string                                          a 32-byte (64-character) hex string used to sign messages, or a path to a file containing it | None
@@ -604,9 +603,6 @@ Option | Description | Default
 `node.bold.state-provider-config.validator-name` | string                                                  name identifier for cosmetic purposes | `default-validator`
 `node.bold.track-challenge-parent-assertion-hashes` | strings                                              only track challenges/edges with these parent assertion hashes | None
 `node.consensus-execution-syncer.sync-interval` | duration                                                 Interval in which finality and sync data is pushed from consensus to execution | `300ms`
-`node.da-provider.data-stream.base-retry-delay` | duration                                                 base delay for retrying failed RPC calls | `2s`
-`node.da-provider.data-stream.max-retry-attempts` | int                                                    maximum number of attempts for retrying failed RPC calls | `5`
-`node.da-provider.data-stream.max-retry-delay` | duration                                                  maximum delay for retrying failed RPC calls | `1m0s`
 `node.da-provider.data-stream.max-store-chunk-body-size` | int                                             maximum HTTP body size for chunked store requests | `5242880`
 `node.da-provider.data-stream.rpc-methods.finalize-stream` | string                                        name of the RPC method to finalize a chunked data stream | `daprovider_commitChunkedStore`
 `node.da-provider.data-stream.rpc-methods.start-stream` | string                                           name of the RPC method to start a chunked data stream | `daprovider_startChunkedStore`
@@ -650,9 +646,6 @@ Option | Description | Default
 `node.data-availability.rest-aggregator.wait-before-try-next` | duration                                   time to wait until trying the next set of REST endpoints while waiting for a response; the next set of REST endpoints is determined by the strategy selected | `2s`
 `node.data-availability.rpc-aggregator.assumed-honest` | int                                               Number of assumed honest backends (H). If there are N backends, K=N+1-H valid responses are required to consider an Store request to be successful. | None
 `node.data-availability.rpc-aggregator.backends` | backendConfigList                                       JSON RPC backend configuration. This can be specified on the command line as a JSON array, eg: [{"url": "...", "pubkey": "..."},...], or as a JSON array in the config file. | `null`
-`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.base-retry-delay` | duration             base delay for retrying failed RPC calls | `2s`
-`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.max-retry-attempts` | int                maximum number of attempts for retrying failed RPC calls | `5`
-`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.max-retry-delay` | duration              maximum delay for retrying failed RPC calls | `1m0s`
 `node.data-availability.rpc-aggregator.das-rpc-client.data-stream.max-store-chunk-body-size` | int         maximum HTTP body size for chunked store requests | `5242880`
 `node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.finalize-stream` | string    name of the RPC method to finalize a chunked data stream | `das_commitChunkedStore`
 `node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.start-stream` | string       name of the RPC method to start a chunked data stream | `das_startChunkedStore`
@@ -763,12 +756,10 @@ Option | Description | Default
 `node.staker.dangerous.ignore-rollup-wasm-module-root` | DANGEROUS! make assertions even when the wasm module root is wrong | None
 `node.staker.dangerous.without-block-validator` | DANGEROUS! allows running an L1 validator without a block validator | None
 `node.staker.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
-`node.staker.data-poster.blob-tx-replacement-times` | durationSlice                                        comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `[5m0s,10m0s,30m0s,1h0m0s,4h0m0s,8h0m0s,16h0m0s,22h0m0s]`
 `node.staker.data-poster.dangerous.clear-dbstorage` | clear database storage | None
 `node.staker.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.staker.data-poster.elapsed-time-base` | duration                                                     unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
 `node.staker.data-poster.elapsed-time-importance` | float                                                  weight given to the units of time elapsed used for maximum fee cap calculation | `10`
-`node.staker.data-poster.enable-cell-proofs` | string                                                      enable cell proofs in blob transactions for Fusaka compatibility. Valid values: "" or "auto" (auto-detect based on L1 Osaka fork), "force-enable", "force-disable" | None
 `node.staker.data-poster.external-signer.address` | string                                                 external signer address | None
 `node.staker.data-poster.external-signer.client-cert` | string                                             rpc client cert | None
 `node.staker.data-poster.external-signer.client-private-key` | string                                      rpc client private key | None
@@ -777,17 +768,14 @@ Option | Description | Default
 `node.staker.data-poster.external-signer.root-ca` | string                                                 external signer root CA | None
 `node.staker.data-poster.external-signer.url` | string                                                     external signer url | None
 `node.staker.data-poster.legacy-storage-encoding` | encodes items in a legacy way (as it was before dropping generics) | None
-`node.staker.data-poster.max-blob-tx-tip-cap-gwei` | float                                                 the maximum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.staker.data-poster.max-fee-bid-multiple-bips` | uint                                                 the maximum multiple of the current price to bid for a transaction's fees (may be exceeded due to min rbf increase, 0 = unlimited) | `100000`
 `node.staker.data-poster.max-fee-cap-formula` | string                                                     mathematical formula to calculate maximum fee cap gwei the result of which would be float64. This expression is expected to be evaluated please refer https://github.com/Knetic/govaluate/blob/master/MANUAL.md to find all available mathematical operators. Currently available variables to construct the formula are BacklogOfBatches, UrgencyGWei, ElapsedTime, ElapsedTimeBase, ElapsedTimeImportance, and TargetPriceGWei (default "((BacklogOfBatches * UrgencyGWei) ** 2) + ((ElapsedTime/ElapsedTimeBase) ** 2) * ElapsedTimeImportance + TargetPriceGWei") | None
 `node.staker.data-poster.max-mempool-transactions` | uint                                                  the maximum number of transactions to have queued in the mempool at once (0 = unlimited) | `1`
 `node.staker.data-poster.max-mempool-weight` | uint                                                        the maximum number of weight (weight = min(1, tx.blobs)) to have queued in the mempool at once (0 = unlimited) | `1`
 `node.staker.data-poster.max-queued-transactions` | int                                                    the maximum number of unconfirmed transactions to track at once (0 = unlimited) | None
 `node.staker.data-poster.max-tip-cap-gwei` | float                                                         the maximum tip cap to post transactions at | `1.2`
-`node.staker.data-poster.min-blob-tx-tip-cap-gwei` | float                                                 the minimum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.staker.data-poster.min-tip-cap-gwei` | float                                                         the minimum tip cap to post transactions at | `0.05`
 `node.staker.data-poster.nonce-rbf-soft-confs` | uint                                                      the maximum probable reorg depth, used to determine when a transaction will no longer likely need replaced-by-fee | `1`
-`node.staker.data-poster.post-4844-blobs` | if the parent chain supports 4844 blobs and they're well priced, post EIP-4844 blobs | None
 `node.staker.data-poster.redis-signer.dangerous.disable-signature-verification` | disable message signature verification | None
 `node.staker.data-poster.redis-signer.fallback-verification-key` | string                                  a fallback key used for message verification | None
 `node.staker.data-poster.redis-signer.signing-key` | string                                                a 32-byte (64-character) hex string used to sign messages, or a path to a file containing it | None
@@ -826,7 +814,9 @@ Option | Description | Default
 `parent-chain.blob-client.authorization` | string                                                          Value to send with the HTTP Authorization: header for Beacon REST requests, must include both scheme and scheme parameters | None
 `parent-chain.blob-client.beacon-url` | string                                                             Beacon Chain RPC URL to use for fetching blobs (normally on port 3500) | None
 `parent-chain.blob-client.blob-directory` | string                                                         Full path of the directory to save fetched blobs | None
+`parent-chain.blob-client.dangerous.skip-blob-proof-verification` | DANGEROUS! Skips verification of KZG proofs for blobs fetched from the beacon node. | None
 `parent-chain.blob-client.secondary-beacon-url` | string                                                   Backup beacon Chain RPC URL to use for fetching blobs (normally on port 3500) when unable to fetch from primary | None
+`parent-chain.blob-client.use-legacy-endpoint` | Use the legacy blob_sidecars endpoint instead of the blobs endpoint | None
 `parent-chain.connection.arg-log-limit` | uint                                                             limit size of arguments in log entries | `2048`
 `parent-chain.connection.connection-wait` | duration                                                       how long to wait for initial connection | `1m0s`
 `parent-chain.connection.jwtsecret` | string                                                               path to file with jwtsecret for validation - ignored if url is self or self-auth | None
