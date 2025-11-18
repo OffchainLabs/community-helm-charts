@@ -53,3 +53,15 @@ NEW_CHART_VERSION=$(yq -r '.version' "$CHART_FILE")
 echo "✓ Bumped chart version from $CURRENT_CHART_VERSION to $NEW_CHART_VERSION"
 
 echo "Successfully updated $CHART_FILE"
+echo ""
+
+# Update README with new configuration options (if script exists)
+if [ -f "scripts/readmecli.py" ]; then
+    echo "Updating README files with configuration options..."
+    cd scripts
+    python3 readmecli.py 2>&1 || echo "⚠ Warning: README update failed, continuing anyway"
+    cd ..
+    echo "✓ README update complete"
+else
+    echo "⚠ Info: scripts/readmecli.py not found, skipping README update"
+fi

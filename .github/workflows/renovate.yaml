@@ -49,6 +49,7 @@ jobs:
           renovate-version: 41.59.0
           docker-cmd-file: .github/renovate-entrypoint.sh
           docker-user: root
+          mount-docker-socket: true
           env-regex: "^(?:RENOVATE_\\w+|LOG_LEVEL|GITHUB_COM_TOKEN)$"
         env:
           # Core configuration

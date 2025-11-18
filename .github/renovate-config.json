@@ -28,7 +28,7 @@
         "commands": [
           ".github/renovate-update-all-charts.sh {{{newVersion}}}"
         ],
-        "fileFilters": ["**/Chart.yaml"],
+        "fileFilters": ["**/Chart.yaml", "**/README.md"],
         "executionMode": "branch"
       },
       "semanticCommits": "enabled",
