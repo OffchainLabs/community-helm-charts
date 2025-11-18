@@ -270,8 +270,9 @@ Option | Description | Default
 `blocks-reexecutor.enable` | enables re-execution of a range of blocks against historic state | None
 `blocks-reexecutor.min-blocks-per-thread` | uint                                                           minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
-`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `10`
+`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `12`
 `blocks-reexecutor.trie-clean-limit` | int                                                                 memory allowance (MB) to use for caching trie nodes in memory | None
+`blocks-reexecutor.validate-multigas` | if set, validate the sum of multi-gas dimensions match the single-gas | None
 `chain.dev-wallet.account` | string                                                                        account to use | `is first account in keystore`
 `chain.dev-wallet.only-create-key` | if true, creates new key then exits | None
 `chain.dev-wallet.password` | string                                                                       wallet passphrase | `PASSWORD_NOT_SET`
@@ -303,6 +304,7 @@ Option | Description | Default
 `execution.caching.head-rewind-blocks-limit` | uint                                                        maximum number of blocks rolled back to recover chain head (0 = use geth default limit) | `2419200`
 `execution.caching.max-amount-of-gas-to-skip-state-saving` | uint                                          maximum amount of gas in blocks to skip saving state to Persistent storage (archive node only) -- warning: this option seems to cause issues | None
 `execution.caching.max-number-of-blocks-to-skip-state-saving` | uint32                                     maximum number of blocks to skip state saving to persistent storage (archive node only) -- warning: this option seems to cause issues | None
+`execution.caching.pathdb-max-diff-layers` | int                                                           maximum number of diff layers to keep in pathdb (path state-scheme only) | `128`
 `execution.caching.snapshot-cache` | int                                                                   amount of memory in megabytes to cache state snapshots with | `400`
 `execution.caching.snapshot-restore-gas-limit` | uint                                                      maximum gas rolled back to recover snapshot | `300000000000`
 `execution.caching.state-history` | uint                                                                   number of recent blocks to retain state history for (path state-scheme only) | `345600`
@@ -350,7 +352,6 @@ Option | Description | Default
 `execution.rpc.log-history` | uint                                                                         maximum number of blocks from head where a log search index is maintained | `9400000`
 `execution.rpc.log-no-history` | no log search index is maintained | None
 `execution.rpc.max-recreate-state-depth` | int                                                             maximum depth for recreating state, measured in l2 gas (0=don't recreate state, -1=infinite, -2=use default value for archive or non-archive node (whichever is configured)) | `-2`
-`execution.rpc.state-scheme` | string                                                                      state scheme used to store states and trie nodes on top | `hash`
 `execution.rpc.tx-allow-unprotected` | allow transactions that aren't EIP-155 replay protected to be submitted over the RPC | `true`
 `execution.rpc.tx-fee-cap` | float                                                                         cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
 `execution.secondary-forwarding-target` | strings                                                          secondary transaction forwarding target URL | None
@@ -397,7 +398,7 @@ Option | Description | Default
 `execution.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
 `execution.tx-indexer.enable` | enables transaction indexer | `true`
 `execution.tx-indexer.min-batch-delay` | duration                                                          minimum delay between transaction indexing/unindexing batches; the bigger the delay, the more blocks can be included in each batch | `1s`
-`execution.tx-indexer.threads` | int                                                                       number of threads used to RLP decode blocks during indexing/unindexing of historical transactions | `10`
+`execution.tx-indexer.threads` | int                                                                       number of threads used to RLP decode blocks during indexing/unindexing of historical transactions | `12`
 `execution.tx-indexer.tx-lookup-limit` | uint                                                              retain the ability to lookup transactions by hash for the past N blocks (0 = all blocks) | `126230400`
 `execution.tx-pre-checker.required-state-age` | int                                                        how long ago should the storage conditions from eth_SendRawTransactionConditional be true, 0 = don't check old state | `2`
 `execution.tx-pre-checker.required-state-max-blocks` | uint                                                maximum number of blocks to look back while looking for the <required-state-age> seconds old state, 0 = don't limit the search | `4`
@@ -442,7 +443,7 @@ Option | Description | Default
 `init.prune` | string                                                                                      pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                             the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
 `init.prune-parallel-storage-traversal` | if true: use parallel pruning per account | None
-`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `10`
+`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `12`
 `init.prune-trie-clean-cache` | int                                                                        amount of memory in megabytes to cache unchanged state trie nodes with when traversing state database during pruning | `600`
 `init.rebuild-local-wasm` | string                                                                         rebuild local wasm database on boot if needed (otherwise-will be done lazily). Three modes are supported  "auto"- (enabled by default) if any previous rebuilding attempt was successful then rebuilding is disabled else continues to rebuild, "force"- force rebuilding which would commence rebuilding despite the status of previous attempts, "false"- do not rebuild on startup (default "auto") | None
 `init.recreate-missing-state-from` | uint                                                                  block number to start recreating missing states from (0 = disabled) | None
@@ -557,7 +558,7 @@ Option | Description | Default
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (stores batch-copy per block) | `128`
 `node.block-validator.memory-free-limit` | string                                                          minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                                pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
-`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `20`
+`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `24`
 `node.block-validator.recording-iter-limit` | uint                                                         limit on block recordings sent per iteration | `20`
 `node.block-validator.redis-validation-client-config.create-streams` | create redis streams if it does not exist | `true`
 `node.block-validator.redis-validation-client-config.name` | string                                        validation client name | `redis validation client`
@@ -617,6 +618,8 @@ Option | Description | Default
 `node.da-provider.rpc.timeout` | duration                                                                  per-response timeout (0-disabled) | None
 `node.da-provider.rpc.url` | string                                                                        url of server, use self for loopback websocket, self-auth for loopback with authentication | None
 `node.da-provider.rpc.websocket-message-size-limit` | int                                                  websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`node.da-provider.store-rpc-method` | string                                                               name of the store rpc method on the daprovider server (used when data streaming is disabled) | `daprovider_store`
+`node.da-provider.use-data-streaming` | use data streaming protocol for storing large payloads | None
 `node.da-provider.with-writer` | implies if the daprovider rpc server supports writer interface | None
 `node.dangerous.disable-blob-reader` | DANGEROUS! disables the EIP-4844 blob reader, which is necessary to read batches | None
 `node.dangerous.no-l1-listener` | DANGEROUS! disables listening to L1. To be used in test nodes only | None
@@ -809,6 +812,7 @@ Option | Description | Default
 `node.transaction-streamer.execute-message-loop-delay` | duration                                          delay when polling calls to execute messages | `100ms`
 `node.transaction-streamer.max-broadcaster-queue-size` | int                                               maximum cache of pending broadcaster messages | `50000`
 `node.transaction-streamer.max-reorg-resequence-depth` | int                                               maximum number of messages to attempt to resequence on reorg (0 = never resequence, -1 = always resequence) | `1024`
+`node.transaction-streamer.shutdown-on-blockhash-mismatch` | if set the node gracefully shuts down upon detecting mismatch in feed and locally computed blockhash. This is turned off by default | None
 `node.transaction-streamer.sync-till-block` | uint                                                         node will not sync past this block | None
 `node.transaction-streamer.track-block-metadata-from` | uint                                               block number to start saving blockmetadata, 0 to disable | None
 `parent-chain.blob-client.authorization` | string                                                          Value to send with the HTTP Authorization: header for Beacon REST requests, must include both scheme and scheme parameters | None
@@ -854,7 +858,7 @@ Option | Description | Default
 `persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | `512000`
 `persistent.pebble.experimental.wal-dir` | string                                                          absolute path of directory to store write-ahead logs (WALs) in. If empty, WALs will be stored in the same directory as sstables | None
 `persistent.pebble.experimental.wal-min-sync-interval` | int                                               minimum duration in microseconds between syncs of the WAL. If WAL syncs are requested faster than this interval, they will be artificially delayed. | None
-`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `10`
+`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `12`
 `persistent.pebble.sync-mode` | if true sync mode is used (data needs to be written to WAL before the write is marked as completed) | None
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                                  pprof server address | `127.0.0.1`
