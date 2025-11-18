@@ -15,7 +15,7 @@ replicaCount: 1
 image:
   repository: offchainlabs/nitro-node
   pullPolicy: Always
-  tag: ""
+  # tag: ""
 
 ## @param imagePullSecrets Docker registry pull secret
 imagePullSecrets: []
