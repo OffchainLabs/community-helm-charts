@@ -1,5 +1,7 @@
 configmap:
   data:
+    chain:
+      id: 421614
     node:
       feed:
         input:
