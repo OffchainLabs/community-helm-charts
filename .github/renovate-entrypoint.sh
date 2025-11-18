@@ -10,6 +10,20 @@ echo "Installing yq..."
 curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
 chmod +x /usr/local/bin/yq
 
+# Install Python and dependencies for README generation
+echo "Installing Python and dependencies..."
+apt-get update -qq
+apt-get install -y -qq python3 python3-pip > /dev/null 2>&1
+pip3 install -q pyyaml
+
+# Install Helm for chart rendering
+echo "Installing Helm..."
+curl -sL https://get.helm.sh/helm-v3.13.0-linux-amd64.tar.gz -o helm.tar.gz
+tar -zxf helm.tar.gz
+mv linux-amd64/helm /usr/local/bin/helm
+chmod +x /usr/local/bin/helm
+rm -rf helm.tar.gz linux-amd64
+
 # Debug information
 echo "Starting Renovate..."
 echo "Repository Owner: ${GITHUB_REPOSITORY_OWNER}"
