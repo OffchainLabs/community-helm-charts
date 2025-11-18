@@ -14,7 +14,7 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "offchainlabs/nitro-node",
-      "versioningTemplate": "docker"
+      "versioningTemplate": "loose"
     }
   ],
   "packageRules": [
