@@ -42,6 +42,9 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: community-helm-charts
 
+      # Commit all changed files back to the repository
+      - uses: stefanzweifel/git-auto-commit-action@v5
+
       - name: Self-hosted Renovate
         uses: renovatebot/github-action@v43.0.7
         with:
@@ -70,8 +73,7 @@ jobs:
           RENOVATE_CONFIG_FILE: .github/renovate-config.json
 
           # Additional useful settings
-          RENOVATE_DEPENDENCY_DASHBOARD: true
-          RENOVATE_DEPENDENCY_DASHBOARD_TITLE: "Nitro Node Dependency Dashboard"
+          RENOVATE_DEPENDENCY_DASHBOARD: false
 
           # Renovate app settings (when using GitHub App)
           RENOVATE_USERNAME: ${{ github.repository_owner }}-renovate[bot]
