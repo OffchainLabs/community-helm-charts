@@ -63,9 +63,12 @@ echo ""
 if [ -f "scripts/readmecli.py" ]; then
     echo "Updating README files with configuration options..."
     cd scripts
-    python3 readmecli.py 2>&1 || echo "⚠ Warning: README update failed, continuing anyway"
+    if python3 readmecli.py 2>&1; then
+        echo "✓ README update complete"
+    else
+        echo "⚠ Warning: README update failed with exit code $?, continuing anyway"
+    fi
     cd ..
-    echo "✓ README update complete"
 else
     echo "⚠ Info: scripts/readmecli.py not found, skipping README update"
 fi
