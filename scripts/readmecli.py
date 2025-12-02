@@ -155,7 +155,7 @@ def main():
     for directory in list_directories(charts_dir):
         chart_path = os.path.join(charts_dir, directory)
         chart_yaml = read_yaml_file(os.path.join(chart_path, "Chart.yaml"))
-        values_yaml = read_yaml_file(os.path.join(chart_path, "Values.yaml"))
+        values_yaml = read_yaml_file(os.path.join(chart_path, "values.yaml"))
 
         if chart_yaml and values_yaml:
             image_repository = values_yaml.get("image", {}).get("repository")
