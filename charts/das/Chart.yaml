@@ -1,12 +1,8 @@
 apiVersion: v2
 name: das
 description: A Helm chart for Arbitrum Nitro DAS and DAS Mirrors
-
 maintainers:
   - name: OffchainLabs
-
 type: application
-
-version: 0.7.2
-
-appVersion: "v3.9.2-52e8959"
+version: 0.7.3
+appVersion: "v3.9.3-8bc5554"
