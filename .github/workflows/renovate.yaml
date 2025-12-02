@@ -70,8 +70,7 @@ jobs:
           RENOVATE_CONFIG_FILE: .github/renovate-config.json
 
           # Additional useful settings
-          RENOVATE_DEPENDENCY_DASHBOARD: true
-          RENOVATE_DEPENDENCY_DASHBOARD_TITLE: "Nitro Node Dependency Dashboard"
+          RENOVATE_DEPENDENCY_DASHBOARD: false
 
           # Renovate app settings (when using GitHub App)
           RENOVATE_USERNAME: ${{ github.repository_owner }}-renovate[bot]
