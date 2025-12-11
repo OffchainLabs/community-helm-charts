@@ -270,7 +270,7 @@ Option | Description | Default
 `blocks-reexecutor.enable` | enables re-execution of a range of blocks against historic state | None
 `blocks-reexecutor.min-blocks-per-thread` | uint                                                           minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
-`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `10`
+`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `4`
 `blocks-reexecutor.trie-clean-limit` | int                                                                 memory allowance (MB) to use for caching trie nodes in memory | None
 `blocks-reexecutor.validate-multigas` | if set, validate the sum of multi-gas dimensions match the single-gas | None
 `chain.dev-wallet.account` | string                                                                        account to use | `is first account in keystore`
@@ -398,7 +398,7 @@ Option | Description | Default
 `execution.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
 `execution.tx-indexer.enable` | enables transaction indexer | `true`
 `execution.tx-indexer.min-batch-delay` | duration                                                          minimum delay between transaction indexing/unindexing batches; the bigger the delay, the more blocks can be included in each batch | `1s`
-`execution.tx-indexer.threads` | int                                                                       number of threads used to RLP decode blocks during indexing/unindexing of historical transactions | `10`
+`execution.tx-indexer.threads` | int                                                                       number of threads used to RLP decode blocks during indexing/unindexing of historical transactions | `4`
 `execution.tx-indexer.tx-lookup-limit` | uint                                                              retain the ability to lookup transactions by hash for the past N blocks (0 = all blocks) | `126230400`
 `execution.tx-pre-checker.required-state-age` | int                                                        how long ago should the storage conditions from eth_SendRawTransactionConditional be true, 0 = don't check old state | `2`
 `execution.tx-pre-checker.required-state-max-blocks` | uint                                                maximum number of blocks to look back while looking for the <required-state-age> seconds old state, 0 = don't limit the search | `4`
@@ -443,7 +443,7 @@ Option | Description | Default
 `init.prune` | string                                                                                      pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                             the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
 `init.prune-parallel-storage-traversal` | if true: use parallel pruning per account | None
-`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `10`
+`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `4`
 `init.prune-trie-clean-cache` | int                                                                        amount of memory in megabytes to cache unchanged state trie nodes with when traversing state database during pruning | `600`
 `init.rebuild-local-wasm` | string                                                                         rebuild local wasm database on boot if needed (otherwise-will be done lazily). Three modes are supported  "auto"- (enabled by default) if any previous rebuilding attempt was successful then rebuilding is disabled else continues to rebuild, "force"- force rebuilding which would commence rebuilding despite the status of previous attempts, "false"- do not rebuild on startup (default "auto") | None
 `init.recreate-missing-state-from` | uint                                                                  block number to start recreating missing states from (0 = disabled) | None
@@ -472,7 +472,6 @@ Option | Description | Default
 `node.batch-poster.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.batch-poster.data-poster.elapsed-time-base` | duration                                               unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
 `node.batch-poster.data-poster.elapsed-time-importance` | float                                            weight given to the units of time elapsed used for maximum fee cap calculation | `10`
-`node.batch-poster.data-poster.enable-cell-proofs` | string                                                enable cell proofs in blob transactions for Fusaka compatibility. Valid values: "" or "auto" (auto-detect based on L1 Osaka fork), "force-enable", "force-disable" | None
 `node.batch-poster.data-poster.external-signer.address` | string                                           external signer address | None
 `node.batch-poster.data-poster.external-signer.client-cert` | string                                       rpc client cert | None
 `node.batch-poster.data-poster.external-signer.client-private-key` | string                                rpc client private key | None
@@ -558,7 +557,7 @@ Option | Description | Default
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (stores batch-copy per block) | `128`
 `node.block-validator.memory-free-limit` | string                                                          minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                                pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
-`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `20`
+`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `8`
 `node.block-validator.recording-iter-limit` | uint                                                         limit on block recordings sent per iteration | `20`
 `node.block-validator.redis-validation-client-config.create-streams` | create redis streams if it does not exist | `true`
 `node.block-validator.redis-validation-client-config.name` | string                                        validation client name | `redis validation client`
@@ -820,7 +819,6 @@ Option | Description | Default
 `parent-chain.blob-client.blob-directory` | string                                                         Full path of the directory to save fetched blobs | None
 `parent-chain.blob-client.dangerous.skip-blob-proof-verification` | DANGEROUS! Skips verification of KZG proofs for blobs fetched from the beacon node. | None
 `parent-chain.blob-client.secondary-beacon-url` | string                                                   Backup beacon Chain RPC URL to use for fetching blobs (normally on port 3500) when unable to fetch from primary | None
-`parent-chain.blob-client.use-legacy-endpoint` | Use the legacy blob_sidecars endpoint instead of the blobs endpoint | None
 `parent-chain.connection.arg-log-limit` | uint                                                             limit size of arguments in log entries | `2048`
 `parent-chain.connection.connection-wait` | duration                                                       how long to wait for initial connection | `1m0s`
 `parent-chain.connection.jwtsecret` | string                                                               path to file with jwtsecret for validation - ignored if url is self or self-auth | None
@@ -858,7 +856,7 @@ Option | Description | Default
 `persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | `512000`
 `persistent.pebble.experimental.wal-dir` | string                                                          absolute path of directory to store write-ahead logs (WALs) in. If empty, WALs will be stored in the same directory as sstables | None
 `persistent.pebble.experimental.wal-min-sync-interval` | int                                               minimum duration in microseconds between syncs of the WAL. If WAL syncs are requested faster than this interval, they will be artificially delayed. | None
-`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `10`
+`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `4`
 `persistent.pebble.sync-mode` | if true sync mode is used (data needs to be written to WAL before the write is marked as completed) | None
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                                  pprof server address | `127.0.0.1`
