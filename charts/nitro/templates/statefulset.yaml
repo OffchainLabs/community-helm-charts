@@ -60,8 +60,17 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if .Values.diagnosticMode }}
-          command: ["sleep"]
-          args: ["infinity"]
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - |
+              #!/usr/bin/env bash
+              set -eo pipefail
+
+              trap 'exit 0' SIGTERM
+
+              sleep infinity &
+              wait $!
           {{- else if .Values.commandOverride.enabled }}
           command: {{ .Values.commandOverride.command | toJson }}
           args: {{ .Values.commandOverride.args | toJson }}
