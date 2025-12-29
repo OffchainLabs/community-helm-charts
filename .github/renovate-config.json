@@ -2,6 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Renovate configuration for community Helm charts - watches offchainlabs/nitro-node Docker images (non-RC only)",
   "extends": ["config:recommended"],
+  "dependencyDashboard": false,
+  "dependencyDashboardAutoclose": true,
   "enabledManagers": ["regex"],
   "customManagers": [
     {
