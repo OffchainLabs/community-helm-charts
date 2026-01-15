@@ -52,7 +52,8 @@ def run_docker_help(image_repository, image_tag, entry_command):
     """Run docker image with the entry command and --help"""
     try:
         # Include the entry command if available
-        command = f"docker run --entrypoint {entry_command} --rm {image_repository}:{image_tag} --help|grep -v 'Version:'|grep -v 'Sample usage:'"
+        # Use --cpus=2 to ensure deterministic output for defaults based on runtime.NumCPU()
+        command = f"docker run --cpus=2 --entrypoint {entry_command} --rm {image_repository}:{image_tag} --help|grep -v 'Version:'|grep -v 'Sample usage:'"
         output = subprocess.check_output(
             command, stderr=subprocess.STDOUT, shell=True)
         return output.decode('utf-8')
