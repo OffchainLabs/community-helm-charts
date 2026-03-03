@@ -590,6 +590,8 @@ Option | Description | Default
 `node.bold.auto-deposit` | auto-deposit stake token whenever making a move in BoLD that does not have enough stake token balance | `true`
 `node.bold.auto-increase-allowance` | auto-increase spending allowance of the stake token by the rollup and challenge manager contracts | `true`
 `node.bold.check-staker-switch-interval` | duration                                                        how often to check if staker can switch to bold | `1m0s`
+`node.bold.dangerous.assume-valid` | uint                                                                  assume this message index is valid (if blockhash matches) | None
+`node.bold.dangerous.assume-valid-blockhash` | string                                                      blockhash of the assumed-valid message | None
 `node.bold.delegated-staking.custom-withdrawal-address` | string                                           enable a custom withdrawal address for staking on the rollup contract, useful for delegated stakers | None
 `node.bold.delegated-staking.enable` | enable delegated staking by having the validator call newStake on startup | None
 `node.bold.enable-fast-confirmation` | enable fast confirmation | None
