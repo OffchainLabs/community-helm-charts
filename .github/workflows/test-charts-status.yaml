@@ -48,21 +48,3 @@ jobs:
                 summary: 'This PR does not modify any charts. Chart installation test is not required.'
               }
             });
-
-      - name: Create pending status (chart changes detected)
-        if: steps.check-charts.outputs.has_chart_changes == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'Chart Installation Test',
-              head_sha: context.payload.pull_request.head.sha,
-              status: 'in_progress',
-              output: {
-                title: 'Chart Installation Test in progress',
-                summary: 'The chart installation test is currently running. Please wait for the results.'
-              }
-            });

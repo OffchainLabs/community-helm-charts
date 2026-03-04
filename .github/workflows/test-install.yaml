@@ -1,10 +1,11 @@
 name: Test Charts (Privileged)
 
 on:
-  workflow_run:
-    workflows: ["Test Charts (Unprivileged)"]
-    types:
-      - completed
+  pull_request_target:
+    branches:
+      - main
+    paths:
+      - "charts/**"
 
 # Limit permissions to only what's needed
 permissions:
@@ -12,73 +13,48 @@ permissions:
   pull-requests: write  # Needed to comment on results
   checks: write  # Needed to create status checks
 
+concurrency:
+  group: test-install-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   test-install:
     runs-on: ubuntu-8
-    # Only run if the unprivileged workflow completed successfully
-    if: github.event.workflow_run.conclusion == 'success'
     environment: chart-testing
 
     steps:
-      - name: Download workflow artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: pr-info
-          path: pr-info
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          run-id: ${{ github.event.workflow_run.id }}
-      
-      - name: Extract PR information
-        id: extract-pr-info
-        run: |
-          # List all files in the pr-info directory for debugging
-          echo "Contents of pr-info directory:"
-          ls -la pr-info/
-          
-          # Debug: Show the content of each file
-          echo "PR_NUMBER content: $(cat pr-info/PR_NUMBER 2>/dev/null || echo 'File not found')"
-          echo "HEAD_SHA content: $(cat pr-info/HEAD_SHA 2>/dev/null || echo 'File not found')"
-          echo "HAS_CHANGES content: $(cat pr-info/HAS_CHANGES 2>/dev/null || echo 'File not found')"
-          
-          if [[ -f "pr-info/changed-charts.txt" ]]; then
-            echo "changed-charts.txt content: $(cat pr-info/changed-charts.txt)"
-          fi
-          
-          # Set environment variables
-          echo "PR_NUMBER=$(cat pr-info/PR_NUMBER)" >> $GITHUB_ENV
-          echo "HEAD_SHA=$(cat pr-info/HEAD_SHA)" >> $GITHUB_ENV
-          echo "HAS_CHANGES=$(cat pr-info/HAS_CHANGES)" >> $GITHUB_ENV
-          
-          # Convert multi-line chart list to space-separated for environment variable
-          if [[ -f "pr-info/changed-charts.txt" ]]; then
-            # Replace newlines with spaces and trim whitespace
-            formatted_changes=$(cat pr-info/changed-charts.txt | tr '\n' ' ' | xargs)
-            echo "Formatted changed charts: $formatted_changes"
-            echo "CHANGED_CHARTS=$formatted_changes" >> $GITHUB_ENV
-          fi
-      
-      # Only proceed with testing if there are chart changes
-      - name: Checkout repository
-        if: env.HAS_CHANGES == 'true'
+      - name: Checkout PR code
         uses: actions/checkout@v4
         with:
-          # We're checking out the PR code, but we're not executing any untrusted code
-          # We're only using it as a reference for chart-testing
+          # Full history needed for ct list-changed to compare against target branch
           fetch-depth: 0
-          ref: ${{ env.HEAD_SHA }}
+          ref: ${{ github.event.pull_request.head.sha }}
           # Important: Don't persist credentials when checking out PR code
           persist-credentials: false
-      
+
       - name: Set up Helm
-        if: env.HAS_CHANGES == 'true'
         uses: azure/setup-helm@v3
         with:
           version: v3.14.0
 
       - name: Set up chart-testing
-        if: env.HAS_CHANGES == 'true'
         uses: helm/chart-testing-action@v2.6.1
+
+      - name: Identify changed charts
+        id: list-changed
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          changed=$(ct list-changed --target-branch "$DEFAULT_BRANCH" --config ct.yaml)
+          if [[ -n "$changed" ]]; then
+            echo "Changed charts: $changed"
+            formatted=$(echo "$changed" | tr '\n' ' ' | xargs)
+            echo "CHANGED_CHARTS=$formatted" >> $GITHUB_ENV
+            echo "HAS_CHANGES=true" >> $GITHUB_ENV
+          else
+            echo "No chart changes detected by chart-testing."
+            echo "HAS_CHANGES=false" >> $GITHUB_ENV
+          fi
 
       - name: Create kind cluster
         if: env.HAS_CHANGES == 'true'
@@ -96,7 +72,7 @@ jobs:
           secrets_for_helm=""
           # Capture all 'CI_' prefixed environment variables into an array
           IFS=$'\n' read -r -d '' -a secret_names < <(env | grep '^CI_' | sed 's/=.*//' && printf '\0')
-          
+
           for secret_name in "${secret_names[@]}"; do
             # Extract the variable name without the CI_ prefix for Helm values
             variable_name=$(echo $secret_name | sed 's/^CI_//')
@@ -109,16 +85,16 @@ jobs:
               secrets_for_helm="${secrets_for_helm},ci.secrets.${variable_name}=${secret_value}"
             fi
           done
-          
+
           # Remove the initial comma to clean up the format
           secrets_for_helm=${secrets_for_helm#,}
-          
+
           # Format the entire string for --helm-extra-set-args, ensuring it's properly quoted
           helm_extra_set_args="--set ${secrets_for_helm}"
 
           # Use the command directly or set the HELM_EXTRA_SET_ARGS environment variable for later use in the workflow
           echo "HELM_EXTRA_SET_ARGS=${helm_extra_set_args}" >> $GITHUB_ENV
-      
+
       - name: Run chart-testing (install)
         if: env.HAS_CHANGES == 'true'
         id: chart-test
@@ -126,48 +102,47 @@ jobs:
         run: |
           ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
           echo "CT_EXIT_CODE=$?" >> $GITHUB_ENV
-      
+
       - name: Determine test status
         id: test-status
         run: |
-          if [[ "${{ env.HAS_CHANGES }}" == "false" ]]; then
+          if [[ "$HAS_CHANGES" == "false" ]]; then
             echo "STATUS=success" >> $GITHUB_ENV
             echo "STATUS_TEXT=No chart changes detected" >> $GITHUB_ENV
-          elif [[ "${{ env.CT_EXIT_CODE }}" == "0" ]]; then
+          elif [[ "${CT_EXIT_CODE:-0}" == "0" ]]; then
             echo "STATUS=success" >> $GITHUB_ENV
             echo "STATUS_TEXT=succeeded" >> $GITHUB_ENV
           else
             echo "STATUS=failure" >> $GITHUB_ENV
             echo "STATUS_TEXT=failed" >> $GITHUB_ENV
           fi
-      
+
       - name: Find existing comment
         uses: peter-evans/find-comment@v3
         id: find-comment
         with:
-          issue-number: ${{ env.PR_NUMBER }}
+          issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
           body-includes: 'Chart Installation Test'
 
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v4
         with:
-          issue-number: ${{ env.PR_NUMBER }}
+          issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           body: |
             ## Chart Installation Test ${{ env.STATUS_TEXT }} ${{ env.STATUS == 'success' && '✅' || '❌' }}
-            
-            The chart installation test for commit `${{ env.HEAD_SHA }}` has ${{ env.STATUS_TEXT }}.
-            
+
+            The chart installation test for commit `${{ github.event.pull_request.head.sha }}` has ${{ env.STATUS_TEXT }}.
+
             ${{ env.HAS_CHANGES == 'true' && format('Changed charts: `{0}`', env.CHANGED_CHARTS) || '' }}
-            
+
             [View workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            [View unprivileged test run](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})
-            
+
             ${{ env.STATUS != 'success' && '⚠️ Please check the workflow logs for details on the failure.' || '' }}
           edit-mode: replace
           reactions: ${{ env.STATUS == 'success' && 'rocket' || 'eyes' }}
-      
+
       - name: Report status check
         uses: actions/github-script@v7
         with:
@@ -175,12 +150,12 @@ jobs:
           script: |
             try {
               const { owner, repo } = context.repo;
-              const commit_sha = process.env.HEAD_SHA;
+              const commit_sha = '${{ github.event.pull_request.head.sha }}';
               const status = process.env.STATUS;
               const status_text = process.env.STATUS_TEXT;
-              
+
               const workflow_run_url = `https://github.com/${owner}/${repo}/actions/runs/${{ github.run_id }}`;
-              
+
               // Report status check
               await github.rest.checks.create({
                 owner,
