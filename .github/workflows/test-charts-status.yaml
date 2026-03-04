@@ -48,24 +48,3 @@ jobs:
                 summary: 'This PR does not modify any charts. Chart installation test is not required.'
               }
             });
-
-      - name: Create pending status (chart changes detected)
-        if: steps.check-charts.outputs.has_chart_changes == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            const { owner, repo } = context.repo;
-            const actionsUrl = `https://github.com/${owner}/${repo}/actions/workflows/test-install.yaml`;
-            await github.rest.checks.create({
-              owner,
-              repo,
-              name: 'Chart Installation Test',
-              head_sha: context.payload.pull_request.head.sha,
-              status: 'in_progress',
-              details_url: actionsUrl,
-              output: {
-                title: 'Awaiting approval',
-                summary: `Chart changes detected. The privileged installation test requires [environment approval](${actionsUrl}) before it can run.`
-              }
-            });
