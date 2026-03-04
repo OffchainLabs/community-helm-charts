@@ -51,8 +51,9 @@ jobs:
           token: ${{ steps.generate-token.outputs.token || secrets.RENOVATE_TOKEN || secrets.GITHUB_TOKEN }}
           renovate-version: 41.59.0
           docker-cmd-file: .github/renovate-entrypoint.sh
-          docker-user: root
-          mount-docker-socket: true
+          # NOTE: docker-user: root and mount-docker-socket: true have been
+          # removed for security. If Renovate needs Docker access (e.g., for
+          # post-upgrade tasks), re-enable with documented justification.
           env-regex: "^(?:RENOVATE_\\w+|LOG_LEVEL|GITHUB_COM_TOKEN)$"
         env:
           # Core configuration
