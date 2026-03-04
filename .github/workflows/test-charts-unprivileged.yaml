@@ -1,0 +1,61 @@
+name: Test Charts (Unprivileged)
+
+on:
+  pull_request:
+    branches:
+      - main
+      - feat/secure-test-install-workflow
+    paths:
+      - "charts/**"
+
+# Limit permissions to only what's needed
+permissions:
+  contents: read
+
+jobs:
+  identify-changes:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # No need to specify ref, as pull_request automatically checks out the PR
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+
+      - name: Identify changed charts
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml)
+          if [[ -n "$changed" ]]; then
+            echo "Changed charts: $changed"
+            
+            # Save the original multi-line output
+            echo "$changed" > ./changed-charts.txt
+            
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "No charts changed."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Save PR information
+        run: |
+          mkdir -p ./pr-info
+          echo "${{ github.event.pull_request.number }}" > ./pr-info/PR_NUMBER
+          echo "${{ github.event.pull_request.head.sha }}" > ./pr-info/HEAD_SHA
+          echo "${{ steps.list-changed.outputs.has_changes }}" > ./pr-info/HAS_CHANGES
+          
+          # If there are changed charts, include them in the artifacts
+          if [[ -f "./changed-charts.txt" ]]; then
+            cp ./changed-charts.txt ./pr-info/
+          fi
+
+      - name: Upload PR information
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-info
+          path: pr-info/

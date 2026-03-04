@@ -52,7 +52,8 @@ def run_docker_help(image_repository, image_tag, entry_command):
     """Run docker image with the entry command and --help"""
     try:
         # Include the entry command if available
-        command = f"docker run --entrypoint {entry_command} --rm {image_repository}:{image_tag} --help"
+        # Use --cpus=2 to ensure deterministic output for defaults based on runtime.NumCPU()
+        command = f"docker run --cpus=2 --entrypoint {entry_command} --rm {image_repository}:{image_tag} --help|grep -v 'Version:'|grep -v 'Sample usage:'"
         output = subprocess.check_output(
             command, stderr=subprocess.STDOUT, shell=True)
         return output.decode('utf-8')
@@ -155,7 +156,7 @@ def main():
     for directory in list_directories(charts_dir):
         chart_path = os.path.join(charts_dir, directory)
         chart_yaml = read_yaml_file(os.path.join(chart_path, "Chart.yaml"))
-        values_yaml = read_yaml_file(os.path.join(chart_path, "Values.yaml"))
+        values_yaml = read_yaml_file(os.path.join(chart_path, "values.yaml"))
 
         if chart_yaml and values_yaml:
             image_repository = values_yaml.get("image", {}).get("repository")

@@ -16,7 +16,7 @@ on:
 
 jobs:
   push-charts:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-4
     steps:
       - name: Checkout code
         uses: actions/checkout@master

@@ -1,12 +1,8 @@
 apiVersion: v2
 name: relay
 description: A Helm chart for Arbitrum Nitro relays
-
 maintainers:
   - name: OffchainLabs
-
 type: application
-
-version: 0.5.8
-
-appVersion: "v3.2.1-d81324d"
+version: 0.7.6
+appVersion: "v3.9.6-91bf578"

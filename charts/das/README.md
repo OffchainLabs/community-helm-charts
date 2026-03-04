@@ -160,6 +160,8 @@ extraEnv:
 | Name                                            | Description                                                                 | Value                       |
 | ----------------------------------------------- | --------------------------------------------------------------------------- | --------------------------- |
 | `replicaCount`                                  | Number of replicas                                                          | `1`                         |
+| `lifecycle`                                     | Lifecycle hooks configuration                                               | `{}`                        |
+| `extraEnv`                                      | Additional environment variables for the container                          | `{}`                        |
 | `image.repository`                              | Docker image repository                                                     | `offchainlabs/nitro-node`   |
 | `image.pullPolicy`                              | Docker image pull policy                                                    | `Always`                    |
 | `image.tag`                                     | Docker image tag ovverrides the chart appVersion                            | `""`                        |
@@ -185,10 +187,7 @@ extraEnv:
 | `readinessProbe.successThreshold`               | Success threshold for the readiness probe                                   | `1`                         |
 | `startupProbe`                                  | startupProbe                                                                |                             |
 | `startupProbe.enabled`                          | Enable startup probe                                                        | `false`                     |
-| `persistence.localdbstorage`                    | This will only be created if local db storage is enabled in the configmap   |                             |
-| `persistence.localdbstorage.size`               | Size of the persistent volume claim                                         | `100Gi`                     |
-| `persistence.localdbstorage.storageClassName`   | Storage class of the persistent volume claim                                | `nil`                       |
-| `persistence.localdbstorage.accessModes`        | Access modes of the persistent volume claim                                 | `["ReadWriteOnce"]`         |
+| `updateStrategy.type`                           | Update strategy type                                                        | `RollingUpdate`             |
 | `persistence.localfilestorage`                  | This will only be created if local file storage is enabled in the configmap |                             |
 | `persistence.localfilestorage.size`             | Size of the persistent volume claim                                         | `100Gi`                     |
 | `persistence.localfilestorage.storageClassName` | Storage class of the persistent volume claim                                | `nil`                       |
@@ -199,8 +198,8 @@ extraEnv:
 | `serviceMonitor.interval`                       | Interval to monitor                                                         | `5s`                        |
 | `serviceMonitor.relabelings`                    | Add relabelings for the metrics being scraped                               | `[]`                        |
 | `perReplicaService.enabled`                     | Enable per replica service                                                  | `false`                     |
-| `headlessservice.enabled`                       | Enable headless service                                                     | `false`                     |
-| `headlessservice.publishNotReadyAddresses`      | Publish not ready addresses                                                 | `true`                      |
+| `headlessService.enabled`                       | Enable headless service                                                     | `false`                     |
+| `headlessService.publishNotReadyAddresses`      | Publish not ready addresses                                                 | `true`                      |
 | `pdb.enabled`                                   | Enable pod disruption budget                                                | `false`                     |
 | `pdb.minAvailable`                              | Minimum number of available pods                                            | `""`                        |
 | `pdb.maxUnavailable`                            | Maximum number of unavailable pods                                          | `1`                         |
@@ -241,9 +240,6 @@ extraEnv:
 | `configmap.data.rpc-port`                                                                  | rpc api port                                                                             | `9876`    |
 | `configmap.data.data-availability.parent-chain-node-url`                                   | Parent chain node url                                                                    | `""`      |
 | `configmap.data.data-availability.sequencer-inbox-address`                                 | Sequencer inbox address                                                                  | `""`      |
-| `configmap.data.data-availability.local-db-storage.enable`                                 | Enable local db storage                                                                  | `false`   |
-| `configmap.data.data-availability.local-db-storage.data-dir`                               | Data directory                                                                           | `""`      |
-| `configmap.data.data-availability.local-db-storage.discard-after-timeout`                  | Discard after timeout                                                                    | `""`      |
 | `configmap.data.data-availability.local-file-storage.enable`                               | Enable local file storage                                                                | `false`   |
 | `configmap.data.data-availability.local-file-storage.data-dir`                             |                                                                                          | `""`      |
 | `configmap.data.data-availability.s3-storage.enable`                                       | Enable s3 storage                                                                        | `false`   |
@@ -282,27 +278,23 @@ Option | Description | Default
 `data-availability.disable-signature-checking` | disables signature checking on Data Availability Store requests (DANGEROUS, FOR TESTING ONLY) | None
 `data-availability.enable` | enable Anytrust Data Availability mode | `true`
 `data-availability.extra-signature-checking-public-key` | string                                  public key to use to validate Data Availability Store requests in addition to the Sequencer's public key determined using sequencer-inbox-address, can be a file or the hex-encoded public key beginning with 0x; useful for testing | None
+`data-availability.google-cloud-storage.access-token` | string                                    Google Cloud Storage access token (JSON string) | None
+`data-availability.google-cloud-storage.access-token-file` | string                               Google Cloud Storage access token (JSON file path) | None
+`data-availability.google-cloud-storage.bucket` | string                                          Google Cloud Storage bucket | None
+`data-availability.google-cloud-storage.discard-after-timeout` | discard data after its expiry timeout | None
+`data-availability.google-cloud-storage.enable` | EXPERIMENTAL/unsupported - enable storage/retrieval of sequencer batch data from a Google Cloud Storage bucket | None
+`data-availability.google-cloud-storage.object-prefix` | string                                   prefix to add to Google Cloud Storage objects | None
 `data-availability.key.key-dir` | string                                                          the directory to read the bls keypair ('das_bls.pub' and 'das_bls') from; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
 `data-availability.key.priv-key` | string                                                         the base64 BLS private key to use for signing DAS certificates; if using any of the DAS storage types exactly one of key-dir or priv-key must be specified | None
 `data-availability.local-cache.capacity` | int                                                    Maximum number of entries (up to 64KB each) to store in the cache. | `20000`
 `data-availability.local-cache.enable` | Enable local in-memory caching of sequencer batch data | None
-`data-availability.local-db-storage.base-table-size` | int                                        BadgerDB option: sets the maximum size in bytes for LSM table or file in the base level | `2097152`
-`data-availability.local-db-storage.data-dir` | string                                            directory in which to store the database | None
-`data-availability.local-db-storage.discard-after-timeout` | discard data after its expiry timeout | None
-`data-availability.local-db-storage.enable` | !!!DEPRECATED, USE local-file-storage!!! enable storage/retrieval of sequencer batch data from a database on the local filesystem | None
-`data-availability.local-db-storage.num-compactors` | int                                         BadgerDB option: Sets the number of compaction workers to run concurrently | `4`
-`data-availability.local-db-storage.num-level-zero-tables` | int                                  BadgerDB option: sets the maximum number of Level 0 tables before compaction starts | `5`
-`data-availability.local-db-storage.num-level-zero-tables-stall` | int                            BadgerDB option: sets the number of Level 0 tables that once reached causes the DB to stall until compaction succeeds | `15`
-`data-availability.local-db-storage.num-memtables` | int                                          BadgerDB option: sets the maximum number of tables to keep in memory before stalling | `5`
-`data-availability.local-db-storage.value-log-file-size` | int                                    BadgerDB option: sets the maximum size of a single log file | `1073741823`
 `data-availability.local-file-storage.data-dir` | string                                          local data directory | None
 `data-availability.local-file-storage.enable` | enable storage/retrieval of sequencer batch data from a directory of files, one per batch | None
 `data-availability.local-file-storage.enable-expiry` | enable expiry of batches | None
 `data-availability.local-file-storage.max-retention` | duration                                   store requests with expiry times farther in the future than max-retention will be rejected | `504h0m0s`
-`data-availability.migrate-local-db-to-file-storage` | daserver will migrate all data on startup from local-db-storage to local-file-storage, then mark local-db-storage as unusable | None
 `data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
 `data-availability.parent-chain-connection-attempts` | int                                        parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
-`data-availability.parent-chain-node-url` | string                                                URL for parent chain node, only used in standalone daserver; when running as part of a node that node's L1 configuration is used | None
+`data-availability.parent-chain-node-url` | string                                                URL for parent chain node, only used in standalone daserver and daprovider; when running as part of a node that node's L1 configuration is used | None
 `data-availability.redis-cache.enable` | enable Redis caching of sequencer batch data | None
 `data-availability.redis-cache.expiration` | duration                                             Redis expiration | `1h0m0s`
 `data-availability.redis-cache.key-config` | string                                               Redis key config | None
@@ -327,7 +319,7 @@ Option | Description | Default
 `data-availability.rest-aggregator.wait-before-try-next` | duration                               time to wait until trying the next set of REST endpoints while waiting for a response; the next set of REST endpoints is determined by the strategy selected | `2s`
 `data-availability.s3-storage.access-key` | string                                                S3 access key | None
 `data-availability.s3-storage.bucket` | string                                                    S3 bucket | None
-`data-availability.s3-storage.discard-after-timeout` | discard data after its expiry timeout | None
+`data-availability.s3-storage.discard-after-timeout` | this config option is deprecated | None
 `data-availability.s3-storage.enable` | enable storage/retrieval of sequencer batch data from an AWS S3 bucket | None
 `data-availability.s3-storage.object-prefix` | string                                             prefix to add to S3 objects | None
 `data-availability.s3-storage.region` | string                                                    S3 region | None

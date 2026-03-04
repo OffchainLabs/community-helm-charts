@@ -7,7 +7,7 @@ metadata:
   annotations:
     nitro.arbitrum.io/desiredReplicas: {{ $.Values.replicaCount | quote }}
 spec:
-  serviceName: "{{ include "nitro.fullname" . }}"
+  serviceName: {{ include "nitro.fullname" . }}-headless
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
@@ -15,7 +15,7 @@ spec:
   podManagementPolicy: Parallel
   {{- if .Values.updateStrategy }}
   {{- with .Values.updateStrategy }}
-  updateStrategy: 
+  updateStrategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
@@ -72,12 +72,8 @@ spec:
               sleep infinity &
               wait $!
           {{- else if .Values.commandOverride.enabled }}
-          {{- with .Values.commandOverride.command }}
-          command: {{- toYaml . | nindent 8}}
-          {{- end }}
-          {{- with .Values.commandOverride.args }}
-          args: {{- toYaml . | nindent 8 }}
-          {{- end }}
+          command: {{ .Values.commandOverride.command | toJson }}
+          args: {{ .Values.commandOverride.args | toJson }}
           {{- else }}
           command: [/usr/local/bin/nitro]
           args:
@@ -90,6 +86,7 @@ spec:
             {{- if .Values.customArgs }}
             {{- include "nitro.customArgs" . | nindent 12 }}
             {{- end }}
+          {{- end }}
           ports:
             {{- if and .Values.configmap.data.http .Values.configmap.data.http.port}}
             - name: http-rpc
@@ -147,10 +144,26 @@ spec:
             failureThreshold: {{ .Values.startupProbe.failureThreshold }}
             periodSeconds: {{ .Values.startupProbe.periodSeconds }}
           {{- end }}
-          {{- end }}
           env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           {{- include "nitro.env" . | nindent 12 }}
           {{- with .Values.extraEnv }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          lifecycle:
+          {{- include "nitro.lifecycle" . | nindent 12 }}
+          {{- with .Values.lifecycle }}
           {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- if .Values.persistence.enabled }}
@@ -285,7 +298,7 @@ spec:
           app: {{ template "nitro.name" . }}
           release: {{ .Release.Name }}
           heritage: {{ .Release.Service }}
-      spec: 
+      spec:
         accessModes:
         {{- toYaml .Values.blobPersistence.accessModes | nindent 8 }}
         {{- if .Values.blobPersistence.storageClassName }}

@@ -36,9 +36,6 @@ Common labels
 {{- define "relay.labels" -}}
 helm.sh/chart: {{ include "relay.chart" . }}
 {{ include "relay.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
@@ -64,7 +61,8 @@ Create the name of the service account to use
 {{- define "relay.env" -}}
 {{- end -}}
 
-
+{{- define "relay.lifecycle" -}}
+{{- end -}}
 
 
 

@@ -1,0 +1,35 @@
+name: 'README Status Check'
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    paths:
+      - "charts/**"
+
+# Limit permissions to only what's needed
+permissions:
+  checks: write  # Needed to create status check
+
+jobs:
+  create-status-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # We don't check out any code here for security
+      - name: Create initial pending status check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'README Update Check',
+              head_sha: context.payload.pull_request.head.sha,
+              status: 'in_progress',
+              output: {
+                title: 'README Update Check in progress',
+                summary: 'The README update check is currently running. Please wait for the results.'
+              }
+            });

@@ -34,66 +34,69 @@ helm install <my-release> offchainlabs/relay \
 
 ### Relay
 
-| Name                                              | Description                                      | Value                       |
-| ------------------------------------------------- | ------------------------------------------------ | --------------------------- |
-| `replicaCount`                                    | Number of replicas to deploy                     | `1`                         |
-| `image.repository`                                | Docker image repository                          | `offchainlabs/nitro-node`   |
-| `image.pullPolicy`                                | Docker image pull policy                         | `Always`                    |
-| `image.tag`                                       | Docker image tag ovverrides the chart appVersion | `""`                        |
-| `imagePullSecrets`                                | Docker registry pull secret                      | `[]`                        |
-| `nameOverride`                                    | String to partially override relay fullname      | `""`                        |
-| `fullnameOverride`                                | String to fully override relay fullname          | `""`                        |
-| `autoscaling.enabled`                             | Enable autoscaling                               | `false`                     |
-| `autoscaling.minReplicas`                         | Minimum number of replicas                       | `1`                         |
-| `autoscaling.maxReplicas`                         | Maximum number of replicas                       | `6`                         |
-| `autoscaling.averageCpuUtilization`               | Average CPU utilization                          | `75`                        |
-| `autoscaling.averageMemoryUtilization`            | Average memory utilization                       | `75`                        |
-| `autoscaling.scaleUpPercent`                      | Percent to scale up                              | `100`                       |
-| `autoscaling.scaleUpPeriodSeconds`                | Period to scale up                               | `30`                        |
-| `autoscaling.scaleUpstabilizationWindowSeconds`   | Stabilization window to scale up                 | `30`                        |
-| `autoscaling.scaleDownPercent`                    | Percent to scale down                            | `10`                        |
-| `autoscaling.scaleDownPeriodSeconds`              | Period to scale down                             | `600`                       |
-| `autoscaling.scaleDownstabilizationWindowSeconds` | Stabilization window to scale down               | `600`                       |
-| `commandOverride`                                 | Command override for the relay container         | `{}`                        |
-| `livenessProbe.enabled`                           | Enable built in liveness probe                   | `true`                      |
-| `livenessProbe.httpGet.path`                      | Path for liveness probe                          | `/livenessprobe`            |
-| `livenessProbe.httpGet.port`                      | Port for liveness probe                          | `feed`                      |
-| `livenessProbe.initialDelaySeconds`               | Initial delay for liveness probe                 | `10`                        |
-| `livenessProbe.periodSeconds`                     | Period for liveness probe                        | `1`                         |
-| `readinessProbe.enabled`                          | Enable built in readiness probe                  | `true`                      |
-| `readinessProbe.tcpSocket.port`                   | Port for readiness probe                         | `feed`                      |
-| `readinessProbe.initialDelaySeconds`              | Initial delay for readiness probe                | `20`                        |
-| `readinessProbe.periodSeconds`                    | Period for readiness probe                       | `1`                         |
-| `startupProbe.enabled`                            | Enable built in startup probe                    | `false`                     |
-| `serviceMonitor.enabled`                          | Enable prometheus service monitor                | `false`                     |
-| `serviceMonitor.portName`                         | Port name for prometheus service monitor         | `metrics`                   |
-| `serviceMonitor.path`                             | Path for prometheus service monitor              | `/debug/metrics/prometheus` |
-| `serviceMonitor.interval`                         | Interval for prometheus service monitor          | `5s`                        |
-| `serviceMonitor.relabelings`                      | Add relabelings for the metrics being scraped    | `[]`                        |
-| `perReplicaService.enabled`                       | Enable per replica service                       | `false`                     |
-| `perReplicaService.publishNotReadyAddresses`      | Publish not ready addresses                      | `false`                     |
-| `headlessservice.enabled`                         | Enable headless service                          | `true`                      |
-| `headlessservice.publishNotReadyAddresses`        | Publish not ready addresses                      | `true`                      |
-| `pdb.enabled`                                     | Enable pod disruption budget                     | `false`                     |
-| `pdb.minAvailable`                                | Minimum number of available pods                 | `75%`                       |
-| `pdb.maxUnavailable`                              | Maximum number of unavailable pods               | `""`                        |
-| `serviceAccount.create`                           | Create a service account                         | `true`                      |
-| `serviceAccount.annotations`                      | Annotations for the service account              | `{}`                        |
-| `serviceAccount.name`                             | Name of the service account                      | `""`                        |
-| `podAnnotations`                                  | Annotations for the pod                          | `{}`                        |
-| `podSecurityContext.fsGroup`                      | Group id for the pod                             | `1000`                      |
-| `podSecurityContext.runAsGroup`                   | Group id for the user                            | `1000`                      |
-| `podSecurityContext.runAsNonRoot`                 | Run as non root                                  | `true`                      |
-| `podSecurityContext.runAsUser`                    | User id for the user                             | `1000`                      |
-| `podSecurityContext.fsGroupChangePolicy`          | Policy for the fs group                          | `OnRootMismatch`            |
-| `securityContext`                                 | Security context for the container               | `{}`                        |
-| `priorityClassName`                               | Priority class name for the pod                  | `""`                        |
-| `service.type`                                    | Service type                                     | `ClusterIP`                 |
-| `resources`                                       | Resources for the container                      | `{}`                        |
-| `nodeSelector`                                    | Node selector for the pod                        | `{}`                        |
-| `tolerations`                                     | Tolerations for the pod                          | `[]`                        |
-| `topologySpreadConstraints`                       | Topology spread constraints for the pod          | `[]`                        |
-| `affinity`                                        | Affinity for the pod                             | `{}`                        |
+| Name                                              | Description                                        | Value                       |
+| ------------------------------------------------- | -------------------------------------------------- | --------------------------- |
+| `lifecycle`                                       | Lifecycle hooks configuration                      | `{}`                        |
+| `extraEnv`                                        | Additional environment variables for the container | `{}`                        |
+| `replicaCount`                                    | Number of replicas to deploy                       | `1`                         |
+| `image.repository`                                | Docker image repository                            | `offchainlabs/nitro-node`   |
+| `image.pullPolicy`                                | Docker image pull policy                           | `Always`                    |
+| `image.tag`                                       | Docker image tag ovverrides the chart appVersion   | `""`                        |
+| `imagePullSecrets`                                | Docker registry pull secret                        | `[]`                        |
+| `nameOverride`                                    | String to partially override relay fullname        | `""`                        |
+| `fullnameOverride`                                | String to fully override relay fullname            | `""`                        |
+| `autoscaling.enabled`                             | Enable autoscaling                                 | `false`                     |
+| `autoscaling.minReplicas`                         | Minimum number of replicas                         | `1`                         |
+| `autoscaling.maxReplicas`                         | Maximum number of replicas                         | `6`                         |
+| `autoscaling.averageCpuUtilization`               | Average CPU utilization                            | `75`                        |
+| `autoscaling.averageMemoryUtilization`            | Average memory utilization                         | `75`                        |
+| `autoscaling.scaleUpPercent`                      | Percent to scale up                                | `100`                       |
+| `autoscaling.scaleUpPeriodSeconds`                | Period to scale up                                 | `30`                        |
+| `autoscaling.scaleUpstabilizationWindowSeconds`   | Stabilization window to scale up                   | `30`                        |
+| `autoscaling.scaleDownPercent`                    | Percent to scale down                              | `10`                        |
+| `autoscaling.scaleDownPeriodSeconds`              | Period to scale down                               | `600`                       |
+| `autoscaling.scaleDownstabilizationWindowSeconds` | Stabilization window to scale down                 | `600`                       |
+| `commandOverride`                                 | Command override for the relay container           | `{}`                        |
+| `livenessProbe.enabled`                           | Enable built in liveness probe                     | `true`                      |
+| `livenessProbe.httpGet.path`                      | Path for liveness probe                            | `/livenessprobe`            |
+| `livenessProbe.httpGet.port`                      | Port for liveness probe                            | `feed`                      |
+| `livenessProbe.initialDelaySeconds`               | Initial delay for liveness probe                   | `10`                        |
+| `livenessProbe.periodSeconds`                     | Period for liveness probe                          | `1`                         |
+| `readinessProbe.enabled`                          | Enable built in readiness probe                    | `true`                      |
+| `readinessProbe.tcpSocket.port`                   | Port for readiness probe                           | `feed`                      |
+| `readinessProbe.initialDelaySeconds`              | Initial delay for readiness probe                  | `20`                        |
+| `readinessProbe.periodSeconds`                    | Period for readiness probe                         | `1`                         |
+| `startupProbe.enabled`                            | Enable built in startup probe                      | `false`                     |
+| `serviceMonitor.enabled`                          | Enable prometheus service monitor                  | `false`                     |
+| `serviceMonitor.fallbackScrapeProtocol`           | Set the fallback scrape protocol                   | `PrometheusText0.0.4`       |
+| `serviceMonitor.portName`                         | Port name for prometheus service monitor           | `metrics`                   |
+| `serviceMonitor.path`                             | Path for prometheus service monitor                | `/debug/metrics/prometheus` |
+| `serviceMonitor.interval`                         | Interval for prometheus service monitor            | `5s`                        |
+| `serviceMonitor.relabelings`                      | Add relabelings for the metrics being scraped      | `[]`                        |
+| `perReplicaService.enabled`                       | Enable per replica service                         | `false`                     |
+| `perReplicaService.publishNotReadyAddresses`      | Publish not ready addresses                        | `false`                     |
+| `headlessService.enabled`                         | Enable headless service                            | `true`                      |
+| `headlessService.publishNotReadyAddresses`        | Publish not ready addresses                        | `true`                      |
+| `pdb.enabled`                                     | Enable pod disruption budget                       | `false`                     |
+| `pdb.minAvailable`                                | Minimum number of available pods                   | `50%`                       |
+| `pdb.maxUnavailable`                              | Maximum number of unavailable pods                 | `""`                        |
+| `serviceAccount.create`                           | Create a service account                           | `true`                      |
+| `serviceAccount.annotations`                      | Annotations for the service account                | `{}`                        |
+| `serviceAccount.name`                             | Name of the service account                        | `""`                        |
+| `podAnnotations`                                  | Annotations for the pod                            | `{}`                        |
+| `podSecurityContext.fsGroup`                      | Group id for the pod                               | `1000`                      |
+| `podSecurityContext.runAsGroup`                   | Group id for the user                              | `1000`                      |
+| `podSecurityContext.runAsNonRoot`                 | Run as non root                                    | `true`                      |
+| `podSecurityContext.runAsUser`                    | User id for the user                               | `1000`                      |
+| `podSecurityContext.fsGroupChangePolicy`          | Policy for the fs group                            | `OnRootMismatch`            |
+| `securityContext`                                 | Security context for the container                 | `{}`                        |
+| `priorityClassName`                               | Priority class name for the pod                    | `""`                        |
+| `service.type`                                    | Service type                                       | `ClusterIP`                 |
+| `resources`                                       | Resources for the container                        | `{}`                        |
+| `nodeSelector`                                    | Node selector for the pod                          | `{}`                        |
+| `tolerations`                                     | Tolerations for the pod                            | `[]`                        |
+| `topologySpreadConstraints`                       | Topology spread constraints for the pod            | `[]`                        |
+| `affinity`                                        | Affinity for the pod                               | `{}`                        |
 
 ### Relay Configmap
 
@@ -148,6 +151,7 @@ Option | Description | Default
 `node.feed.input.verify.allowed-addresses` | strings                        a list of allowed addresses | None
 `node.feed.input.verify.dangerous.accept-missing` | accept empty as valid signature | `true`
 `node.feed.output.addr` | string                                            address to bind the relay feed output to | None
+`node.feed.output.backlog.enable-backlog-deep-copy` | enable deep copying of L2 messages for memory profiling (debug only) | None
 `node.feed.output.backlog.segment-limit` | int                              the maximum number of messages each segment within the backlog can contain | `240`
 `node.feed.output.client-delay` | duration                                  delay the first messages sent to each client by this amount | None
 `node.feed.output.client-timeout` | duration                                duration to wait before timing out connections to client | `15s`
@@ -156,7 +160,6 @@ Option | Description | Default
 `node.feed.output.connection-limits.per-ipv6-cidr-48-limit` | int           limit ipv6 clients, as identified by IPv6 address masked with /48, to this many connections to this relay | `20`
 `node.feed.output.connection-limits.per-ipv6-cidr-64-limit` | int           limit ipv6 clients, as identified by IPv6 address masked with /64, to this many connections to this relay | `10`
 `node.feed.output.connection-limits.reconnect-cooldown-period` | duration   time to wait after a relay client disconnects before the disconnect is registered with respect to the limit for this client | None
-`node.feed.output.disable-signing` | don't sign feed messages | `true`
 `node.feed.output.enable` | enable broadcaster | None
 `node.feed.output.enable-compression` | enable per message deflate compression support | None
 `node.feed.output.handshake-timeout` | duration                             duration to wait before timing out HTTP to WS upgrade | `1s`
@@ -180,3 +183,4 @@ Option | Description | Default
 `queue` | int                                                               queue for incoming messages from sequencer | `1024`
 
 ## Notes
+

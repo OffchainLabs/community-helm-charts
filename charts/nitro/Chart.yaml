@@ -1,12 +1,8 @@
 apiVersion: v2
 name: nitro
 description: A Helm chart for Arbitrum Nitro
-
 maintainers:
   - name: OffchainLabs
-
 type: application
-
-version: 0.6.18
-
-appVersion: "v3.2.1-d81324d"
+version: 0.8.6
+appVersion: "v3.9.6-91bf578"

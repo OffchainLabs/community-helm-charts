@@ -1,6 +1,6 @@
 # Arbitrum Nitro
 
-A Helm chart for Arbitrum Nitro. For full details on running a node, please see the official [Arbitrum Documentation](https://docs.arbitrum.io/node-running/quickstart-running-a-node).
+A Helm chart for Arbitrum Nitro. For full details on running a node, please see the official [Arbitrum Documentation](https://docs.arbitrum.io/run-arbitrum-node/run-full-node).
 
 ## Quickstart
 
@@ -73,94 +73,119 @@ helm install xai offchainlabs/nitro -f values.yaml
 
 ### Nitro Deployment Options
 
-| Name                                                       | Description                                                                     | Value                                                               |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `replicaCount`                                             | Number of replicas to deploy                                                    | `1`                                                                 |
-| `image.repository`                                         | Docker image repository                                                         | `offchainlabs/nitro-node`                                           |
-| `image.pullPolicy`                                         | Docker image pull policy                                                        | `Always`                                                            |
-| `image.tag`                                                | Docker image tag. Overrides the chart appVersion.                               | `""`                                                                |
-| `imagePullSecrets`                                         | Docker registry pull secret names as an array                                   | `[]`                                                                |
-| `nameOverride`                                             | String to partially override nitro.fullname                                     | `""`                                                                |
-| `fullnameOverride`                                         | String to fully override nitro.fullname                                         | `""`                                                                |
-| `commandOverride`                                          | Command override for the nitro container                                        | `{}`                                                                |
-| `livenessProbe`                                            | Liveness probe configuration                                                    | `{}`                                                                |
-| `readinessProbe`                                           | Readiness probe configuration                                                   | `{}`                                                                |
-| `startupProbe.enabled`                                     | Enable built in startup probe                                                   | `true`                                                              |
-| `startupProbe.failureThreshold`                            | Number of failures before pod is considered unhealthy                           | `2419200`                                                           |
-| `startupProbe.periodSeconds`                               | Number of seconds between startup probes                                        | `1`                                                                 |
-| `startupProbe.command`                                     | Command to run for the startup probe. If empty, the built in probe will be used | `""`                                                                |
-| `updateStrategy.type`                                      | Update strategy type                                                            | `RollingUpdate`                                                     |
-| `persistence.enabled`                                      | Enable persistence                                                              | `true`                                                              |
-| `persistence.size`                                         | Size of the persistent volume claim                                             | `500Gi`                                                             |
-| `persistence.storageClassName`                             | Storage class of the persistent volume claim                                    | `nil`                                                               |
-| `persistence.accessModes`                                  | Access modes of the persistent volume claim                                     | `["ReadWriteOnce"]`                                                 |
-| `blobPersistence.enabled`                                  | Enable blob persistence                                                         | `false`                                                             |
-| `blobPersistence.size`                                     | Size of the blob persistent volume claim                                        | `100Gi`                                                             |
-| `blobPersistence.storageClassName`                         | Storage class of the blob persistent volume claim                               | `nil`                                                               |
-| `blobPersistence.accessModes`                              | Access modes of the blob persistent volume claim                                | `["ReadWriteOnce"]`                                                 |
-| `serviceMonitor.enabled`                                   | Enable service monitor CRD for prometheus operator                              | `false`                                                             |
-| `serviceMonitor.portName`                                  | Name of the port to monitor                                                     | `metrics`                                                           |
-| `serviceMonitor.path`                                      | Path to monitor                                                                 | `/debug/metrics/prometheus`                                         |
-| `serviceMonitor.interval`                                  | Interval to monitor                                                             | `5s`                                                                |
-| `serviceMonitor.additionalLabels`                          | Additional labels for the service monitor                                       | `{}`                                                                |
-| `serviceMonitor.relabelings`                               | Add relabelings for the metrics being scraped                                   | `[]`                                                                |
-| `perReplicaService.enabled`                                | Enable a service for each sts replica                                           | `false`                                                             |
-| `perReplicaService.publishNotReadyAddresses`               | Publish not ready addresses                                                     | `true`                                                              |
-| `headlessservice.enabled`                                  | Enable headless service                                                         | `true`                                                              |
-| `headlessservice.publishNotReadyAddresses`                 | Publish not ready addresses                                                     | `true`                                                              |
-| `jwtSecret.enabled`                                        | Enable a jwt secret for use with the stateless validator                        | `false`                                                             |
-| `jwtSecret.value`                                          | Value of the jwt secret for use with the stateless validator                    | `""`                                                                |
-| `auth.enabled`                                             | Enable auth for the stateless validator                                         | `false`                                                             |
-| `pdb.enabled`                                              | Enable pod disruption budget                                                    | `false`                                                             |
-| `pdb.minAvailable`                                         | Minimum number of pods available                                                | `75%`                                                               |
-| `pdb.maxUnavailable`                                       | Maximum number of pods unavailable                                              | `""`                                                                |
-| `serviceAccount.create`                                    | Create a service account                                                        | `true`                                                              |
-| `serviceAccount.annotations`                               | Annotations for the service account                                             | `{}`                                                                |
-| `serviceAccount.name`                                      | Name of the service account                                                     | `""`                                                                |
-| `podAnnotations`                                           | Annotations for the pod                                                         | `{}`                                                                |
-| `podLabels`                                                | Labels for the pod                                                              | `{}`                                                                |
-| `podSecurityContext.fsGroup`                               | Group id for the pod                                                            | `1000`                                                              |
-| `podSecurityContext.runAsGroup`                            | Group id for the user                                                           | `1000`                                                              |
-| `podSecurityContext.runAsNonRoot`                          | Run as non root                                                                 | `true`                                                              |
-| `podSecurityContext.runAsUser`                             | User id for the user                                                            | `1000`                                                              |
-| `podSecurityContext.fsGroupChangePolicy`                   | Policy for the fs group                                                         | `OnRootMismatch`                                                    |
-| `securityContext`                                          | Security context for the container                                              | `{}`                                                                |
-| `priorityClassName`                                        | Priority class name                                                             | `""`                                                                |
-| `service.type`                                             | Service type                                                                    | `ClusterIP`                                                         |
-| `service.publishNotReadyAddresses`                         | Publish not ready addresses                                                     | `false`                                                             |
-| `resources`                                                | Resources for the container                                                     | `{}`                                                                |
-| `nodeSelector`                                             | Node selector for the pod                                                       | `{}`                                                                |
-| `tolerations`                                              | Tolerations for the pod                                                         | `[]`                                                                |
-| `affinity`                                                 | Affinity for the pod                                                            | `{}`                                                                |
-| `additionalVolumeClaims`                                   | Additional volume claims for the pod                                            | `[]`                                                                |
-| `extraVolumes`                                             | Additional volumes for the pod                                                  | `[]`                                                                |
-| `extraVolumeMounts`                                        | Additional volume mounts for the pod                                            | `[]`                                                                |
-| `extraPorts`                                               | Additional ports for the pod                                                    | `[]`                                                                |
-| `wallet.mountPath`                                         | Path to mount the wallets                                                       | `/wallet/`                                                          |
-| `wallet.files`                                             | Key value pair of wallet name and contents (ethers json format)                 | `{}`                                                                |
-| `enableAutoConfigProcessing`                               | Enable intelligent automatic configuration processing                           | `true`                                                              |
-| `configmap.enabled`                                        | Enable a configmap for the nitro container                                      | `true`                                                              |
-| `configmap.data`                                           | See Configuration Options for the full list of options                          |                                                                     |
-| `configmap.data.conf.env-prefix`                           | Environment variable prefix                                                     | `NITRO`                                                             |
-| `configmap.data.http.addr`                                 | Address to bind http service to                                                 | `0.0.0.0`                                                           |
-| `configmap.data.http.api`                                  | List of apis to enable                                                          | `["arb","personal","eth","net","web3","txpool","arbdebug"]`         |
-| `configmap.data.http.corsdomain`                           | CORS domain                                                                     | `*`                                                                 |
-| `configmap.data.http.port`                                 | Port to bind http service to                                                    | `8547`                                                              |
-| `configmap.data.http.rpcprefix`                            | Prefix for rpc calls                                                            | `/rpc`                                                              |
-| `configmap.data.http.vhosts`                               | Vhosts to allow                                                                 | `*`                                                                 |
-| `configmap.data.parent-chain.id`                           | ID of the parent chain                                                          | `1`                                                                 |
-| `configmap.data.parent-chain.connection.url`               | URL of the parent chain                                                         | `""`                                                                |
-| `configmap.data.chain.id`                                  | ID of the chain                                                                 | `42161`                                                             |
-| `configmap.data.log-type`                                  | Type of log                                                                     | `json`                                                              |
-| `configmap.data.metrics`                                   | Enable metrics                                                                  | `false`                                                             |
-| `configmap.data.metrics-server.addr`                       | Address to bind metrics server to                                               | `0.0.0.0`                                                           |
-| `configmap.data.metrics-server.port`                       | Port to bind metrics server to                                                  | `6070`                                                              |
-| `configmap.data.persistent.chain`                          | Path to persistent chain data                                                   | `/home/user/data/`                                                  |
-| `configmap.data.ws.addr`                                   | Address to bind ws service to                                                   | `0.0.0.0`                                                           |
-| `configmap.data.ws.api`                                    | List of apis to enable                                                          | `["net","web3","eth","arb"]`                                        |
-| `configmap.data.ws.port`                                   | Port to bind ws service to                                                      | `8548`                                                              |
-| `configmap.data.ws.rpcprefix`                              | Prefix for rpc calls                                                            | `/ws`                                                               |
-| `configmap.data.validation.wasm.allowed-wasm-module-roots` | Default flags as of v3.0.0                                                      | `["/home/user/nitro-legacy/machines","/home/user/target/machines"]` |
+| Name                                                       | Description                                                                               | Value                                                               |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `lifecycle`                                                | Lifecycle hooks configuration                                                             | `{}`                                                                |
+| `extraEnv`                                                 | Additional environment variables for the container                                        | `{}`                                                                |
+| `replicaCount`                                             | Number of replicas to deploy                                                              | `1`                                                                 |
+| `image.repository`                                         | Docker image repository                                                                   | `offchainlabs/nitro-node`                                           |
+| `image.pullPolicy`                                         | Docker image pull policy                                                                  | `Always`                                                            |
+| `image.tag`                                                | Docker image tag. Overrides the chart appVersion.                                         | `""`                                                                |
+| `imagePullSecrets`                                         | Docker registry pull secret names as an array                                             | `[]`                                                                |
+| `nameOverride`                                             | String to partially override nitro.fullname                                               | `""`                                                                |
+| `fullnameOverride`                                         | String to fully override nitro.fullname                                                   | `""`                                                                |
+| `commandOverride`                                          | Command override for the nitro container                                                  | `{}`                                                                |
+| `livenessProbe`                                            | Liveness probe configuration                                                              | `{}`                                                                |
+| `readinessProbe`                                           | Readiness probe configuration                                                             | `{}`                                                                |
+| `startupProbe.enabled`                                     | Enable built in startup probe                                                             | `true`                                                              |
+| `startupProbe.failureThreshold`                            | Number of failures before pod is considered unhealthy                                     | `2419200`                                                           |
+| `startupProbe.periodSeconds`                               | Number of seconds between startup probes                                                  | `1`                                                                 |
+| `startupProbe.command`                                     | Command to run for the startup probe. If empty, the built in probe will be used           | `""`                                                                |
+| `updateStrategy.type`                                      | Update strategy type                                                                      | `RollingUpdate`                                                     |
+| `env.splitvalidator.goMemLimit.enabled`                    | Enable setting the garbage cleanup limit in Go for the split validator                    | `true`                                                              |
+| `env.splitvalidator.goMemLimit.multiplier`                 | The multiplier of available memory to use for the split validator                         | `0.75`                                                              |
+| `env.splitvalidator.goMaxProcs.enabled`                    | Enable setting GOMAXPROCS for the split validator                                         | `true`                                                              |
+| `env.splitvalidator.goMaxProcs.multiplier`                 | The multiplier to use for CPU request (default 2)                                         | `2`                                                                 |
+| `env.nitro.goMemLimit.enabled`                             | Enable setting the garbage cleanup limit in Go for nitro                                  | `true`                                                              |
+| `env.nitro.goMemLimit.multiplier`                          | The multiplier of available memory to use for nitro                                       | `0.9`                                                               |
+| `env.nitro.goMaxProcs.enabled`                             | Enable setting GOMAXPROCS for nitro                                                       | `false`                                                             |
+| `env.nitro.goMaxProcs.multiplier`                          | The multiplier to use for CPU request (default 2)                                         | `2`                                                                 |
+| `env.resourceMgmtMemFreeLimit.enabled`                     | Enable nitro resource management                                                          | `false`                                                             |
+| `env.resourceMgmtMemFreeLimit.multiplier`                  | The multiplier of available memory to use                                                 | `0.05`                                                              |
+| `env.blockValidatorMemFreeLimit.enabled`                   | Enable block validator memory management                                                  | `false`                                                             |
+| `env.blockValidatorMemFreeLimit.multiplier`                | The multiplier of available memory to use                                                 | `0.05`                                                              |
+| `persistence.enabled`                                      | Enable persistence                                                                        | `true`                                                              |
+| `persistence.size`                                         | Size of the persistent volume claim                                                       | `500Gi`                                                             |
+| `persistence.storageClassName`                             | Storage class of the persistent volume claim                                              | `nil`                                                               |
+| `persistence.accessModes`                                  | Access modes of the persistent volume claim                                               | `["ReadWriteOnce"]`                                                 |
+| `blobPersistence.enabled`                                  | Enable blob persistence                                                                   | `false`                                                             |
+| `blobPersistence.size`                                     | Size of the blob persistent volume claim                                                  | `100Gi`                                                             |
+| `blobPersistence.storageClassName`                         | Storage class of the blob persistent volume claim                                         | `nil`                                                               |
+| `blobPersistence.accessModes`                              | Access modes of the blob persistent volume claim                                          | `["ReadWriteOnce"]`                                                 |
+| `serviceMonitor.enabled`                                   | Enable service monitor CRD for prometheus operator                                        | `false`                                                             |
+| `serviceMonitor.portName`                                  | Name of the port to monitor                                                               | `metrics`                                                           |
+| `serviceMonitor.path`                                      | Path to monitor                                                                           | `/debug/metrics/prometheus`                                         |
+| `serviceMonitor.interval`                                  | Interval to monitor                                                                       | `5s`                                                                |
+| `serviceMonitor.additionalLabels`                          | Additional labels for the service monitor                                                 | `{}`                                                                |
+| `serviceMonitor.relabelings`                               | Add relabelings for the metrics being scraped                                             | `[]`                                                                |
+| `perReplicaService.enabled`                                | Enable a service for each sts replica                                                     | `false`                                                             |
+| `perReplicaService.publishNotReadyAddresses`               | Publish not ready addresses                                                               | `true`                                                              |
+| `perReplicaService.annotations`                            | Annotations for the per replica service. Supports templating with .ordinal for pod index  | `{}`                                                                |
+| `perReplicaService.type`                                   | Service type for per replica services. If not set, uses service.type                      | `nil`                                                               |
+| `perReplicaService.loadBalancerClass`                      | Load balancer class for per replica services                                              | `nil`                                                               |
+| `perReplicaService.loadBalancerSourceRanges`               | Load balancer source ranges for per replica services                                      | `nil`                                                               |
+| `perReplicaHeadlessService.enabled`                        | Enable a headless service for each sts replica                                            | `false`                                                             |
+| `perReplicaHeadlessService.publishNotReadyAddresses`       | Publish not ready addresses                                                               | `true`                                                              |
+| `perReplicaHeadlessService.annotations`                    | Annotations for the per replica headless service                                          | `{}`                                                                |
+| `headlessService.enabled`                                  | Enable headless service                                                                   | `true`                                                              |
+| `headlessService.publishNotReadyAddresses`                 | Publish not ready addresses                                                               | `true`                                                              |
+| `headlessService.annotations`                              | Annotations for the headless service                                                      | `{}`                                                                |
+| `jwtSecret.enabled`                                        | Enable a jwt secret for use with the stateless validator                                  | `false`                                                             |
+| `jwtSecret.value`                                          | Value of the jwt secret for use with the stateless validator                              | `""`                                                                |
+| `auth.enabled`                                             | Enable auth for the stateless validator                                                   | `false`                                                             |
+| `pdb.enabled`                                              | Enable pod disruption budget                                                              | `false`                                                             |
+| `pdb.minAvailable`                                         | Minimum number of pods available                                                          | `75%`                                                               |
+| `pdb.maxUnavailable`                                       | Maximum number of pods unavailable                                                        | `""`                                                                |
+| `serviceAccount.create`                                    | Create a service account                                                                  | `true`                                                              |
+| `serviceAccount.annotations`                               | Annotations for the service account                                                       | `{}`                                                                |
+| `serviceAccount.name`                                      | Name of the service account                                                               | `""`                                                                |
+| `podAnnotations`                                           | Annotations for the pod                                                                   | `{}`                                                                |
+| `podLabels`                                                | Labels for the pod                                                                        | `{}`                                                                |
+| `podSecurityContext.fsGroup`                               | Group id for the pod                                                                      | `1000`                                                              |
+| `podSecurityContext.runAsGroup`                            | Group id for the user                                                                     | `1000`                                                              |
+| `podSecurityContext.runAsNonRoot`                          | Run as non root                                                                           | `true`                                                              |
+| `podSecurityContext.runAsUser`                             | User id for the user                                                                      | `1000`                                                              |
+| `podSecurityContext.fsGroupChangePolicy`                   | Policy for the fs group                                                                   | `OnRootMismatch`                                                    |
+| `securityContext`                                          | Security context for the container                                                        | `{}`                                                                |
+| `priorityClassName`                                        | Priority class name                                                                       | `""`                                                                |
+| `service.type`                                             | Service type                                                                              | `ClusterIP`                                                         |
+| `service.publishNotReadyAddresses`                         | Publish not ready addresses                                                               | `false`                                                             |
+| `service.loadBalancerClass`                                | Load balancer class for the service                                                       | `nil`                                                               |
+| `service.loadBalancerSourceRanges`                         | Load balancer source ranges for the service                                               | `nil`                                                               |
+| `resources`                                                | Resources for the container                                                               | `{}`                                                                |
+| `nodeSelector`                                             | Node selector for the pod                                                                 | `{}`                                                                |
+| `tolerations`                                              | Tolerations for the pod                                                                   | `[]`                                                                |
+| `affinity`                                                 | Affinity for the pod                                                                      | `{}`                                                                |
+| `additionalVolumeClaims`                                   | Additional volume claims for the pod                                                      | `[]`                                                                |
+| `extraVolumes`                                             | Additional volumes for the pod                                                            | `[]`                                                                |
+| `extraVolumeMounts`                                        | Additional volume mounts for the pod                                                      | `[]`                                                                |
+| `extraPorts`                                               | Additional ports for the pod                                                              | `[]`                                                                |
+| `wallet.mountPath`                                         | Path to mount the wallets                                                                 | `/wallet/`                                                          |
+| `wallet.files`                                             | Key value pair of wallet name and contents (ethers json format)                           | `{}`                                                                |
+| `enableAutoConfigProcessing`                               | Enable intelligent automatic configuration processing                                     | `true`                                                              |
+| `configmap.enabled`                                        | Enable a configmap for the nitro container                                                | `true`                                                              |
+| `configmap.removeKeys`                                     | List of keys to remove from the config (dot-separated paths, e.g., "metrics-server.port") | `[]`                                                                |
+| `configmap.data`                                           | See Configuration Options for the full list of options                                    |                                                                     |
+| `configmap.data.conf.env-prefix`                           | Environment variable prefix                                                               | `NITRO`                                                             |
+| `configmap.data.http.addr`                                 | Address to bind http service to                                                           | `0.0.0.0`                                                           |
+| `configmap.data.http.api`                                  | List of apis to enable                                                                    | `["arb","eth","net","web3","txpool","arbdebug"]`                    |
+| `configmap.data.http.corsdomain`                           | CORS domain                                                                               | `*`                                                                 |
+| `configmap.data.http.port`                                 | Port to bind http service to                                                              | `8547`                                                              |
+| `configmap.data.http.rpcprefix`                            | Prefix for rpc calls                                                                      | `/rpc`                                                              |
+| `configmap.data.http.vhosts`                               | Vhosts to allow                                                                           | `*`                                                                 |
+| `configmap.data.parent-chain.id`                           | ID of the parent chain                                                                    | `1`                                                                 |
+| `configmap.data.parent-chain.connection.url`               | URL of the parent chain                                                                   | `""`                                                                |
+| `configmap.data.chain.id`                                  | ID of the chain                                                                           | `42161`                                                             |
+| `configmap.data.log-type`                                  | Type of log                                                                               | `json`                                                              |
+| `configmap.data.metrics`                                   | Enable metrics                                                                            | `false`                                                             |
+| `configmap.data.metrics-server.addr`                       | Address to bind metrics server to                                                         | `0.0.0.0`                                                           |
+| `configmap.data.metrics-server.port`                       | Port to bind metrics server to                                                            | `6070`                                                              |
+| `configmap.data.persistent.chain`                          | Path to persistent chain data                                                             | `/home/user/data/`                                                  |
+| `configmap.data.ws.addr`                                   | Address to bind ws service to                                                             | `0.0.0.0`                                                           |
+| `configmap.data.ws.api`                                    | List of apis to enable                                                                    | `["net","web3","eth","arb"]`                                        |
+| `configmap.data.ws.port`                                   | Port to bind ws service to                                                                | `8548`                                                              |
+| `configmap.data.ws.rpcprefix`                              | Prefix for rpc calls                                                                      | `/ws`                                                               |
+| `configmap.data.validation.wasm.allowed-wasm-module-roots` | Default flags as of v3.0.0                                                                | `["/home/user/nitro-legacy/machines","/home/user/target/machines"]` |
 
 ### Stateless Validator
 
@@ -170,6 +195,7 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.splitvalidator.deployments`                                              | List of deployments for the split validator. Each deploymeny can have its own image, config, etc. | `[]`                          |
 | `validator.splitvalidator.global.replicaCount`                                      | Number of replicas for the split validator                                                        | `1`                           |
 | `validator.splitvalidator.global.nodeSelector`                                      | Node selector for the split validator                                                             | `{kubernetes.io/arch: amd64}` |
+| `validator.splitvalidator.global.lifecycle`                                         | Lifecycle hooks configuration                                                                     | `{}`                          |
 | `validator.splitvalidator.global.image.repository`                                  | Docker image repository for the split validator                                                   | `""`                          |
 | `validator.splitvalidator.global.image.tag`                                         | Docker image tag for the split validator                                                          | `""`                          |
 | `validator.splitvalidator.global.useConfigmap`                                      | Use the configmap for the validator container                                                     | `true`                        |
@@ -198,8 +224,8 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `validator.splitvalidator.global.livenessProbe.initialDelaySeconds`                 | Initial delay for the liveness probe                                                              | `30`                          |
 | `validator.splitvalidator.global.livenessProbe.periodSeconds`                       | Period for the liveness probe                                                                     | `10`                          |
 | `validator.splitvalidator.global.pdb.enabled`                                       | Enable pod disruption budget                                                                      | `true`                        |
-| `validator.splitvalidator.global.pdb.minAvailable`                                  | Minimum number of pods available                                                                  | `75%`                         |
-| `validator.splitvalidator.global.pdb.maxUnavailable`                                | Maximum number of pods unavailable                                                                | `""`                          |
+| `validator.splitvalidator.global.pdb.minAvailable`                                  | Minimum number of pods available                                                                  | `""`                          |
+| `validator.splitvalidator.global.pdb.maxUnavailable`                                | Maximum number of pods unavailable                                                                | `100%`                        |
 | `validator.splitvalidator.global.keda.enabled`                                      | Enable keda                                                                                       | `false`                       |
 | `validator.splitvalidator.global.keda.scaledObject`                                 | Scaled object for keda                                                                            | `{}`                          |
 | `validator.splitvalidator.global.hpa.enabled`                                       | Enable horizontal pod autoscaler                                                                  | `false`                       |
@@ -240,12 +266,13 @@ Option | Description | Default
 `auth.jwtsecret` | string                                                                                  Path to file holding JWT secret (32B hex) | None
 `auth.origins` | strings                                                                                   Origins from which to accept AUTH requests | `[localhost]`
 `auth.port` | int                                                                                          AUTH-RPC server listening port | `8549`
-`blocks-reexecutor.blocks-per-thread` | uint                                                               minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | None
+`blocks-reexecutor.blocks` | string                                                                        json encoded list of block ranges in the form of start and end block numbers in a list of size 2 | `[[0,0]]`
 `blocks-reexecutor.enable` | enables re-execution of a range of blocks against historic state | None
-`blocks-reexecutor.end-block` | uint                                                                       last block number of the block range for re-execution | None
+`blocks-reexecutor.min-blocks-per-thread` | uint                                                           minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
-`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `10`
-`blocks-reexecutor.start-block` | uint                                                                     first block number of the block range for re-execution | None
+`blocks-reexecutor.room` | int                                                                             number of threads to parallelize blocks re-execution | `2`
+`blocks-reexecutor.trie-clean-limit` | int                                                                 memory allowance (MB) to use for caching trie nodes in memory | None
+`blocks-reexecutor.validate-multigas` | if set, validate the sum of multi-gas dimensions match the single-gas | None
 `chain.dev-wallet.account` | string                                                                        account to use | `is first account in keystore`
 `chain.dev-wallet.only-create-key` | if true, creates new key then exits | None
 `chain.dev-wallet.password` | string                                                                       wallet passphrase | `PASSWORD_NOT_SET`
@@ -253,8 +280,6 @@ Option | Description | Default
 `chain.dev-wallet.private-key` | string                                                                    private key for wallet | None
 `chain.id` | uint                                                                                          L2 chain ID (determines Arbitrum network) | None
 `chain.info-files` | strings                                                                               L2 chain info json files | None
-`chain.info-ipfs-download-path` | string                                                                   path to save temp downloaded file | `/tmp/`
-`chain.info-ipfs-url` | string                                                                             url to download chain info file | None
 `chain.info-json` | string                                                                                 L2 chain info in json string format | None
 `chain.name` | string                                                                                      L2 chain name (determines Arbitrum network) | None
 `conf.dump` | print out currently active configuration file | None
@@ -267,25 +292,36 @@ Option | Description | Default
 `conf.s3.region` | string                                                                                  S3 region | None
 `conf.s3.secret-key` | string                                                                              S3 secret key | None
 `conf.string` | string                                                                                     configuration as JSON string | None
+`ensure-rollup-deployment` | before starting the node, wait until the transaction that deployed rollup is finalized | `true`
+`execution.block-metadata-api-blocks-limit` | uint                                                         maximum number of blocks allowed to be queried for blockMetadata per arb_getRawBlockMetadata query. Enabled by default, set 0 to disable the limit | `100`
+`execution.block-metadata-api-cache-size` | uint                                                           size (in bytes) of lru cache storing the blockMetadata to service arb_getRawBlockMetadata | `104857600`
 `execution.caching.archive` | retain past block state | None
 `execution.caching.block-age` | duration                                                                   minimum age of recent blocks to keep in memory | `30m0s`
 `execution.caching.block-count` | uint                                                                     minimum number of recent blocks to keep in memory | `128`
 `execution.caching.database-cache` | int                                                                   amount of memory in megabytes to cache database contents with | `2048`
+`execution.caching.disable-stylus-cache-metrics-collection` | disable metrics collection for the stylus cache | None
+`execution.caching.enable-preimages` | enable recording of preimages | None
+`execution.caching.head-rewind-blocks-limit` | uint                                                        maximum number of blocks rolled back to recover chain head (0 = use geth default limit) | `2419200`
 `execution.caching.max-amount-of-gas-to-skip-state-saving` | uint                                          maximum amount of gas in blocks to skip saving state to Persistent storage (archive node only) -- warning: this option seems to cause issues | None
 `execution.caching.max-number-of-blocks-to-skip-state-saving` | uint32                                     maximum number of blocks to skip state saving to persistent storage (archive node only) -- warning: this option seems to cause issues | None
+`execution.caching.pathdb-max-diff-layers` | int                                                           maximum number of diff layers to keep in pathdb (path state-scheme only) | `128`
 `execution.caching.snapshot-cache` | int                                                                   amount of memory in megabytes to cache state snapshots with | `400`
 `execution.caching.snapshot-restore-gas-limit` | uint                                                      maximum gas rolled back to recover snapshot | `300000000000`
 `execution.caching.state-history` | uint                                                                   number of recent blocks to retain state history for (path state-scheme only) | `345600`
 `execution.caching.state-scheme` | string                                                                  scheme to use for state trie storage (hash, path) | `hash`
-`execution.caching.stylus-lru-cache` | uint32                                                              initialized stylus programs to keep in LRU cache | `256`
+`execution.caching.stylus-lru-cache-capacity` | uint32                                                     capacity, in megabytes, of the LRU cache that keeps initialized stylus programs | `256`
+`execution.caching.trie-cap-limit` | uint32                                                                amount of memory in megabytes to be used in the TrieDB Cap operation during maintenance | `100`
 `execution.caching.trie-clean-cache` | int                                                                 amount of memory in megabytes to cache unchanged state trie nodes with | `600`
 `execution.caching.trie-dirty-cache` | int                                                                 amount of memory in megabytes to cache state diffs against disk with (larger cache lowers database growth) | `1024`
 `execution.caching.trie-time-limit` | duration                                                             maximum block processing time before trie is written to hard-disk | `1h0m0s`
+`execution.caching.trie-time-limit-before-flush-maintenance` | duration                                    Execution will suggest that maintenance is run if the block processing time required to reach trie-time-limit is smaller or equal than trie-time-limit-before-flush-maintenance | None
+`execution.caching.trie-time-limit-random-offset` | duration                                               if greater then 0, the block processing time period of each trie write to hard-disk is shortened by a random value from range [0, trie-time-limit-random-offset) | None
 `execution.enable-prefetch-block` | enable prefetching of blocks | `true`
+`execution.expose-multi-gas` | experimental: expose multi-dimensional gas in transaction receipts | None
 `execution.forwarder.connection-timeout` | duration                                                        total time to wait before cancelling connection | `30s`
 `execution.forwarder.idle-connection-timeout` | duration                                                   time until idle connections are closed | `15s`
 `execution.forwarder.max-idle-connections` | int                                                           maximum number of idle connections to keep open | `1`
-`execution.forwarder.redis-url` | string                                                                   the Redis URL to recomend target via | None
+`execution.forwarder.redis-url` | string                                                                   the Redis URL to recommend target via | None
 `execution.forwarder.retry-interval` | duration                                                            minimal time between update retries | `100ms`
 `execution.forwarder.update-interval` | duration                                                           forwarding target update interval | `1s`
 `execution.forwarding-target` | string                                                                     transaction forwarding target URL, or "null" to disable forwarding (iff not sequencer) | None
@@ -304,8 +340,7 @@ Option | Description | Default
 `execution.rpc.allow-method` | strings                                                                     list of whitelisted rpc methods | None
 `execution.rpc.arbdebug.block-range-bound` | uint                                                          bounds the number of blocks arbdebug calls may return | `256`
 `execution.rpc.arbdebug.timeout-queue-bound` | uint                                                        bounds the length of timeout queues arbdebug calls may return | `512`
-`execution.rpc.bloom-bits-blocks` | uint                                                                   number of blocks a single bloom bit section vector holds | `16384`
-`execution.rpc.bloom-confirms` | uint                                                                      number of confirmation blocks before a bloom section is considered final | `256`
+`execution.rpc.block-redirects-list` | string                                                              array of node configs to redirect block requests given as a json string. time duration should be supplied in number indicating nanoseconds | `default`
 `execution.rpc.classic-redirect` | string                                                                  url to redirect classic requests, use "error:[CODE:]MESSAGE" to return specified error instead of redirecting | None
 `execution.rpc.classic-redirect-timeout` | duration                                                        timeout for forwarded classic requests, where 0 = no timeout | None
 `execution.rpc.evm-timeout` | duration                                                                     timeout used for eth_call (0=infinite) | `5s`
@@ -313,18 +348,24 @@ Option | Description | Default
 `execution.rpc.filter-log-cache-size` | int                                                                log filter system maximum number of cached blocks | `32`
 `execution.rpc.filter-timeout` | duration                                                                  log filter system maximum time filters stay active | `5m0s`
 `execution.rpc.gas-cap` | uint                                                                             cap on computation gas that can be used in eth_call/estimateGas (0=infinite) | `50000000`
+`execution.rpc.log-export-checkpoints` | string                                                            export log index checkpoints to file | None
+`execution.rpc.log-history` | uint                                                                         maximum number of blocks from head where a log search index is maintained | `9400000`
+`execution.rpc.log-no-history` | no log search index is maintained | None
 `execution.rpc.max-recreate-state-depth` | int                                                             maximum depth for recreating state, measured in l2 gas (0=don't recreate state, -1=infinite, -2=use default value for archive or non-archive node (whichever is configured)) | `-2`
 `execution.rpc.tx-allow-unprotected` | allow transactions that aren't EIP-155 replay protected to be submitted over the RPC | `true`
 `execution.rpc.tx-fee-cap` | float                                                                         cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
 `execution.secondary-forwarding-target` | strings                                                          secondary transaction forwarding target URL | None
+`execution.sequencer.dangerous.disable-blob-base-fee-check` | DANGEROUS! disables nitro checks on sequencer for blob base fee | None
+`execution.sequencer.dangerous.disable-seq-inbox-max-data-size-check` | DANGEROUS! disables nitro checks on sequencer MaxTxDataSize against the sequencer inbox MaxDataSize | None
 `execution.sequencer.enable` | act and post to l1 as sequencer | None
 `execution.sequencer.enable-profiling` | enable CPU profiling and tracing | None
+`execution.sequencer.expected-surplus-gas-price-mode` | string                                             gas price setting to be used in calculating estimated surplus. Allowed values- CalldataPrice, BlobPrice and CalldataPrice7523 | `BlobPrice`
 `execution.sequencer.expected-surplus-hard-threshold` | string                                             if expected surplus is lower than this value, new incoming transactions will be denied | `default`
 `execution.sequencer.expected-surplus-soft-threshold` | string                                             if expected surplus is lower than this value, warnings are posted | `default`
 `execution.sequencer.forwarder.connection-timeout` | duration                                              total time to wait before cancelling connection | `30s`
 `execution.sequencer.forwarder.idle-connection-timeout` | duration                                         time until idle connections are closed | `1m0s`
 `execution.sequencer.forwarder.max-idle-connections` | int                                                 maximum number of idle connections to keep open | `100`
-`execution.sequencer.forwarder.redis-url` | string                                                         the Redis URL to recomend target via | None
+`execution.sequencer.forwarder.redis-url` | string                                                         the Redis URL to recommend target via | None
 `execution.sequencer.forwarder.retry-interval` | duration                                                  minimal time between update retries | `100ms`
 `execution.sequencer.forwarder.update-interval` | duration                                                 forwarding target update interval | `1s`
 `execution.sequencer.max-acceptable-timestamp-delta` | duration                                            maximum acceptable time difference between the local time and the latest L1 block's timestamp | `1h0m0s`
@@ -336,17 +377,34 @@ Option | Description | Default
 `execution.sequencer.nonce-failure-cache-size` | int                                                       number of transactions with too high of a nonce to keep in memory while waiting for their predecessor | `1024`
 `execution.sequencer.queue-size` | int                                                                     size of the pending tx queue | `1024`
 `execution.sequencer.queue-timeout` | duration                                                             maximum amount of time transaction can wait in queue | `12s`
+`execution.sequencer.read-from-tx-queue-timeout` | duration                                                timeout for reading new messages | `10ms`
 `execution.sequencer.sender-whitelist` | strings                                                           comma separated whitelist of authorized senders (if empty, everyone is allowed) | None
+`execution.sequencer.timeboost.auction-contract-address` | string                                          Address of the proxy pointing to the ExpressLaneAuction contract | None
+`execution.sequencer.timeboost.auctioneer-address` | string                                                Address of the Timeboost Autonomous Auctioneer | None
+`execution.sequencer.timeboost.early-submission-grace` | duration                                          period of time before the next round where submissions for the next round will be queued | `2s`
+`execution.sequencer.timeboost.enable` | enable timeboost based on express lane auctions | None
+`execution.sequencer.timeboost.express-lane-advantage` | duration                                          specify the express lane advantage | `200ms`
+`execution.sequencer.timeboost.max-future-sequence-distance` | uint                                        maximum allowed difference (in terms of sequence numbers) between a future express lane tx and the current sequence count of a round | `1000`
+`execution.sequencer.timeboost.queue-timeout-in-blocks` | uint                                             maximum amount of time (measured in blocks) that Express Lane transactions can wait in the sequencer's queue | `5`
+`execution.sequencer.timeboost.redis-update-events-channel-size` | uint                                    size of update events' buffered channels in timeboost redis coordinator | `500`
+`execution.sequencer.timeboost.redis-url` | string                                                         the Redis URL for expressLaneService to coordinate via | `unset`
+`execution.sequencer.timeboost.sequencer-http-endpoint` | string                                           this sequencer's http endpoint | `http://localhost:8547`
 `execution.stylus-target.amd64` | string                                                                   stylus programs compilation target for amd64 linux | `x86_64-linux-unknown+sse4.2+lzcnt+bmi`
 `execution.stylus-target.arm64` | string                                                                   stylus programs compilation target for arm64 linux | `arm64-linux-unknown+neon`
 `execution.stylus-target.extra-archs` | strings                                                            Comma separated list of extra architectures to cross-compile stylus program to and cache in wasm store (additionally to local target). Currently must include at least wavm. (supported targets: wavm, arm64, amd64, host) | `[wavm]`
 `execution.stylus-target.host` | string                                                                    stylus programs compilation target for system other than 64-bit ARM or 64-bit x86 | None
 `execution.sync-monitor.finalized-block-wait-for-block-validator` | wait for block validator to complete before returning finalized block number | None
+`execution.sync-monitor.msg-lag` | duration                                                                allowed message lag while still considered in sync | `1s`
 `execution.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
-`execution.tx-lookup-limit` | uint                                                                         retain the ability to lookup transactions by hash for the past N blocks (0 = all blocks) | `126230400`
+`execution.tx-indexer.enable` | enables transaction indexer | `true`
+`execution.tx-indexer.min-batch-delay` | duration                                                          minimum delay between transaction indexing/unindexing batches; the bigger the delay, the more blocks can be included in each batch | `1s`
+`execution.tx-indexer.threads` | int                                                                       number of threads used to RLP decode blocks during indexing/unindexing of historical transactions | `2`
+`execution.tx-indexer.tx-lookup-limit` | uint                                                              retain the ability to lookup transactions by hash for the past N blocks (0 = all blocks) | `126230400`
 `execution.tx-pre-checker.required-state-age` | int                                                        how long ago should the storage conditions from eth_SendRawTransactionConditional be true, 0 = don't check old state | `2`
 `execution.tx-pre-checker.required-state-max-blocks` | uint                                                maximum number of blocks to look back while looking for the <required-state-age> seconds old state, 0 = don't limit the search | `4`
 `execution.tx-pre-checker.strictness` | uint                                                               how strict to be when checking txs before forwarding them. 0 = accept anything, 10 = should never reject anything that'd succeed, 20 = likely won't reject anything that'd succeed, 30 = full validation which may reject txs that would succeed | `20`
+`execution.vmtrace.json-config` | string                                                                   (experimental) Tracer configuration in JSON format | `{}`
+`execution.vmtrace.tracer-name` | string                                                                   (experimental) Name of tracer which should record internal VM operations (costly) | None
 `file-logging.buf-size` | int                                                                              size of intermediate log records buffer | `512`
 `file-logging.compress` | enable compression of old log files | `true`
 `file-logging.enable` | enable logging to file | `true`
@@ -372,17 +430,20 @@ Option | Description | Default
 `init.dev-init` | init with dev data (1 account with balance) instead of file import | None
 `init.dev-init-address` | string                                                                           Address of dev-account. Leave empty to use the dev-wallet. | None
 `init.dev-init-blocknum` | uint                                                                            Number of preinit blocks. Must exist in ancient database. | None
-`init.download-path` | string                                                                              path to save temp downloaded file | `/tmp/`
+`init.dev-max-code-size` | uint                                                                            Max code size for dev accounts | None
+`init.download-path` | string                                                                              path to save temp downloaded file | None
 `init.download-poll` | duration                                                                            how long to wait between polling attempts | `1m0s`
 `init.empty` | init with empty state | None
 `init.force` | if true: in case database exists init code will be reexecuted and genesis block compared to database | None
+`init.genesis-json-file` | string                                                                          path for genesis json file | None
 `init.import-file` | string                                                                                path for json data to import | None
 `init.import-wasm` | if set, import the wasm directory when downloading a database (contains executable code - only use with highly trusted source) | None
 `init.latest` | string                                                                                     if set, searches for the latest snapshot of the given kind (accepted values: "archive" | "pruned" | "genesis") | None
 `init.latest-base` | string                                                                                base url used when searching for the latest | `https://snapshot.arbitrum.foundation/`
 `init.prune` | string                                                                                      pruning for a given use: "full" for full nodes serving RPC requests, or "validator" for validators | None
 `init.prune-bloom-size` | uint                                                                             the amount of memory in megabytes to use for the pruning bloom filter (higher values prune better) | `2048`
-`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `10`
+`init.prune-parallel-storage-traversal` | if true: use parallel pruning per account | None
+`init.prune-threads` | int                                                                                 the number of threads to use when pruning | `2`
 `init.prune-trie-clean-cache` | int                                                                        amount of memory in megabytes to cache unchanged state trie nodes with when traversing state database during pruning | `600`
 `init.rebuild-local-wasm` | string                                                                         rebuild local wasm database on boot if needed (otherwise-will be done lazily). Three modes are supported  "auto"- (enabled by default) if any previous rebuilding attempt was successful then rebuilding is disabled else continues to rebuild, "force"- force rebuilding which would commence rebuilding despite the status of previous attempts, "false"- do not rebuild on startup (default "auto") | None
 `init.recreate-missing-state-from` | uint                                                                  block number to start recreating missing states from (0 = disabled) | None
@@ -392,6 +453,7 @@ Option | Description | Default
 `init.then-quit` | quit after init is done | None
 `init.url` | string                                                                                        url to download initialization data - will poll if download fails | None
 `init.validate-checksum` | if true: validate the checksum after downloading the snapshot | `true`
+`init.validate-genesis-assertion` | tests genesis assertion posted on parent chain against the genesis block created on init | `true`
 `ipc.path` | string                                                                                        Requested location to place the IPC endpoint. An empty path disables IPC. | None
 `log-level` | string                                                                                       log level, valid values are CRIT, ERROR, WARN, INFO, DEBUG, TRACE | `INFO`
 `log-type` | string                                                                                        log type (plaintext or json) | `plaintext`
@@ -401,6 +463,8 @@ Option | Description | Default
 `metrics-server.update-interval` | duration                                                                metrics server update interval | `3s`
 `node.batch-poster.check-batch-correctness` | setting this to true will run the batch against an inbox multiplexer and verifies that it produces the correct set of messages | `true`
 `node.batch-poster.compression-level` | int                                                                batch compression level | `11`
+`node.batch-poster.dangerous.allow-posting-first-batch-when-sequencer-message-count-mismatch` | allow posting the first batch even if sequence number doesn't match chain (useful after force-inclusion) | None
+`node.batch-poster.dangerous.fixed-gas-limit` | uint                                                       use this gas limit for batch posting instead of estimating it | None
 `node.batch-poster.das-retention-period` | duration                                                        In AnyTrust mode, the period which DASes are requested to retain the stored batches. | `360h0m0s`
 `node.batch-poster.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
 `node.batch-poster.data-poster.blob-tx-replacement-times` | durationSlice                                  comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `[5m0s,10m0s,30m0s,1h0m0s,4h0m0s,8h0m0s,16h0m0s,22h0m0s]`
@@ -435,6 +499,8 @@ Option | Description | Default
 `node.batch-poster.data-poster.use-db-storage` | uses database storage when enabled | `true`
 `node.batch-poster.data-poster.use-noop-storage` | uses noop storage, it doesn't store anything | None
 `node.batch-poster.data-poster.wait-for-l1-finality` | only treat a transaction as confirmed after L1 finality has been achieved (recommended) | `true`
+`node.batch-poster.delay-buffer-always-updatable` | always treat delay buffer as updatable | `true`
+`node.batch-poster.delay-buffer-threshold-margin` | uint                                                   the number of blocks to post the batch before reaching the delay buffer threshold | `25`
 `node.batch-poster.disable-dap-fallback-store-data-on-chain` | If unable to batch to DA provider, disable fallback storing data on chain | None
 `node.batch-poster.enable` | enable posting batches to l1 | None
 `node.batch-poster.error-delay` | duration                                                                 how long to delay after error posting batch | `10s`
@@ -444,9 +510,11 @@ Option | Description | Default
 `node.batch-poster.ignore-blob-price` | if the parent chain supports 4844 blobs and ignore-blob-price is true, post 4844 blobs even if it's not price efficient | None
 `node.batch-poster.l1-block-bound` | string                                                                only post messages to batches when they're within the max future block/timestamp as of this L1 block tag ("safe", "finalized", "latest", or "ignore" to ignore this check) | None
 `node.batch-poster.l1-block-bound-bypass` | duration                                                       post batches even if not within the layer 1 future bounds if we're within this margin of the max delay | `1h0m0s`
-`node.batch-poster.max-4844-batch-size` | int                                                              maximum 4844 blob enabled batch size | `388144`
+`node.batch-poster.max-4844-batch-size` | int                                                              maximum estimated compressed 4844 blob enabled batch size | None
 `node.batch-poster.max-delay` | duration                                                                   maximum batch posting delay | `1h0m0s`
-`node.batch-poster.max-size` | int                                                                         maximum batch size | `100000`
+`node.batch-poster.max-empty-batch-delay` | duration                                                       maximum empty batch posting delay, batch poster will only be able to post an empty batch if this time period building a batch has passed | `72h0m0s`
+`node.batch-poster.max-size` | int                                                                         maximum estimated compressed batch size | `100000`
+`node.batch-poster.parent-chain-eip7623` | string                                                          if parent chain uses EIP7623 ("yes", "no", "auto") | `auto`
 `node.batch-poster.parent-chain-wallet.account` | string                                                   account to use | `is first account in keystore`
 `node.batch-poster.parent-chain-wallet.only-create-key` | if true, creates new key then exits | None
 `node.batch-poster.parent-chain-wallet.password` | string                                                  wallet passphrase | `PASSWORD_NOT_SET`
@@ -454,7 +522,7 @@ Option | Description | Default
 `node.batch-poster.parent-chain-wallet.private-key` | string                                               private key for wallet | None
 `node.batch-poster.poll-interval` | duration                                                               how long to wait after no batches are ready to be posted before checking again | `10s`
 `node.batch-poster.post-4844-blobs` | if the parent chain supports 4844 blobs and they're well priced, post EIP-4844 blobs | None
-`node.batch-poster.redis-lock.background-lock` | should node always try grabing lock in background | None
+`node.batch-poster.redis-lock.background-lock` | should node always try grabbing lock in background | None
 `node.batch-poster.redis-lock.enable` | if false, always treat this as locked and don't write the lock to redis | `true`
 `node.batch-poster.redis-lock.key` | string                                                                key for lock | None
 `node.batch-poster.redis-lock.lockout-duration` | duration                                                 how long lock is held | `1m0s`
@@ -464,28 +532,43 @@ Option | Description | Default
 `node.batch-poster.reorg-resistance-margin` | duration                                                     do not post batch if its within this duration from layer 1 minimum bounds. Requires l1-block-bound option not be set to "ignore" | `10m0s`
 `node.batch-poster.use-access-lists` | post batches with access lists to reduce gas usage (disabled for L3s) | `true`
 `node.batch-poster.wait-for-max-delay` | wait for the max batch delay, even if the batch is full | None
+`node.block-metadata-fetcher.api-blocks-limit` | uint                                                      maximum number of blocks per arb_getRawBlockMetadata query | `100`
+`node.block-metadata-fetcher.enable` | enable syncing blockMetadata using a bulk blockMetadata api | None
+`node.block-metadata-fetcher.max-sync-interval` | duration                                                 maximum time between blockMetadata requests | `32m0s`
+`node.block-metadata-fetcher.source.arg-log-limit` | uint                                                  limit size of arguments in log entries | `2048`
+`node.block-metadata-fetcher.source.connection-wait` | duration                                            how long to wait for initial connection | None
+`node.block-metadata-fetcher.source.jwtsecret` | string                                                    path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`node.block-metadata-fetcher.source.retries` | uint                                                        number of retries in case of failure(0 mean one attempt) | `3`
+`node.block-metadata-fetcher.source.retry-delay` | duration                                                delay between retries | None
+`node.block-metadata-fetcher.source.retry-errors` | string                                                 Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`node.block-metadata-fetcher.source.timeout` | duration                                                    per-response timeout (0-disabled) | None
+`node.block-metadata-fetcher.source.url` | string                                                          url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
+`node.block-metadata-fetcher.source.websocket-message-size-limit` | int                                    websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`node.block-metadata-fetcher.sync-interval` | duration                                                     minimum time between blockMetadata requests | `1m0s`
 `node.block-validator.batch-cache-limit` | uint32                                                          limit number of old batches to keep in block-validator | `20`
+`node.block-validator.block-inputs-file-path` | string                                                     directory to write block validation inputs files | `./target/validation_inputs`
 `node.block-validator.current-module-root` | string                                                        current wasm module root ('current' read from chain, 'latest' from machines/latest dir, or provide hash) | `current`
 `node.block-validator.dangerous.reset-block-validation` | resets block-by-block validation, starting again at genesis | None
+`node.block-validator.dangerous.revalidation.end-block` | uint                                             end revalidation at this block | None
+`node.block-validator.dangerous.revalidation.quit-after-revalidation` | exit node after revalidation is done | None
+`node.block-validator.dangerous.revalidation.start-block` | uint                                           start revalidation from this block | None
 `node.block-validator.enable` | enable block-by-block validation | None
 `node.block-validator.failure-is-fatal` | failing a validation is treated as a fatal error | `true`
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (stores batch-copy per block) | `128`
 `node.block-validator.memory-free-limit` | string                                                          minimum free-memory limit after reaching which the blockvalidator pauses validation. Enabled by default as 1GB, to disable provide empty string | `default`
 `node.block-validator.pending-upgrade-module-root` | string                                                pending upgrade wasm module root to additionally validate (hash, 'latest' or empty) | `latest`
-`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `20`
+`node.block-validator.prerecorded-blocks` | uint                                                           record that many blocks ahead of validation (larger footprint) | `4`
 `node.block-validator.recording-iter-limit` | uint                                                         limit on block recordings sent per iteration | `20`
 `node.block-validator.redis-validation-client-config.create-streams` | create redis streams if it does not exist | `true`
 `node.block-validator.redis-validation-client-config.name` | string                                        validation client name | `redis validation client`
-`node.block-validator.redis-validation-client-config.producer-config.check-pending-interval` | duration    interval in which producer checks pending messages whether consumer processing them is inactive | `1s`
-`node.block-validator.redis-validation-client-config.producer-config.check-pending-items` | int            items to screen during check-pending | `256`
 `node.block-validator.redis-validation-client-config.producer-config.check-result-interval` | duration     interval in which producer checks pending messages whether consumer processing them is inactive | `5s`
-`node.block-validator.redis-validation-client-config.producer-config.enable-reproduce` | when enabled, messages with dead consumer will be re-inserted into the stream | `true`
-`node.block-validator.redis-validation-client-config.producer-config.keepalive-timeout` | duration         timeout after which consumer is considered inactive if heartbeat wasn't performed | `5m0s`
+`node.block-validator.redis-validation-client-config.producer-config.request-timeout` | duration           timeout after which the message in redis stream is considered as errored, this prevents workers from working on wrong requests indefinitely | `3h0m0s`
 `node.block-validator.redis-validation-client-config.redis-url` | string                                   redis url | None
 `node.block-validator.redis-validation-client-config.room` | int32                                         validation client room | `2`
 `node.block-validator.redis-validation-client-config.stream-prefix` | string                               prefix for stream name | None
 `node.block-validator.redis-validation-client-config.stylus-archs` | strings                               archs required for stylus workers | `[wavm]`
 `node.block-validator.validation-poll` | duration                                                          poll time to check validations | `1s`
+`node.block-validator.validation-sent-limit` | uint                                                        limit on block validations to keep in validation sent state | `1024`
 `node.block-validator.validation-server-configs-list` | string                                             array of execution rpc configs given as a json string. time duration should be supplied in number indicating nanoseconds | `default`
 `node.block-validator.validation-server.arg-log-limit` | uint                                              limit size of arguments in log entries | `2048`
 `node.block-validator.validation-server.connection-wait` | duration                                        how long to wait for initial connection | None
@@ -496,13 +579,56 @@ Option | Description | Default
 `node.block-validator.validation-server.timeout` | duration                                                per-response timeout (0-disabled) | None
 `node.block-validator.validation-server.url` | string                                                      url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
 `node.block-validator.validation-server.websocket-message-size-limit` | int                                websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`node.block-validator.validation-spawning-allowed-attempts` | uint                                         number of attempts allowed when trying to spawn a validation before erroring out | `1`
+`node.bold.api` | enable api | None
+`node.bold.api-db-path` | string                                                                           bold api db path | `bold-api-db`
+`node.bold.api-host` | string                                                                              bold api host | `127.0.0.1`
+`node.bold.api-port` | uint16                                                                              bold api port | `9393`
+`node.bold.assertion-confirming-interval` | duration                                                       confirm assertion interval | `1m0s`
+`node.bold.assertion-posting-interval` | duration                                                          assertion posting interval | `15m0s`
+`node.bold.assertion-scanning-interval` | duration                                                         scan assertion interval | `1m0s`
+`node.bold.auto-deposit` | auto-deposit stake token whenever making a move in BoLD that does not have enough stake token balance | `true`
+`node.bold.auto-increase-allowance` | auto-increase spending allowance of the stake token by the rollup and challenge manager contracts | `true`
+`node.bold.check-staker-switch-interval` | duration                                                        how often to check if staker can switch to bold | `1m0s`
+`node.bold.dangerous.assume-valid` | uint                                                                  assume this message index is valid (if blockhash matches) | None
+`node.bold.dangerous.assume-valid-blockhash` | string                                                      blockhash of the assumed-valid message | None
+`node.bold.delegated-staking.custom-withdrawal-address` | string                                           enable a custom withdrawal address for staking on the rollup contract, useful for delegated stakers | None
+`node.bold.delegated-staking.enable` | enable delegated staking by having the validator call newStake on startup | None
+`node.bold.enable-fast-confirmation` | enable fast confirmation | None
+`node.bold.max-get-log-blocks` | int                                                                       maximum size for chunk of blocks when using get logs rpc | `5000`
+`node.bold.minimum-gap-to-parent-assertion` | duration                                                     minimum duration to wait since the parent assertion was created to post a new assertion | `1m0s`
+`node.bold.parent-chain-block-time` | duration                                                             the average block time of the parent chain where assertions are posted | `12s`
+`node.bold.rpc-block-number` | string                                                                      define the block number to use for reading data onchain, either latest, safe, or finalized | `finalized`
+`node.bold.start-validation-from-staked` | assume staked nodes are valid | `true`
+`node.bold.state-provider-config.check-batch-finality` | check batch finality | `true`
+`node.bold.state-provider-config.machine-leaves-cache-path` | string                                       path to machine cache | `machine-hashes-cache`
+`node.bold.state-provider-config.validator-name` | string                                                  name identifier for cosmetic purposes | `default-validator`
+`node.bold.track-challenge-parent-assertion-hashes` | strings                                              only track challenges/edges with these parent assertion hashes | None
+`node.consensus-execution-syncer.sync-interval` | duration                                                 Interval in which finality and sync data is pushed from consensus to execution | `300ms`
+`node.da-provider.data-stream.max-store-chunk-body-size` | int                                             maximum HTTP body size for chunked store requests | `5242880`
+`node.da-provider.data-stream.rpc-methods.finalize-stream` | string                                        name of the RPC method to finalize a chunked data stream | `daprovider_commitChunkedStore`
+`node.da-provider.data-stream.rpc-methods.start-stream` | string                                           name of the RPC method to start a chunked data stream | `daprovider_startChunkedStore`
+`node.da-provider.data-stream.rpc-methods.stream-chunk` | string                                           name of the RPC method to send a chunk of data | `daprovider_sendChunk`
+`node.da-provider.enable` | enable daprovider client | None
+`node.da-provider.rpc.arg-log-limit` | uint                                                                limit size of arguments in log entries | `2048`
+`node.da-provider.rpc.connection-wait` | duration                                                          how long to wait for initial connection | None
+`node.da-provider.rpc.jwtsecret` | string                                                                  path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`node.da-provider.rpc.retries` | uint                                                                      number of retries in case of failure(0 mean one attempt) | `3`
+`node.da-provider.rpc.retry-delay` | duration                                                              delay between retries | None
+`node.da-provider.rpc.retry-errors` | string                                                               Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`node.da-provider.rpc.timeout` | duration                                                                  per-response timeout (0-disabled) | None
+`node.da-provider.rpc.url` | string                                                                        url of server, use self for loopback websocket, self-auth for loopback with authentication | None
+`node.da-provider.rpc.websocket-message-size-limit` | int                                                  websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`node.da-provider.store-rpc-method` | string                                                               name of the store rpc method on the daprovider server (used when data streaming is disabled) | `daprovider_store`
+`node.da-provider.use-data-streaming` | use data streaming protocol for storing large payloads | None
+`node.da-provider.with-writer` | implies if the daprovider rpc server supports writer interface | None
 `node.dangerous.disable-blob-reader` | DANGEROUS! disables the EIP-4844 blob reader, which is necessary to read batches | None
 `node.dangerous.no-l1-listener` | DANGEROUS! disables listening to L1. To be used in test nodes only | None
 `node.dangerous.no-sequencer-coordinator` | DANGEROUS! allows sequencing without sequencer-coordinator | None
 `node.data-availability.enable` | enable Anytrust Data Availability mode | None
 `node.data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
 `node.data-availability.parent-chain-connection-attempts` | int                                            parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
-`node.data-availability.parent-chain-node-url` | string                                                    URL for parent chain node, only used in standalone daserver; when running as part of a node that node's L1 configuration is used | None
+`node.data-availability.parent-chain-node-url` | string                                                    URL for parent chain node, only used in standalone daserver and daprovider; when running as part of a node that node's L1 configuration is used | None
 `node.data-availability.request-timeout` | duration                                                        Data Availability Service timeout duration for Store requests | `5s`
 `node.data-availability.rest-aggregator.enable` | enable retrieval of sequencer batch data from a list of remote REST endpoints; if other DAS storage types are enabled, this mode is used as a fallback | None
 `node.data-availability.rest-aggregator.max-per-endpoint-stats` | int                                      number of stats entries (latency and success rate) to keep for each REST endpoint; controls whether strategy is faster or slower to respond to changing conditions | `20`
@@ -524,12 +650,18 @@ Option | Description | Default
 `node.data-availability.rest-aggregator.wait-before-try-next` | duration                                   time to wait until trying the next set of REST endpoints while waiting for a response; the next set of REST endpoints is determined by the strategy selected | `2s`
 `node.data-availability.rpc-aggregator.assumed-honest` | int                                               Number of assumed honest backends (H). If there are N backends, K=N+1-H valid responses are required to consider an Store request to be successful. | None
 `node.data-availability.rpc-aggregator.backends` | backendConfigList                                       JSON RPC backend configuration. This can be specified on the command line as a JSON array, eg: [{"url": "...", "pubkey": "..."},...], or as a JSON array in the config file. | `null`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.max-store-chunk-body-size` | int         maximum HTTP body size for chunked store requests | `5242880`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.finalize-stream` | string    name of the RPC method to finalize a chunked data stream | `das_commitChunkedStore`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.start-stream` | string       name of the RPC method to start a chunked data stream | `das_startChunkedStore`
+`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.stream-chunk` | string       name of the RPC method to send a chunk of data | `das_sendChunk`
+`node.data-availability.rpc-aggregator.das-rpc-client.enable-chunked-store` | enable data to be sent to DAS in chunks instead of all at once | `true`
+`node.data-availability.rpc-aggregator.das-rpc-client.server-url` | string                                 URL of DAS server to connect to | None
 `node.data-availability.rpc-aggregator.enable` | enable storage of sequencer batch data from a list of RPC endpoints; this should only be used by the batch poster and not in combination with other DAS storage types | None
-`node.data-availability.rpc-aggregator.max-store-chunk-body-size` | int                                    maximum HTTP POST body size to use for individual batch chunks, including JSON RPC overhead and an estimated overhead of 512B of headers | `524288`
 `node.data-availability.sequencer-inbox-address` | string                                                  parent chain address of SequencerInbox contract | None
 `node.delayed-sequencer.enable` | enable delayed sequencer | None
 `node.delayed-sequencer.finalize-distance` | int                                                           how many blocks in the past L1 block is considered final (ignored when using Merge finality) | `20`
 `node.delayed-sequencer.require-full-finality` | whether to wait for full finality before sequencing delayed messages | None
+`node.delayed-sequencer.rescan-interval` | duration                                                        frequency to rescan for new delayed messages (the parent chain reader's poll-interval config is more important than this) | `1s`
 `node.delayed-sequencer.use-merge-finality` | whether to use The Merge's notion of finality before sequencing delayed messages | `true`
 `node.feed.input.enable-compression` | enable per message deflate compression support | `true`
 `node.feed.input.reconnect-initial-backoff` | duration                                                     initial duration to wait before reconnect | `1s`
@@ -543,6 +675,7 @@ Option | Description | Default
 `node.feed.input.verify.allowed-addresses` | strings                                                       a list of allowed addresses | None
 `node.feed.input.verify.dangerous.accept-missing` | accept empty as valid signature | `true`
 `node.feed.output.addr` | string                                                                           address to bind the relay feed output to | None
+`node.feed.output.backlog.enable-backlog-deep-copy` | enable deep copying of L2 messages for memory profiling (debug only) | None
 `node.feed.output.backlog.segment-limit` | int                                                             the maximum number of messages each segment within the backlog can contain | `240`
 `node.feed.output.client-delay` | duration                                                                 delay the first messages sent to each client by this amount | None
 `node.feed.output.client-timeout` | duration                                                               duration to wait before timing out connections to client | `15s`
@@ -551,7 +684,6 @@ Option | Description | Default
 `node.feed.output.connection-limits.per-ipv6-cidr-48-limit` | int                                          limit ipv6 clients, as identified by IPv6 address masked with /48, to this many connections to this relay | `20`
 `node.feed.output.connection-limits.per-ipv6-cidr-64-limit` | int                                          limit ipv6 clients, as identified by IPv6 address masked with /64, to this many connections to this relay | `10`
 `node.feed.output.connection-limits.reconnect-cooldown-period` | duration                                  time to wait after a relay client disconnects before the disconnect is registered with respect to the limit for this client | None
-`node.feed.output.disable-signing` | don't sign feed messages | `true`
 `node.feed.output.enable` | enable broadcaster | None
 `node.feed.output.enable-compression` | enable per message deflate compression support | None
 `node.feed.output.handshake-timeout` | duration                                                            duration to wait before timing out HTTP to WS upgrade | `1s`
@@ -572,20 +704,20 @@ Option | Description | Default
 `node.inbox-reader.check-delay` | duration                                                                 the maximum time to wait between inbox checks (if not enough new blocks are found) | `1m0s`
 `node.inbox-reader.default-blocks-to-read` | uint                                                          the default number of blocks to read at once (will vary based on traffic by default) | `100`
 `node.inbox-reader.delay-blocks` | uint                                                                    number of latest blocks to ignore to reduce reorgs | None
-`node.inbox-reader.hard-reorg` | erase future transactions in addition to overwriting existing ones on reorg | None
 `node.inbox-reader.max-blocks-to-read` | uint                                                              if adjust-blocks-to-read is enabled, the maximum number of blocks to read at once | `2000`
 `node.inbox-reader.min-blocks-to-read` | uint                                                              the minimum number of blocks to read at once (when caught up lowers load on L1) | `1`
 `node.inbox-reader.read-mode` | string                                                                     mode to only read latest or safe or finalized L1 blocks. Enabling safe or finalized disables feed input and output. Defaults to latest. Takes string input, valid strings- latest, safe, finalized | `latest`
 `node.inbox-reader.target-messages-read` | uint                                                            if adjust-blocks-to-read is enabled, the target number of messages to read at once | `500`
-`node.maintenance.lock.background-lock` | should node always try grabing lock in background | None
+`node.maintenance.check-interval` | duration                                                               how often to check if maintenance should be run | `1m0s`
+`node.maintenance.enable` | enable maintenance runner | None
+`node.maintenance.lock.background-lock` | should node always try grabbing lock in background | None
 `node.maintenance.lock.enable` | if false, always treat this as locked and don't write the lock to redis | `true`
 `node.maintenance.lock.key` | string                                                                       key for lock | None
 `node.maintenance.lock.lockout-duration` | duration                                                        how long lock is held | `1m0s`
 `node.maintenance.lock.my-id` | string                                                                     this node's id prefix when acquiring the lock (optional) | None
 `node.maintenance.lock.refresh-duration` | duration                                                        how long between consecutive calls to redis | `10s`
-`node.maintenance.time-of-day` | string                                                                    UTC 24-hour time of day to run maintenance (currently only db compaction) at (e.g. 15:00) | None
 `node.message-pruner.enable` | enable message pruning | `true`
-`node.message-pruner.min-batches-left` | uint                                                              min number of batches not pruned | `2`
+`node.message-pruner.min-batches-left` | uint                                                              min number of batches not pruned | `1000`
 `node.message-pruner.prune-interval` | duration                                                            interval for running message pruner | `1m0s`
 `node.parent-chain-reader.dangerous.wait-for-tx-approval-safe-poll` | duration                             Dangerous! only meant to be used by system tests | None
 `node.parent-chain-reader.enable` | enable reader connection | `true`
@@ -596,19 +728,23 @@ Option | Description | Default
 `node.parent-chain-reader.subscribe-err-interval` | duration                                               interval for subscribe error | `5m0s`
 `node.parent-chain-reader.tx-timeout` | duration                                                           timeout when waiting for a transaction | `5m0s`
 `node.parent-chain-reader.use-finality-data` | use l1 data about finalized/safe blocks | `true`
+`node.resource-mgmt.mem-free-limit` | string                                                               Decline RPC calls if free memory excluding the page cache is below this amount | None
+`node.seq-coordinator.block-metadata-duration` | duration                                                  expiration duration for block metadata keys in Redis | `240h0m0s`
 `node.seq-coordinator.chosen-healthcheck-addr` | string                                                    if non-empty, launch an HTTP service binding to this address that returns status code 200 when chosen and 503 otherwise | None
 `node.seq-coordinator.delete-finalized-msgs` | enable deleting of finalized messages from redis | `true`
 `node.seq-coordinator.enable` | enable sequence coordinator | None
 `node.seq-coordinator.handoff-timeout` | duration                                                          the maximum amount of time to spend waiting for another sequencer to accept the lockout when handing it off on shutdown or db compaction | `30s`
-`node.seq-coordinator.lockout-duration` | duration | `1m0s`
-`node.seq-coordinator.lockout-spare` | duration | `30s`
+`node.seq-coordinator.lockout-duration` | duration                                                         duration to hold the sequencer lockout after acquiring it | `1m0s`
+`node.seq-coordinator.lockout-spare` | duration                                                            time to subtract from lockout duration to ensure timely renewal | `30s`
 `node.seq-coordinator.msg-per-poll` | uint                                                                 will only be marked as wanting the lockout if not too far behind | `2000`
 `node.seq-coordinator.my-url` | string                                                                     url for this sequencer if it is the chosen | `<?INVALID-URL?>`
+`node.seq-coordinator.new-redis-url` | string                                                              switch to the new Redis URL to coordinate via | None
+`node.seq-coordinator.redis-quorum-size` | uint                                                            the quorum size needed to qualify a redis GET as valid | `1`
 `node.seq-coordinator.redis-url` | string                                                                  the Redis URL to coordinate via | None
 `node.seq-coordinator.release-retries` | int                                                               the number of times to retry releasing the wants lockout and chosen one status on shutdown | `4`
-`node.seq-coordinator.retry-interval` | duration | `50ms`
+`node.seq-coordinator.retry-interval` | duration                                                           interval to wait before retrying after an error | `50ms`
 `node.seq-coordinator.safe-shutdown-delay` | duration                                                      if non-zero will add delay after transferring control | `5s`
-`node.seq-coordinator.seq-num-duration` | duration | `240h0m0s`
+`node.seq-coordinator.seq-num-duration` | duration                                                         expiration duration for message count keys in Redis | `240h0m0s`
 `node.seq-coordinator.signer.ecdsa.accept-sequencer` | accept verified message from sequencer | `true`
 `node.seq-coordinator.signer.ecdsa.allowed-addresses` | strings                                            a list of allowed addresses | None
 `node.seq-coordinator.signer.ecdsa.dangerous.accept-missing` | accept empty as valid signature | `true`
@@ -617,14 +753,13 @@ Option | Description | Default
 `node.seq-coordinator.signer.symmetric.dangerous.disable-signature-verification` | disable message signature verification | None
 `node.seq-coordinator.signer.symmetric.fallback-verification-key` | string                                 a fallback key used for message verification | None
 `node.seq-coordinator.signer.symmetric.signing-key` | string                                               a 32-byte (64-character) hex string used to sign messages, or a path to a file containing it | None
-`node.seq-coordinator.update-interval` | duration | `250ms`
+`node.seq-coordinator.update-interval` | duration                                                          interval between sequencer coordinator update attempts | `250ms`
 `node.sequencer` | enable sequencer | None
 `node.staker.confirmation-blocks` | int                                                                    confirmation blocks | `12`
 `node.staker.contract-wallet-address` | string                                                             validator smart contract wallet public address | None
 `node.staker.dangerous.ignore-rollup-wasm-module-root` | DANGEROUS! make assertions even when the wasm module root is wrong | None
 `node.staker.dangerous.without-block-validator` | DANGEROUS! allows running an L1 validator without a block validator | None
 `node.staker.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
-`node.staker.data-poster.blob-tx-replacement-times` | durationSlice                                        comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `[5m0s,10m0s,30m0s,1h0m0s,4h0m0s,8h0m0s,16h0m0s,22h0m0s]`
 `node.staker.data-poster.dangerous.clear-dbstorage` | clear database storage | None
 `node.staker.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.staker.data-poster.elapsed-time-base` | duration                                                     unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
@@ -637,14 +772,12 @@ Option | Description | Default
 `node.staker.data-poster.external-signer.root-ca` | string                                                 external signer root CA | None
 `node.staker.data-poster.external-signer.url` | string                                                     external signer url | None
 `node.staker.data-poster.legacy-storage-encoding` | encodes items in a legacy way (as it was before dropping generics) | None
-`node.staker.data-poster.max-blob-tx-tip-cap-gwei` | float                                                 the maximum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.staker.data-poster.max-fee-bid-multiple-bips` | uint                                                 the maximum multiple of the current price to bid for a transaction's fees (may be exceeded due to min rbf increase, 0 = unlimited) | `100000`
 `node.staker.data-poster.max-fee-cap-formula` | string                                                     mathematical formula to calculate maximum fee cap gwei the result of which would be float64. This expression is expected to be evaluated please refer https://github.com/Knetic/govaluate/blob/master/MANUAL.md to find all available mathematical operators. Currently available variables to construct the formula are BacklogOfBatches, UrgencyGWei, ElapsedTime, ElapsedTimeBase, ElapsedTimeImportance, and TargetPriceGWei (default "((BacklogOfBatches * UrgencyGWei) ** 2) + ((ElapsedTime/ElapsedTimeBase) ** 2) * ElapsedTimeImportance + TargetPriceGWei") | None
 `node.staker.data-poster.max-mempool-transactions` | uint                                                  the maximum number of transactions to have queued in the mempool at once (0 = unlimited) | `1`
 `node.staker.data-poster.max-mempool-weight` | uint                                                        the maximum number of weight (weight = min(1, tx.blobs)) to have queued in the mempool at once (0 = unlimited) | `1`
 `node.staker.data-poster.max-queued-transactions` | int                                                    the maximum number of unconfirmed transactions to track at once (0 = unlimited) | None
 `node.staker.data-poster.max-tip-cap-gwei` | float                                                         the maximum tip cap to post transactions at | `1.2`
-`node.staker.data-poster.min-blob-tx-tip-cap-gwei` | float                                                 the minimum tip cap to post EIP-4844 blob carrying transactions at | `1`
 `node.staker.data-poster.min-tip-cap-gwei` | float                                                         the minimum tip cap to post transactions at | `0.05`
 `node.staker.data-poster.nonce-rbf-soft-confs` | uint                                                      the maximum probable reorg depth, used to determine when a transaction will no longer likely need replaced-by-fee | `1`
 `node.staker.data-poster.redis-signer.dangerous.disable-signature-verification` | disable message signature verification | None
@@ -680,9 +813,13 @@ Option | Description | Default
 `node.transaction-streamer.execute-message-loop-delay` | duration                                          delay when polling calls to execute messages | `100ms`
 `node.transaction-streamer.max-broadcaster-queue-size` | int                                               maximum cache of pending broadcaster messages | `50000`
 `node.transaction-streamer.max-reorg-resequence-depth` | int                                               maximum number of messages to attempt to resequence on reorg (0 = never resequence, -1 = always resequence) | `1024`
+`node.transaction-streamer.shutdown-on-blockhash-mismatch` | if set the node gracefully shuts down upon detecting mismatch in feed and locally computed blockhash. This is turned off by default | None
+`node.transaction-streamer.sync-till-block` | uint                                                         node will not sync past this block | None
+`node.transaction-streamer.track-block-metadata-from` | uint                                               block number to start saving blockmetadata, 0 to disable | None
 `parent-chain.blob-client.authorization` | string                                                          Value to send with the HTTP Authorization: header for Beacon REST requests, must include both scheme and scheme parameters | None
 `parent-chain.blob-client.beacon-url` | string                                                             Beacon Chain RPC URL to use for fetching blobs (normally on port 3500) | None
 `parent-chain.blob-client.blob-directory` | string                                                         Full path of the directory to save fetched blobs | None
+`parent-chain.blob-client.dangerous.skip-blob-proof-verification` | DANGEROUS! Skips verification of KZG proofs for blobs fetched from the beacon node. | None
 `parent-chain.blob-client.secondary-beacon-url` | string                                                   Backup beacon Chain RPC URL to use for fetching blobs (normally on port 3500) when unable to fetch from primary | None
 `parent-chain.connection.arg-log-limit` | uint                                                             limit size of arguments in log entries | `2048`
 `parent-chain.connection.connection-wait` | duration                                                       how long to wait for initial connection | `1m0s`
@@ -709,19 +846,20 @@ Option | Description | Default
 `persistent.pebble.experimental.l-base-max-bytes` | int                                                    The maximum number of bytes for LBase. The base level is the level which L0 is compacted into. The base level is determined dynamically based on the existing data in the LSM. The maximum number of bytes for other levels is computed dynamically based on the base level's maximum size. When the maximum number of bytes for a level is exceeded, compaction is requested. | `67108864`
 `persistent.pebble.experimental.l0-compaction-concurrency` | int                                           threshold of L0 read-amplification at which compaction concurrency is enabled (if compaction-debt-concurrency was not already exceeded). Every multiple of this value enables another concurrent compaction up to max-concurrent-compactions. | `10`
 `persistent.pebble.experimental.l0-compaction-file-threshold` | int                                        count of L0 files necessary to trigger an L0 compaction | `500`
-`persistent.pebble.experimental.l0-compaction-threshold` | int                                             amount of L0 read-amplification necessary to trigger an L0 compaction | `4`
+`persistent.pebble.experimental.l0-compaction-threshold` | int                                             amount of L0 read-amplification necessary to trigger an L0 compaction | `2`
 `persistent.pebble.experimental.l0-stop-writes-threshold` | int                                            hard limit on L0 read-amplification, computed as the number of L0 sublevels. Writes are stopped when this threshold is reached | `12`
 `persistent.pebble.experimental.max-writer-concurrency` | int                                              maximum number of compression workers the compression queue is allowed to use. If max-writer-concurrency > 0, then the Writer will use parallelism, to compress and write blocks to disk. Otherwise, the writer will compress and write blocks to disk synchronously. | None
-`persistent.pebble.experimental.mem-table-stop-writes-threshold` | int                                     hard limit on the number of queued of MemTables | `2`
+`persistent.pebble.experimental.mem-table-stop-writes-threshold` | int                                     hard limit on the number of queued of MemTables | `4`
 `persistent.pebble.experimental.read-compaction-rate` | AllowedSeeks                                       controls the frequency of read triggered compactions by adjusting AllowedSeeks in manifest.FileMetadata: AllowedSeeks = FileSize / ReadCompactionRate | `16000`
 `persistent.pebble.experimental.read-sampling-multiplier` | int                                            a multiplier for the readSamplingPeriod in iterator.maybeSampleRead() to control the frequency of read sampling to trigger a read triggered compaction. A value of -1 prevents sampling and disables read triggered compactions. Geth default is -1. The pebble default is 1 << 4. which gets multiplied with a constant of 1 << 16 to yield 1 << 20 (1MB). | `-1`
 `persistent.pebble.experimental.target-byte-deletion-rate` | int                                           rate (in bytes per second) at which sstable file deletions are limited to (under normal circumstances). | None
 `persistent.pebble.experimental.target-file-size` | int                                                    target file size for the level 0 | `2097152`
-`persistent.pebble.experimental.target-file-size-equal-levels` | if true same target-file-size will be uses for all levels, otherwise target size for layer n = 2 * target size for layer n - 1 | `true`
-`persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | None
+`persistent.pebble.experimental.target-file-size-equal-levels` | if true same target-file-size will be uses for all levels, otherwise target size for layer n = 2 * target size for layer n - 1 | None
+`persistent.pebble.experimental.wal-bytes-per-sync` | int                                                  number of bytes to write to a write-ahead log (WAL) before calling Sync on it in the background | `512000`
 `persistent.pebble.experimental.wal-dir` | string                                                          absolute path of directory to store write-ahead logs (WALs) in. If empty, WALs will be stored in the same directory as sstables | None
 `persistent.pebble.experimental.wal-min-sync-interval` | int                                               minimum duration in microseconds between syncs of the WAL. If WAL syncs are requested faster than this interval, they will be artificially delayed. | None
-`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `10`
+`persistent.pebble.max-concurrent-compactions` | int                                                       maximum number of concurrent compactions | `2`
+`persistent.pebble.sync-mode` | if true sync mode is used (data needs to be written to WAL before the write is marked as completed) | None
 `pprof` | enable pprof | None
 `pprof-cfg.addr` | string                                                                                  pprof server address | `127.0.0.1`
 `pprof-cfg.port` | int                                                                                     pprof server port | `6071`
@@ -734,7 +872,7 @@ Option | Description | Default
 `validation.arbitrator.execution.initial-steps` | uint                                                     initial steps between machines | `100000`
 `validation.arbitrator.output-path` | string                                                               path to write machines to | `./target/output`
 `validation.arbitrator.redis-validation-server-config.buffer-reads` | buffer reads (read next while working) | `true`
-`validation.arbitrator.redis-validation-server-config.consumer-config.keepalive-timeout` | duration        timeout after which consumer is considered inactive if heartbeat wasn't performed | `5m0s`
+`validation.arbitrator.redis-validation-server-config.consumer-config.idletime-to-autoclaim` | duration    After a message spends this amount of time in PEL (Pending Entries List i.e claimed by another consumer but not Acknowledged) it will be allowed to be autoclaimed by other consumers | `5m0s`
 `validation.arbitrator.redis-validation-server-config.consumer-config.response-entry-timeout` | duration   timeout for response entry | `1h0m0s`
 `validation.arbitrator.redis-validation-server-config.module-roots` | strings                              Supported module root hashes | None
 `validation.arbitrator.redis-validation-server-config.redis-url` | string                                  url of redis server | None
@@ -743,10 +881,12 @@ Option | Description | Default
 `validation.arbitrator.redis-validation-server-config.workers` | int                                       number of validation threads (0 to use number of CPUs) | None
 `validation.arbitrator.workers` | int                                                                      number of concurrent validation threads | None
 `validation.jit.cranelift` | use Cranelift instead of LLVM when validating blocks using the jit-accelerated block validator | `true`
+`validation.jit.jit-path` | string                                                                         path to jit executable, if empty, attempts to find jit executable relative to nitro binary or in PATH | None
+`validation.jit.max-execution-time` | duration                                                             if execution time used by a jit wasm exceeds this limit, a rpc error is returned | `10m0s`
 `validation.jit.wasm-memory-usage-limit` | int                                                             if memory used by a jit wasm exceeds this limit, a warning is logged | `4294967296`
 `validation.jit.workers` | int                                                                             number of concurrent validation threads | None
 `validation.use-jit` | use jit for validation | `true`
-`validation.wasm.allowed-wasm-module-roots` | strings                                                      list of WASM module roots or mahcine base paths to match against on-chain WasmModuleRoot | None
+`validation.wasm.allowed-wasm-module-roots` | strings                                                      list of WASM module roots or machine base paths to match against on-chain WasmModuleRoot | None
 `validation.wasm.enable-wasmroots-check` | enable check for compatibility of on-chain WASM module root with node | `true`
 `validation.wasm.root-path` | string                                                                       path to machine folders, each containing wasm files (machine.wavm.br, replay.wasm) | None
 `ws.addr` | string                                                                                         WS-RPC server listening interface | None

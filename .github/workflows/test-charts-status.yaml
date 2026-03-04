@@ -1,0 +1,36 @@
+name: Test Charts (Status Check)
+
+on:
+  pull_request_target:
+    branches:
+      - main
+      - feat/secure-test-install-workflow
+    paths:
+      - "charts/**"
+
+# Limit permissions to only what's needed
+permissions:
+  checks: write  # Needed to create status check
+
+jobs:
+  create-status-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # We don't check out any code here for security
+      - name: Create initial pending status check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Chart Installation Test',
+              head_sha: context.payload.pull_request.head.sha,
+              status: 'in_progress',
+              output: {
+                title: 'Chart Installation Test in progress',
+                summary: 'The chart installation test is currently running. Please wait for the results.'
+              }
+            });

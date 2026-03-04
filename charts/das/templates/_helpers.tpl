@@ -36,9 +36,6 @@ Common labels
 {{- define "das.labels" -}}
 helm.sh/chart: {{ include "das.chart" . }}
 {{ include "das.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
@@ -82,5 +79,5 @@ curl "http://localhost:{{ index .Values.configmap.data "rpc-port" }}" -X POST \
 {{- define "das.env" -}}
 {{- end -}}
 
-
-
+{{- define "das.lifecycle" -}}
+{{- end -}}

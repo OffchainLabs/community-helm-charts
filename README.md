@@ -13,3 +13,7 @@ helm repo add offchainlabs https://charts.arbitrum.io
 ```console
 helm install <my-release> offchainlabs/<chart>
 ```
+
+## Grafana Dashboards for Nitro
+
+Grafana dashboards can be found in the [Releases section](https://github.com/OffchainLabs/community-helm-charts/releases) of this repository.

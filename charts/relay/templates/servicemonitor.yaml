@@ -24,7 +24,7 @@ spec:
       scheme: {{ .Values.serviceMonitor.scheme }}
       {{- end }}
       {{- if .Values.serviceMonitor.tlsConfig }}
-      tlsConfig: 
+      tlsConfig:
         {{- toYaml .Values.serviceMonitor.tlsConfig | nindent 8 }}
       {{- end }}
       {{- with .Values.serviceMonitor.relabelings }}
@@ -36,4 +36,5 @@ spec:
   selector:
     matchLabels:
       {{- include "relay.selectorLabels" . | nindent 6 }}
+  fallbackScrapeProtocol: {{ .Values.serviceMonitor.fallbackScrapeProtocol }}
 {{- end }}

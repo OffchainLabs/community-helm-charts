@@ -11,6 +11,12 @@ spec:
     matchLabels:
       {{- include "das.selectorLabels" . | nindent 6 }}
   podManagementPolicy: Parallel
+  {{- if .Values.updateStrategy }}
+  {{- with .Values.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
   template:
     metadata:
       annotations:
@@ -47,7 +53,7 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-          - mountPath: /data/das-storage
+          - mountPath: {{ index .Values "configmap" "data" "data-availability" "local-file-storage" "data-dir" }}
             name: localfilestorage
       {{- end }}
       {{- if .Values.initContainers }}
@@ -63,12 +69,8 @@ spec:
           command: ["sleep"]
           args: ["infinity"]
           {{- else if .Values.commandOverride.enabled }}
-          {{- with .Values.commandOverride.command }}
-          command: {{- toYaml . | nindent 8}}
-          {{- end }}
-          {{- with .Values.commandOverride.args }}
-          args: {{- toYaml . | nindent 8 }}
-          {{- end }}
+          command: {{ .Values.commandOverride.command | toJson }}
+          args: {{ .Values.commandOverride.args | toJson }}
           {{- else }}
           command: [/usr/local/bin/daserver]
           args:
@@ -81,6 +83,7 @@ spec:
             {{- range $key, $value := .Values.customArgs }}
             - --{{ $key }}={{ $value | quote }}
             {{- end }}
+          {{- end }}
           ports:
             {{- if and .Values.configmap.data.http .Values.configmap.data.http.port}}
             - name: http-rpc
@@ -188,12 +191,12 @@ spec:
           {{- with .Values.extraEnv }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
+          lifecycle:
+          {{- include "das.lifecycle" . | nindent 12 }}
+          {{- with .Values.lifecycle }}
+          {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-          {{- if index .Values "configmap" "data" "data-availability" "local-db-storage" "enable" }}
-          - name: localdbstorage
-            mountPath: {{ index .Values "configmap" "data" "data-availability" "local-db-storage" "data-dir" }}
-          {{- end }}
           {{- if index .Values "configmap" "data" "data-availability" "local-file-storage" "enable" }}
           - name: localfilestorage
             mountPath: {{ index .Values "configmap" "data" "data-availability" "local-file-storage" "data-dir" }}
@@ -246,27 +249,6 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
   volumeClaimTemplates:
-    {{- if index .Values "configmap" "data" "data-availability" "local-db-storage" "enable" }}
-    - metadata:
-        name: localdbstorage
-        {{- with .Values.storageAnnotations }}
-        annotations:
-        {{- toYaml . | nindent 10 }}
-      {{- end }}
-        labels:
-          app: {{ template "das.name" . }}
-          release: {{ .Release.Name }}
-          heritage: {{ .Release.Service }}
-      spec:
-        accessModes:
-        {{- toYaml .Values.persistence.localdbstorage.accessModes | nindent 8 }}
-        {{- if .Values.persistence.localdbstorage.storageClassName }}
-        storageClassName: {{ .Values.persistence.localdbstorage.storageClassName | quote }}
-        {{- end }}
-        resources:
-          requests:
-            storage: {{ .Values.persistence.localdbstorage.size | quote }}
-    {{- end }}
     {{- if index .Values "configmap" "data" "data-availability" "local-file-storage" "enable" }}
     - metadata:
         name: localfilestorage
