@@ -26,10 +26,12 @@ jobs:
         
       - name: Get modified charts
         id: get-modified-charts
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           # GitHub Actions checks out a merge commit by default
           # We can use git diff against the PR base to find changed files
-          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} HEAD)
+          BASE_SHA=$(git merge-base "$PR_BASE_SHA" HEAD)
           
           # Get all modified values.yaml files
           paths=$(git diff --name-only $BASE_SHA HEAD | grep 'charts/.*/values.yaml' | cut -d/ -f1,2 | uniq | tr '\n' ' ')

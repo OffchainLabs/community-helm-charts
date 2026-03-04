@@ -18,8 +18,11 @@ jobs:
 
       - name: Get modified charts
         id: get-modified-charts
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
         run: |
-          paths=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep ^charts/ | cut -d/ -f1,2 | uniq | tr '\n' ' ')
+          paths=$(git diff --name-only "$BEFORE_SHA" "$AFTER_SHA" | grep ^charts/ | cut -d/ -f1,2 | uniq | tr '\n' ' ')
           echo "paths=${paths}" >> $GITHUB_OUTPUT
 
   push-charts:
@@ -31,8 +34,10 @@ jobs:
 
       # Create and push git tags
       - name: Create and push git tags
+        env:
+          MODIFIED_PATHS: ${{ needs.get-modified-charts.outputs.paths }}
         run: |
-          IFS=' ' read -ra ADDR <<< "${{ needs.get-modified-charts.outputs.paths }}"
+          IFS=' ' read -ra ADDR <<< "$MODIFIED_PATHS"
           for path in "${ADDR[@]}"; do
             # Extract the chart name from the path
             chart_name=$(basename $path)
