@@ -6,6 +6,9 @@ on:
     paths:
       - "charts/**"
 
+permissions:
+  contents: write
+
 jobs:
   get-modified-charts:
     runs-on: ubuntu-4
