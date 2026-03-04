@@ -23,7 +23,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch_name }}
 
-      - uses: a-thomas-22/helm-push-action@v0.0.29
+      - uses: a-thomas-22/helm-push-action@780d6973e12f5dd24dcd6f4a2975f14d87c62699 # v0.0.29
         env:
           PATHS: ${{ github.event.inputs.chart_dir }}
           VERSION: ${{ github.event.inputs.chart_version }}-dev 
