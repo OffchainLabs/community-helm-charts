@@ -17,6 +17,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: push-charts-dev-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   push-charts:
     runs-on: ubuntu-4
