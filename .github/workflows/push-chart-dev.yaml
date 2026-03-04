@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-4
     steps:
       - name: Checkout code
-        uses: actions/checkout@master
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.inputs.branch_name }}
 
