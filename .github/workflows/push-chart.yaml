@@ -12,7 +12,7 @@ jobs:
     outputs:
       paths: ${{ steps.get-modified-charts.outputs.paths }}
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-4
     if: ${{ needs.get-modified-charts.outputs.paths != '' }}
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
 
       # Create and push git tags
       - name: Create and push git tags
