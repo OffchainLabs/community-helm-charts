@@ -65,7 +65,7 @@ spec:
             - -c
             - |
               #!/usr/bin/env bash
-              set -eo pipefail
+              set -e pipefail
 
               trap 'exit 0' TERM
 
