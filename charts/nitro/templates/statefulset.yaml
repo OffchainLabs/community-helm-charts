@@ -67,7 +67,7 @@ spec:
               #!/usr/bin/env bash
               set -eo pipefail
 
-              trap 'exit 0' SIGTERM
+              trap 'exit 0' TERM
 
               sleep infinity &
               wait $!
