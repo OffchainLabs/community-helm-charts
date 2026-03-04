@@ -4,9 +4,6 @@ on:
   pull_request_target:
     branches:
       - main
-      - feat/secure-test-install-workflow
-    paths:
-      - "charts/**"
 
 # Limit permissions to only what's needed
 permissions:
@@ -15,10 +12,45 @@ permissions:
 jobs:
   create-status-check:
     runs-on: ubuntu-latest
-    
+
     steps:
       # We don't check out any code here for security
-      - name: Create initial pending status check
+      - name: Check if charts were modified
+        id: check-charts
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100
+            });
+            const chartFiles = files.filter(f => f.filename.startsWith('charts/'));
+            core.setOutput('has_chart_changes', chartFiles.length > 0 ? 'true' : 'false');
+
+      - name: Create success status (no chart changes)
+        if: steps.check-charts.outputs.has_chart_changes == 'false'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Chart Installation Test',
+              head_sha: context.payload.pull_request.head.sha,
+              status: 'completed',
+              conclusion: 'success',
+              output: {
+                title: 'No chart changes detected',
+                summary: 'This PR does not modify any charts. Chart installation test is not required.'
+              }
+            });
+
+      - name: Create pending status (chart changes detected)
+        if: steps.check-charts.outputs.has_chart_changes == 'true'
         uses: actions/github-script@v7
         with:
           github-token: ${{ github.token }}
