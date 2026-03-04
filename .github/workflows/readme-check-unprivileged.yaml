@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: readme-check-${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
   check-readme-updates:
     runs-on: ubuntu-latest

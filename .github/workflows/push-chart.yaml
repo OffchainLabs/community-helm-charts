@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: push-charts-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   get-modified-charts:
     runs-on: ubuntu-4

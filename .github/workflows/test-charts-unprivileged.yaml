@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: test-charts-${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
   identify-changes:
     runs-on: ubuntu-latest
