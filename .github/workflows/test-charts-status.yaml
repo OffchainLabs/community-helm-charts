@@ -55,14 +55,17 @@ jobs:
         with:
           github-token: ${{ github.token }}
           script: |
+            const { owner, repo } = context.repo;
+            const actionsUrl = `https://github.com/${owner}/${repo}/actions/workflows/test-install.yaml`;
             await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner,
+              repo,
               name: 'Chart Installation Test',
               head_sha: context.payload.pull_request.head.sha,
               status: 'in_progress',
+              details_url: actionsUrl,
               output: {
-                title: 'Chart Installation Test in progress',
-                summary: 'The chart installation test is currently running. Please wait for the results.'
+                title: 'Awaiting approval',
+                summary: `Chart changes detected. The privileged installation test requires [environment approval](${actionsUrl}) before it can run.`
               }
             });
