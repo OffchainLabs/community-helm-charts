@@ -51,9 +51,8 @@ jobs:
           token: ${{ steps.generate-token.outputs.token || secrets.RENOVATE_TOKEN || secrets.GITHUB_TOKEN }}
           renovate-version: 41.59.0
           docker-cmd-file: .github/renovate-entrypoint.sh
-          # NOTE: docker-user: root and mount-docker-socket: true have been
-          # removed for security. If Renovate needs Docker access (e.g., for
-          # post-upgrade tasks), re-enable with documented justification.
+          docker-user: root  # Required: entrypoint installs packages via apt-get and writes to /usr/local/bin/
+          mount-docker-socket: true  # Required: readmecli.py runs `docker run` to scrape CLI --help output
           env-regex: "^(?:RENOVATE_\\w+|LOG_LEVEL|GITHUB_COM_TOKEN)$"
         env:
           # Core configuration
