@@ -101,6 +101,12 @@ nitro args
 {{- fail (printf "configmap.data.conf.env-prefix '%s' conflicts with service name '%s'. This will cause Kubernetes service environment variables like %s_SERVICE_HOST to be interpreted as configuration keys. Use a different env-prefix or release name." $envPrefix $fullName (upper $fullName)) -}}
 {{- end -}}
 
+{{/* MALLOC_ARENA_MAX */}}
+{{- if and .Values.env.nitro.mallocArenaMax (get .Values.env.nitro.mallocArenaMax "enabled") -}}
+- name: MALLOC_ARENA_MAX
+  value: {{ .Values.env.nitro.mallocArenaMax.value | default 2 | quote }}
+{{- end }}
+
 {{/* Memory-based environment variables */}}
 {{- if and .Values.resources .Values.resources.limits .Values.resources.limits.memory .Values.env.nitro.goMemLimit.enabled -}}
 {{- $memory := .Values.resources.limits.memory -}}
@@ -111,9 +117,68 @@ nitro args
   {{- $valueMi = mulf $value 1024 -}}
 {{- else if eq $unit "Mi" -}}
   {{- $valueMi = $value -}}
-{{- end }}
+{{- end -}}
+
+{{/* Calculate non-Go memory subtraction if enabled */}}
+{{- $nonGoMiB := 0.0 -}}
+{{- if and .Values.env.nitro.goMemLimit.nonGoMemory (get .Values.env.nitro.goMemLimit.nonGoMemory "enabled") -}}
+
+  {{/* Read database-cache from configmap or use default */}}
+  {{- $databaseCache := float64 (.Values.env.nitro.goMemLimit.nonGoMemory.defaults.databaseCache | default 2048) -}}
+  {{- if and .Values.configmap.data.execution .Values.configmap.data.execution.caching -}}
+    {{- if hasKey .Values.configmap.data.execution.caching "database-cache" -}}
+      {{- $databaseCache = index .Values.configmap.data.execution.caching "database-cache" | float64 -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/* Pebble memtables = database-cache / 2 (derived, not directly configurable) */}}
+  {{- $memtables := divf $databaseCache 2.0 -}}
+
+  {{/* Read trie-clean-cache from configmap or use default */}}
+  {{- $trieCleanCache := float64 (.Values.env.nitro.goMemLimit.nonGoMemory.defaults.trieCleanCache | default 600) -}}
+  {{- if and .Values.configmap.data.execution .Values.configmap.data.execution.caching -}}
+    {{- if hasKey .Values.configmap.data.execution.caching "trie-clean-cache" -}}
+      {{- $trieCleanCache = index .Values.configmap.data.execution.caching "trie-clean-cache" | float64 -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/* Read snapshot-cache from configmap or use default */}}
+  {{- $snapshotCache := float64 (.Values.env.nitro.goMemLimit.nonGoMemory.defaults.snapshotCache | default 400) -}}
+  {{- if and .Values.configmap.data.execution .Values.configmap.data.execution.caching -}}
+    {{- if hasKey .Values.configmap.data.execution.caching "snapshot-cache" -}}
+      {{- $snapshotCache = index .Values.configmap.data.execution.caching "snapshot-cache" | float64 -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/* Read stylus-lru-cache-capacity from configmap or use default */}}
+  {{- $stylusLruCache := float64 (.Values.env.nitro.goMemLimit.nonGoMemory.defaults.stylusLruCache | default 256) -}}
+  {{- if and .Values.configmap.data.execution .Values.configmap.data.execution.caching -}}
+    {{- if hasKey .Values.configmap.data.execution.caching "stylus-lru-cache-capacity" -}}
+      {{- $stylusLruCache = index .Values.configmap.data.execution.caching "stylus-lru-cache-capacity" | float64 -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/* Malloc arena overhead: MALLOC_ARENA_MAX * arenaSize (default 64 MB per arena) */}}
+  {{- $arenaOverhead := 0.0 -}}
+  {{- if and .Values.env.nitro.mallocArenaMax (get .Values.env.nitro.mallocArenaMax "enabled") -}}
+    {{- $arenaCount := float64 (.Values.env.nitro.mallocArenaMax.value | default 2) -}}
+    {{- $arenaSize := float64 (.Values.env.nitro.goMemLimit.nonGoMemory.defaults.mallocArenaSize | default 64) -}}
+    {{- $arenaOverhead = mulf $arenaCount $arenaSize -}}
+  {{- end -}}
+
+  {{/* Total non-Go memory in MiB */}}
+  {{- $nonGoMiB = addf $databaseCache $memtables $trieCleanCache $snapshotCache $stylusLruCache $arenaOverhead -}}
+
+{{- end -}}
+
+{{/* GOMEMLIMIT = (memoryLimitMiB - nonGoMiB) * multiplier */}}
+{{/* When nonGoMemory is disabled, nonGoMiB is 0, so formula reduces to memoryLimitMiB * multiplier */}}
+{{- $goAvailable := subf $valueMi $nonGoMiB -}}
+{{- if le $goAvailable 0.0 -}}
+{{- fail (printf "non-Go memory (%dMiB) exceeds or equals container memory limit (%dMiB). Reduce cache sizes or increase memory limit." (int $nonGoMiB) (int $valueMi)) -}}
+{{- end -}}
 - name: GOMEMLIMIT
-  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.nitro.goMemLimit.multiplier | default 0.9))) | quote }}
+  value: {{ printf "%dMiB" (int (mulf $goAvailable ($.Values.env.nitro.goMemLimit.multiplier | default 0.9))) | quote }}
 {{- end }}
 
 {{- if and .Values.resources .Values.resources.limits .Values.resources.limits.memory .Values.env.resourceMgmtMemFreeLimit.enabled -}}
