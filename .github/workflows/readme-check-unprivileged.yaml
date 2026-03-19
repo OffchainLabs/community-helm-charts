@@ -56,20 +56,25 @@ jobs:
         run: |
           # Create a temporary directory
           mkdir -p temp_readme_files
-          
+
           changes_needed=false
+          generator_failed=false
           changes_details=()
-          
+
           IFS=' ' read -ra ADDR <<< "$paths"
           for chart in "${ADDR[@]}"; do
             echo "Checking README changes for ${chart}"
-            
+
             # Copy the existing README to a temporary file
             cp "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md"
-            
-            # Try to generate README to a temporary location
-            readme-generator --values "${chart}/values.yaml" --readme "temp_readme_files/$(basename ${chart})_README.md" || true
-            
+
+            # Generate README — fail the workflow if the generator errors
+            if ! readme-generator --values "${chart}/values.yaml" --readme "temp_readme_files/$(basename ${chart})_README.md"; then
+              echo "::error::readme-generator failed for ${chart}/values.yaml — check @param annotations"
+              generator_failed=true
+              continue
+            fi
+
             # Check if there are differences
             if diff -q "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md" > /dev/null; then
               echo "No changes needed for ${chart}/README.md"
@@ -80,10 +85,15 @@ jobs:
               changes_details+=("${chart}:needs_update")
             fi
           done
-          
+
+          if [[ "$generator_failed" == "true" ]]; then
+            echo "::error::readme-generator encountered errors. Fix the values.yaml @param annotations and retry."
+            exit 1
+          fi
+
           # Join the array with commas
           changes_details_str=$(IFS=,; echo "${changes_details[*]}")
-          
+
           # Set outputs for use in later steps
           echo "changes_needed=${changes_needed}" >> $GITHUB_OUTPUT
           echo "changes_details=${changes_details_str}" >> $GITHUB_OUTPUT
