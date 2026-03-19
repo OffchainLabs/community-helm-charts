@@ -4,5 +4,5 @@ description: A Helm chart for Arbitrum Nitro
 maintainers:
   - name: OffchainLabs
 type: application
-version: 0.8.7
+version: 0.8.8
 appVersion: "v3.9.7-75e084e"
