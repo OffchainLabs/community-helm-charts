@@ -231,10 +231,11 @@ service:
   loadBalancerClass: null
   loadBalancerSourceRanges: null
 
-## @param resources Resources for the container
+## @extra resources Resources for the container
 resources:
-  ## @param resources.requests Resource requests for the container
+  ## @extra resources.requests Resource requests for the container
   requests:
+    ## @param resources.requests.ephemeral-storage Ephemeral storage request for the container
     ephemeral-storage: 100Mi
 
 
