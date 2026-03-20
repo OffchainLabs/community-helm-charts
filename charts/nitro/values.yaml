@@ -55,6 +55,14 @@ updateStrategy:
 ## @param env.splitvalidator.goMaxProcs.multiplier The multiplier to use for CPU request (default 2)
 ## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
 ## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
+## @param env.nitro.goMemLimit.nonGoMemory.enabled Enable non-Go memory subtraction from GOMEMLIMIT calculation
+## @param env.nitro.goMemLimit.nonGoMemory.defaults.databaseCache Default Pebble block cache size in MiB (CGO)
+## @param env.nitro.goMemLimit.nonGoMemory.defaults.trieCleanCache Default trie-clean-cache size in MiB (fastcache/mmap)
+## @param env.nitro.goMemLimit.nonGoMemory.defaults.snapshotCache Default snapshot-cache size in MiB (fastcache/mmap)
+## @param env.nitro.goMemLimit.nonGoMemory.defaults.stylusLruCache Default stylus-lru-cache size in MiB (Rust/jemalloc)
+## @param env.nitro.goMemLimit.nonGoMemory.defaults.mallocArenaSize Default glibc malloc arena size in MiB
+## @param env.nitro.mallocArenaMax.enabled Enable setting MALLOC_ARENA_MAX to limit glibc arena count
+## @param env.nitro.mallocArenaMax.value Value for MALLOC_ARENA_MAX
 ## @param env.nitro.goMaxProcs.enabled Enable setting GOMAXPROCS for nitro
 ## @param env.nitro.goMaxProcs.multiplier The multiplier to use for CPU request (default 2)
 ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
@@ -73,6 +81,17 @@ env:
     goMemLimit:
       enabled: true
       multiplier: 0.9
+      nonGoMemory:
+        enabled: true
+        defaults:
+          databaseCache: 2048
+          trieCleanCache: 600
+          snapshotCache: 400
+          stylusLruCache: 256
+          mallocArenaSize: 64
+    mallocArenaMax:
+      enabled: true
+      value: 2
     goMaxProcs:
       enabled: false
       multiplier: 2
