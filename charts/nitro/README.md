@@ -399,6 +399,7 @@ Option | Description | Default
 `execution.sequencer.timeboost.redis-update-events-channel-size` | uint                                    size of update events' buffered channels in timeboost redis coordinator | `500`
 `execution.sequencer.timeboost.redis-url` | string                                                         the Redis URL for expressLaneService to coordinate via | `unset`
 `execution.sequencer.timeboost.sequencer-http-endpoint` | string                                           this sequencer's http endpoint | `http://localhost:8547`
+`execution.stylus-target.allow-fallback` | if true, fall back to an alternative compiler when compilation of a Stylus program fails | `true`
 `execution.stylus-target.amd64` | string                                                                   stylus programs compilation target for amd64 linux | `x86_64-linux-unknown+sse4.2+lzcnt+bmi`
 `execution.stylus-target.arm64` | string                                                                   stylus programs compilation target for arm64 linux | `arm64-linux-unknown+neon`
 `execution.stylus-target.extra-archs` | strings                                                            Comma separated list of extra architectures to cross-compile stylus program to and cache in wasm store (additionally to local target). Currently must include at least wavm. (supported targets: wavm, arm64, amd64, host) | `[wavm]`
