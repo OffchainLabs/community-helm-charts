@@ -13,7 +13,7 @@ helm install <my-release> offchainlabs/nitro
 ```
 
 ### Required Parameters
-Chart defaults are for launching an arbitrum one node. At a minimum you must provide a parent chain url, consensus client api url, and an init method(downloading from snapshot is in the example).
+Chart defaults are for launching an arbitrum one node. At a minimum you must provide a parent chain url, consensus client api url, and an init method(downloading from a snapshot is in the example).
 
 ```console
 helm install <my-release> offchainlabs/nitro \
@@ -115,10 +115,12 @@ helm install xai offchainlabs/nitro -f values.yaml
 | `persistence.enabled`                                       | Enable persistence                                                                        | `true`                                                              |
 | `persistence.size`                                          | Size of the persistent volume claim                                                       | `500Gi`                                                             |
 | `persistence.storageClassName`                              | Storage class of the persistent volume claim                                              | `nil`                                                               |
+| `persistence.volumeAttributesClassName`                     | Volume attributes class to apply to the persistent volume claim                           | `nil`                                                               |
 | `persistence.accessModes`                                   | Access modes of the persistent volume claim                                               | `["ReadWriteOnce"]`                                                 |
 | `blobPersistence.enabled`                                   | Enable blob persistence                                                                   | `false`                                                             |
 | `blobPersistence.size`                                      | Size of the blob persistent volume claim                                                  | `100Gi`                                                             |
 | `blobPersistence.storageClassName`                          | Storage class of the blob persistent volume claim                                         | `nil`                                                               |
+| `blobPersistence.volumeAttributesClassName`                 | Volume attributes class to apply to the blob persistent volume claim                      | `nil`                                                               |
 | `blobPersistence.accessModes`                               | Access modes of the blob persistent volume claim                                          | `["ReadWriteOnce"]`                                                 |
 | `serviceMonitor.enabled`                                    | Enable service monitor CRD for prometheus operator                                        | `false`                                                             |
 | `serviceMonitor.portName`                                   | Name of the port to monitor                                                               | `metrics`                                                           |
