@@ -13,7 +13,7 @@ helm install <my-release> offchainlabs/nitro
 ```
 
 ### Required Parameters
-Chart defaults are for launching an arbitrum one node. At a minimum you must provide a parent chain url, consensus client api url, and an init method(downloading from snapshot is in the example).
+Chart defaults are for launching an arbitrum one node. At a minimum you must provide a parent chain url, consensus client api url, and an init method(downloading from a snapshot is in the example).
 
 ```console
 helm install <my-release> offchainlabs/nitro \
