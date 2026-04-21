@@ -274,6 +274,9 @@ spec:
         {{- if .Values.persistence.storageClassName }}
         storageClassName: {{ .Values.persistence.storageClassName | quote }}
         {{- end }}
+        {{- if .Values.persistence.volumeAttributesClassName }}
+        volumeAttributesClassName: {{ .Values.persistence.volumeAttributesClassName | quote }}
+        {{- end }}
         resources:
           requests:
             storage: {{ .Values.persistence.size | quote }}
@@ -294,6 +297,9 @@ spec:
         {{- toYaml .Values.blobPersistence.accessModes | nindent 8 }}
         {{- if .Values.blobPersistence.storageClassName }}
         storageClassName: {{ .Values.blobPersistence.storageClassName | quote }}
+        {{- end }}
+        {{- if .Values.blobPersistence.volumeAttributesClassName }}
+        volumeAttributesClassName: {{ .Values.blobPersistence.volumeAttributesClassName | quote }}
         {{- end }}
         resources:
           requests:
