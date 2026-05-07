@@ -406,6 +406,8 @@ Option | Description | Default
 `execution.stylus-target.arm64` | string                                                                   stylus programs compilation target for arm64 linux | `arm64-linux-unknown+neon`
 `execution.stylus-target.extra-archs` | strings                                                            Comma separated list of extra architectures to cross-compile stylus program to and cache in wasm store (additionally to local target). Currently must include at least wavm. (supported targets: wavm, arm64, amd64, host) | `[wavm]`
 `execution.stylus-target.host` | string                                                                    stylus programs compilation target for system other than 64-bit ARM or 64-bit x86 | None
+`execution.stylus-target.max-stylus-call-depth` | uint16                                                   max number of Stylus frames simultaneously on the call stack (counts only Stylus frames; EVM frames between two Stylus frames do not decrement it); exceeding the limit rejects non-on-chain calls; 0 disables the limit | None
+`execution.stylus-target.max-stylus-open-pages` | uint16                                                   max open WASM pages per tx; exceeding the limit rejects non-on-chain calls and filters sequencer-committed txs (delayed inbox is exempt); 0 disables the limit | `128`
 `execution.sync-monitor.finalized-block-wait-for-block-validator` | wait for block validator to complete before returning finalized block number | None
 `execution.sync-monitor.msg-lag` | duration                                                                allowed message lag while still considered in sync | `1s`
 `execution.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
@@ -449,6 +451,7 @@ Option | Description | Default
 `init.empty` | init with empty state | None
 `init.force` | if true: in case database exists init code will be reexecuted and genesis block compared to database | None
 `init.genesis-json-file` | string                                                                          path for genesis json file | None
+`init.genesis-json-file-directory` | string                                                                directory path for genesis json files - will search for a file named by the chain ID | None
 `init.import-file` | string                                                                                path for json data to import | None
 `init.import-wasm` | if set, import the wasm directory when downloading a database (contains executable code - only use with highly trusted source) | None
 `init.latest` | string                                                                                     if set, searches for the latest snapshot of the given kind (accepted values: "archive" | "pruned" | "genesis") | None
