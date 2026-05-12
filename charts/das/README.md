@@ -238,8 +238,8 @@ extraEnv:
 | `configmap.data.enable-rpc`                                                                | Enable rpc api                                                                           | `false`   |
 | `configmap.data.rpc-addr`                                                                  | rpc api address                                                                          | `0.0.0.0` |
 | `configmap.data.rpc-port`                                                                  | rpc api port                                                                             | `9876`    |
-| `configmap.data.data-availability.parent-chain-node-url`                                   | Parent chain node url                                                                    | `""`      |
-| `configmap.data.data-availability.sequencer-inbox-address`                                 | Sequencer inbox address                                                                  | `""`      |
+| `configmap.data.parent-chain.node-url`                                                     | Parent chain node url                                                                    | `""`      |
+| `configmap.data.parent-chain.sequencer-inbox-address`                                      | Sequencer inbox address                                                                  | `""`      |
 | `configmap.data.data-availability.local-file-storage.enable`                               | Enable local file storage                                                                | `false`   |
 | `configmap.data.data-availability.local-file-storage.data-dir`                             |                                                                                          | `""`      |
 | `configmap.data.data-availability.s3-storage.enable`                                       | Enable s3 storage                                                                        | `false`   |
