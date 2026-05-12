@@ -205,12 +205,13 @@ configmap:
     ## @param configmap.data.rpc-port rpc api port
     rpc-addr: 0.0.0.0
 
-    ## @param configmap.data.data-availability.parent-chain-node-url Parent chain node url
-    ## @param configmap.data.data-availability.sequencer-inbox-address Sequencer inbox address
-    data-availability:
-      parent-chain-node-url: ""
+    ## @param configmap.data.parent-chain.node-url Parent chain node url
+    ## @param configmap.data.parent-chain.sequencer-inbox-address Sequencer inbox address
+    parent-chain:
+      node-url: ""
       sequencer-inbox-address: ""
 
+    data-availability:
       ## @param configmap.data.data-availability.local-file-storage.enable Enable local file storage
       ## @param configmap.data.data-availability.local-file-storage.data-dir
       local-file-storage:
