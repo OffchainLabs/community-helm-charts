@@ -2,8 +2,9 @@ configmap:
   data:
     conf:
       env-prefix: "NITROCI"
-    data-availability:
+    parent-chain:
       sequencer-inbox-address: "0x6c97864CE4bEf387dE0b3310A44230f7E3F1be0D"
+    data-availability:
       local-file-storage:
         enable: true
         data-dir: "/data/das-storage"
@@ -16,7 +17,7 @@ configmap:
           state-dir: /data/das-storage/syncState
 
 extraEnv:
-  - name: NITROCI_DATA__AVAILABILITY_PARENT__CHAIN__NODE__URL
+  - name: NITROCI_PARENT__CHAIN_NODE__URL
     valueFrom:
       secretKeyRef:
         name: ci-secret-nitro
