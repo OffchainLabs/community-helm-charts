@@ -279,6 +279,7 @@ Option | Description | Default
 `auth.origins` | strings                                                                                   Origins from which to accept AUTH requests | `[localhost]`
 `auth.port` | int                                                                                          AUTH-RPC server listening port | `8549`
 `blocks-reexecutor.blocks` | string                                                                        json encoded list of block ranges in the form of start and end block numbers in a list of size 2 | `[[0,0]]`
+`blocks-reexecutor.commit-state-to-disk` | if set, blocks-reexecutor not only re-executes blocks but it also commits their state to triedb | None
 `blocks-reexecutor.enable` | enables re-execution of a range of blocks against historic state | None
 `blocks-reexecutor.min-blocks-per-thread` | uint                                                           minimum number of blocks to execute per thread. When mode is random this acts as the size of random block range sample | None
 `blocks-reexecutor.mode` | string                                                                          mode to run the blocks-reexecutor on. Valid modes full and random. full - execute all the blocks in the given range. random - execute a random sample range of blocks with in a given range | `random`
@@ -298,11 +299,11 @@ Option | Description | Default
 `conf.env-prefix` | string                                                                                 environment variables with given prefix will be loaded as configuration values | None
 `conf.file` | strings                                                                                      name of configuration file | None
 `conf.reload-interval` | duration                                                                          how often to reload configuration (0=disable periodic reloading) | None
-`conf.s3.access-key` | string                                                                              S3 access key | None
-`conf.s3.bucket` | string                                                                                  S3 bucket | None
-`conf.s3.object-key` | string                                                                              S3 object key | None
-`conf.s3.region` | string                                                                                  S3 region | None
-`conf.s3.secret-key` | string                                                                              S3 secret key | None
+`conf.s3.access-key` | string                                                                              S3 access key for fetching the node configuration file from S3 | None
+`conf.s3.bucket` | string                                                                                  S3 bucket containing the node configuration file | None
+`conf.s3.object-key` | string                                                                              S3 object key of the node configuration file (JSON format) | None
+`conf.s3.region` | string                                                                                  S3 region of the bucket containing the node configuration file | None
+`conf.s3.secret-key` | string                                                                              S3 secret key for fetching the node configuration file from S3 (triggers S3 config loading) | None
 `conf.string` | string                                                                                     configuration as JSON string | None
 `ensure-rollup-deployment` | before starting the node, wait until the transaction that deployed rollup is finalized | `true`
 `execution.block-metadata-api-blocks-limit` | uint                                                         maximum number of blocks allowed to be queried for blockMetadata per arb_getRawBlockMetadata query. Enabled by default, set 0 to disable the limit | `100`
@@ -319,15 +320,28 @@ Option | Description | Default
 `execution.caching.pathdb-max-diff-layers` | int                                                           maximum number of diff layers to keep in pathdb (path state-scheme only) | `128`
 `execution.caching.snapshot-cache` | int                                                                   amount of memory in megabytes to cache state snapshots with | `400`
 `execution.caching.snapshot-restore-gas-limit` | uint                                                      maximum gas rolled back to recover snapshot | `300000000000`
-`execution.caching.state-history` | uint                                                                   number of recent blocks to retain state history for (path state-scheme only) | `345600`
+`execution.caching.state-history` | uint                                                                   number of recent blocks to retain state history for (path state-scheme only) | `18446744073709551615`
 `execution.caching.state-scheme` | string                                                                  scheme to use for state trie storage (hash, path) | `hash`
+`execution.caching.state-size-tracking` | enable tracking of state size over time | None
 `execution.caching.stylus-lru-cache-capacity` | uint32                                                     capacity, in megabytes, of the LRU cache that keeps initialized stylus programs | `256`
+`execution.caching.trie-cap-batch-size` | uint32                                                           batch size in bytes used in the TrieDB Cap operation (0 = use geth default) | None
 `execution.caching.trie-cap-limit` | uint32                                                                amount of memory in megabytes to be used in the TrieDB Cap operation during maintenance | `100`
 `execution.caching.trie-clean-cache` | int                                                                 amount of memory in megabytes to cache unchanged state trie nodes with | `600`
+`execution.caching.trie-commit-batch-size` | uint32                                                        batch size in bytes used in the TrieDB Commit operation (0 = use geth default) | None
 `execution.caching.trie-dirty-cache` | int                                                                 amount of memory in megabytes to cache state diffs against disk with (larger cache lowers database growth) | `1024`
 `execution.caching.trie-time-limit` | duration                                                             maximum block processing time before trie is written to hard-disk | `1h0m0s`
 `execution.caching.trie-time-limit-before-flush-maintenance` | duration                                    Execution will suggest that maintenance is run if the block processing time required to reach trie-time-limit is smaller or equal than trie-time-limit-before-flush-maintenance | None
 `execution.caching.trie-time-limit-random-offset` | duration                                               if greater then 0, the block processing time period of each trie write to hard-disk is shortened by a random value from range [0, trie-time-limit-random-offset) | None
+`execution.consensus-rpc-client.arg-log-limit` | uint                                                      limit size of arguments in log entries | `2048`
+`execution.consensus-rpc-client.connection-wait` | duration                                                how long to wait for initial connection | None
+`execution.consensus-rpc-client.jwtsecret` | string                                                        path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`execution.consensus-rpc-client.retries` | uint                                                            number of retries in case of failure(0 mean one attempt) | `3`
+`execution.consensus-rpc-client.retry-delay` | duration                                                    delay between retries | None
+`execution.consensus-rpc-client.retry-errors` | string                                                     Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`execution.consensus-rpc-client.timeout` | duration                                                        per-response timeout (0-disabled) | None
+`execution.consensus-rpc-client.url` | string                                                              url of server, use self for loopback websocket, self-auth for loopback with authentication | None
+`execution.consensus-rpc-client.websocket-message-size-limit` | int                                        websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`execution.disable-arbowner-ethcall` | disable ArbOwner precompile calls outside on-chain execution (ethcall, gas estimation) | None
 `execution.enable-prefetch-block` | enable prefetching of blocks | `true`
 `execution.expose-multi-gas` | experimental: expose multi-dimensional gas in transaction receipts | None
 `execution.forwarder.connection-timeout` | duration                                                        total time to wait before cancelling connection | `30s`
@@ -349,6 +363,9 @@ Option | Description | Default
 `execution.recording-database.max-prepared` | int                                                          max references to store in the recording database | `1000`
 `execution.recording-database.trie-clean-cache` | int                                                      like trie-clean-cache for the separate, recording database (used for validation) | `16`
 `execution.recording-database.trie-dirty-cache` | int                                                      like trie-dirty-cache for the separate, recording database (used for validation) | `1024`
+`execution.rpc-server.authenticated` | rpc is authenticated | `true`
+`execution.rpc-server.enable` | enable execution node to serve over rpc | None
+`execution.rpc-server.public` | rpc is public | None
 `execution.rpc.allow-method` | strings                                                                     list of whitelisted rpc methods | None
 `execution.rpc.arbdebug.block-range-bound` | uint                                                          bounds the number of blocks arbdebug calls may return | `256`
 `execution.rpc.arbdebug.timeout-queue-bound` | uint                                                        bounds the length of timeout queues arbdebug calls may return | `512`
@@ -366,6 +383,8 @@ Option | Description | Default
 `execution.rpc.max-recreate-state-depth` | int                                                             maximum depth for recreating state, measured in l2 gas (0=don't recreate state, -1=infinite, -2=use default value for archive or non-archive node (whichever is configured)) | `-2`
 `execution.rpc.tx-allow-unprotected` | allow transactions that aren't EIP-155 replay protected to be submitted over the RPC | `true`
 `execution.rpc.tx-fee-cap` | float                                                                         cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap) | `1`
+`execution.rpc.tx-sync-default-timeout` | duration                                                         default timeout for eth_sendRawTransactionSync | `20s`
+`execution.rpc.tx-sync-max-timeout` | duration                                                             maximum allowed timeout for eth_sendRawTransactionSync | `1m0s`
 `execution.secondary-forwarding-target` | strings                                                          secondary transaction forwarding target URL | None
 `execution.sequencer.dangerous.disable-blob-base-fee-check` | DANGEROUS! disables nitro checks on sequencer for blob base fee | None
 `execution.sequencer.dangerous.disable-seq-inbox-max-data-size-check` | DANGEROUS! disables nitro checks on sequencer MaxTxDataSize against the sequencer inbox MaxDataSize | None
@@ -399,7 +418,7 @@ Option | Description | Default
 `execution.sequencer.timeboost.max-future-sequence-distance` | uint                                        maximum allowed difference (in terms of sequence numbers) between a future express lane tx and the current sequence count of a round | `1000`
 `execution.sequencer.timeboost.queue-timeout-in-blocks` | uint                                             maximum amount of time (measured in blocks) that Express Lane transactions can wait in the sequencer's queue | `5`
 `execution.sequencer.timeboost.redis-update-events-channel-size` | uint                                    size of update events' buffered channels in timeboost redis coordinator | `500`
-`execution.sequencer.timeboost.redis-url` | string                                                         the Redis URL for expressLaneService to coordinate via | `unset`
+`execution.sequencer.timeboost.redis-url` | string                                                         the Redis URL for ExpressLaneService to coordinate via | `unset`
 `execution.sequencer.timeboost.sequencer-http-endpoint` | string                                           this sequencer's http endpoint | `http://localhost:8547`
 `execution.stylus-target.allow-fallback` | if true, fall back to an alternative compiler when compilation of a Stylus program fails | `true`
 `execution.stylus-target.amd64` | string                                                                   stylus programs compilation target for amd64 linux | `x86_64-linux-unknown+sse4.2+lzcnt+bmi`
@@ -408,9 +427,45 @@ Option | Description | Default
 `execution.stylus-target.host` | string                                                                    stylus programs compilation target for system other than 64-bit ARM or 64-bit x86 | None
 `execution.stylus-target.max-stylus-call-depth` | uint16                                                   max number of Stylus frames simultaneously on the call stack (counts only Stylus frames; EVM frames between two Stylus frames do not decrement it); exceeding the limit rejects non-on-chain calls; 0 disables the limit | None
 `execution.stylus-target.max-stylus-open-pages` | uint16                                                   max open WASM pages per tx; exceeding the limit rejects non-on-chain calls and filters sequencer-committed txs (delayed inbox is exempt); 0 disables the limit | `128`
+`execution.stylus-target.native-stack-size` | uint                                                         initial native stack size in bytes for Wasmer coroutines used by Stylus execution (0 = default 1MB) | None
 `execution.sync-monitor.finalized-block-wait-for-block-validator` | wait for block validator to complete before returning finalized block number | None
 `execution.sync-monitor.msg-lag` | duration                                                                allowed message lag while still considered in sync | `1s`
 `execution.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
+`execution.transaction-filtering.address-filter.address-checker-queue-size` | int                          work queue size for address checker | `8192`
+`execution.transaction-filtering.address-filter.address-checker-worker-count` | int                        number of workers for address checker | `4`
+`execution.transaction-filtering.address-filter.cache-size` | int                                          LRU cache size for address lookup results | `10000`
+`execution.transaction-filtering.address-filter.enable` | enable restricted address synchronization service | None
+`execution.transaction-filtering.address-filter.poll-interval` | duration                                  interval between polling S3 for hash list updates | `5m0s`
+`execution.transaction-filtering.address-filter.s3.access-key` | string                                    S3 access key | None
+`execution.transaction-filtering.address-filter.s3.bucket` | string                                        S3 bucket name | None
+`execution.transaction-filtering.address-filter.s3.chunk-size-mb` | int                                    S3 multipart download part size in MB | `32`
+`execution.transaction-filtering.address-filter.s3.concurrency` | int                                      S3 multipart download concurrency | `10`
+`execution.transaction-filtering.address-filter.s3.endpoint` | string                                      custom S3 endpoint URL (for MinIO, localstack, or other S3-compatible services) | None
+`execution.transaction-filtering.address-filter.s3.max-retries` | int                                      maximum retries for S3 part body download | `3`
+`execution.transaction-filtering.address-filter.s3.object-key` | string                                    S3 object key (path) to the file | None
+`execution.transaction-filtering.address-filter.s3.region` | string                                        S3 region | None
+`execution.transaction-filtering.address-filter.s3.secret-key` | string                                    S3 secret key | None
+`execution.transaction-filtering.disable-delayed-sequencing-filter` | disable delayed sequencing filter | None
+`execution.transaction-filtering.enable-ethcall-filter` | enable address filtering for eth_estimateGas and eth_call | `true`
+`execution.transaction-filtering.event-filter.path` | string                                               path to JSON file containing event filter rules | None
+`execution.transaction-filtering.filtering-report-rpc-client.arg-log-limit` | uint                         limit size of arguments in log entries | `2048`
+`execution.transaction-filtering.filtering-report-rpc-client.connection-wait` | duration                   how long to wait for initial connection | None
+`execution.transaction-filtering.filtering-report-rpc-client.jwtsecret` | string                           path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`execution.transaction-filtering.filtering-report-rpc-client.retries` | uint                               number of retries in case of failure(0 mean one attempt) | `3`
+`execution.transaction-filtering.filtering-report-rpc-client.retry-delay` | duration                       delay between retries | None
+`execution.transaction-filtering.filtering-report-rpc-client.retry-errors` | string                        Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`execution.transaction-filtering.filtering-report-rpc-client.timeout` | duration                           per-response timeout (0-disabled) | None
+`execution.transaction-filtering.filtering-report-rpc-client.url` | string                                 url of server, use self for loopback websocket, self-auth for loopback with authentication | None
+`execution.transaction-filtering.filtering-report-rpc-client.websocket-message-size-limit` | int           websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`execution.transaction-filtering.transaction-filterer-rpc-client.arg-log-limit` | uint                     limit size of arguments in log entries | `2048`
+`execution.transaction-filtering.transaction-filterer-rpc-client.connection-wait` | duration               how long to wait for initial connection | None
+`execution.transaction-filtering.transaction-filterer-rpc-client.jwtsecret` | string                       path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`execution.transaction-filtering.transaction-filterer-rpc-client.retries` | uint                           number of retries in case of failure(0 mean one attempt) | `3`
+`execution.transaction-filtering.transaction-filterer-rpc-client.retry-delay` | duration                   delay between retries | None
+`execution.transaction-filtering.transaction-filterer-rpc-client.retry-errors` | string                    Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`execution.transaction-filtering.transaction-filterer-rpc-client.timeout` | duration                       per-response timeout (0-disabled) | None
+`execution.transaction-filtering.transaction-filterer-rpc-client.url` | string                             url of server, use self for loopback websocket, self-auth for loopback with authentication | None
+`execution.transaction-filtering.transaction-filterer-rpc-client.websocket-message-size-limit` | int       websocket message size limit used by the RPC client. 0 means no limit | `268435456`
 `execution.tx-indexer.enable` | enables transaction indexer | `true`
 `execution.tx-indexer.min-batch-delay` | duration                                                          minimum delay between transaction indexing/unindexing batches; the bigger the delay, the more blocks can be included in each batch | `1s`
 `execution.tx-indexer.threads` | int                                                                       number of threads used to RLP decode blocks during indexing/unindexing of historical transactions | `2`
@@ -477,11 +532,12 @@ Option | Description | Default
 `metrics-server.addr` | string                                                                             metrics server address | `127.0.0.1`
 `metrics-server.port` | int                                                                                metrics server port | `6070`
 `metrics-server.update-interval` | duration                                                                metrics server update interval | `3s`
+`node.batch-poster.anytrust-retention-period` | duration                                                   In AnyTrust mode, the period which AnyTrust nodes are requested to retain the stored batches. | `360h0m0s`
 `node.batch-poster.check-batch-correctness` | setting this to true will run the batch against an inbox multiplexer and verifies that it produces the correct set of messages | `true`
-`node.batch-poster.compression-level` | int                                                                batch compression level | `11`
+`node.batch-poster.compression-level` | int                                                                DEPRECATED: use compression-levels instead. batch compression level | None
+`node.batch-poster.compression-levels` | CompressionLevelStepList                                          JSON array of compression level steps. Format: [{"backlog":<int>,"level":<int>,"recompression-level":<int>},...]. First entry must have backlog:0. Both Level and recomp-level must be 0-11, weakly descending. Example: [{"backlog":0,"level":11,"recompression-level":11},{"backlog":21,"level":6,"recompression-level":11}] | `null`
 `node.batch-poster.dangerous.allow-posting-first-batch-when-sequencer-message-count-mismatch` | allow posting the first batch even if sequence number doesn't match chain (useful after force-inclusion) | None
 `node.batch-poster.dangerous.fixed-gas-limit` | uint                                                       use this gas limit for batch posting instead of estimating it | None
-`node.batch-poster.das-retention-period` | duration                                                        In AnyTrust mode, the period which DASes are requested to retain the stored batches. | `360h0m0s`
 `node.batch-poster.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
 `node.batch-poster.data-poster.blob-tx-replacement-times` | durationSlice                                  comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `[5m0s,10m0s,30m0s,1h0m0s,4h0m0s,8h0m0s,16h0m0s,22h0m0s]`
 `node.batch-poster.data-poster.dangerous.clear-dbstorage` | clear database storage | None
@@ -520,6 +576,7 @@ Option | Description | Default
 `node.batch-poster.disable-dap-fallback-store-data-on-chain` | If unable to batch to DA provider, disable fallback storing data on chain | None
 `node.batch-poster.enable` | enable posting batches to l1 | None
 `node.batch-poster.error-delay` | duration                                                                 how long to delay after error posting batch | `10s`
+`node.batch-poster.ethda-fallback-batch-count` | int                                                       number of batches to post to EthDA before retrying AltDA after a fallback | `10`
 `node.batch-poster.extra-batch-gas` | uint                                                                 use this much more gas than estimation says is necessary to post batches | `50000`
 `node.batch-poster.gas-estimate-base-fee-multiple-bips` | uint                                             for gas estimation, use this multiple of the basefee (measured in basis points) as the max fee per gas | `15000`
 `node.batch-poster.gas-refunder-address` | string                                                          The gas refunder contract address (optional) | None
@@ -527,9 +584,10 @@ Option | Description | Default
 `node.batch-poster.l1-block-bound` | string                                                                only post messages to batches when they're within the max future block/timestamp as of this L1 block tag ("safe", "finalized", "latest", or "ignore" to ignore this check) | None
 `node.batch-poster.l1-block-bound-bypass` | duration                                                       post batches even if not within the layer 1 future bounds if we're within this margin of the max delay | `1h0m0s`
 `node.batch-poster.max-4844-batch-size` | int                                                              maximum estimated compressed 4844 blob enabled batch size | None
+`node.batch-poster.max-calldata-batch-size` | int                                                          maximum estimated compressed calldata batch size | `100000`
 `node.batch-poster.max-delay` | duration                                                                   maximum batch posting delay | `1h0m0s`
-`node.batch-poster.max-empty-batch-delay` | duration                                                       maximum empty batch posting delay, batch poster will only be able to post an empty batch if this time period building a batch has passed | `72h0m0s`
-`node.batch-poster.max-size` | int                                                                         maximum estimated compressed batch size | `100000`
+`node.batch-poster.max-empty-batch-delay` | duration                                                       maximum empty batch posting delay, batch poster will only be able to post an empty batch if this time period building a batch has passed; if 0, disable automatic empty batch posting | `72h0m0s`
+`node.batch-poster.max-size` | int                                                                         DEPRECATED: use node.batch-poster.max-calldata-batch-size instead | None
 `node.batch-poster.parent-chain-eip7623` | string                                                          if parent chain uses EIP7623 ("yes", "no", "auto") | `auto`
 `node.batch-poster.parent-chain-wallet.account` | string                                                   account to use | `is first account in keystore`
 `node.batch-poster.parent-chain-wallet.only-create-key` | if true, creates new key then exits | None
@@ -557,7 +615,7 @@ Option | Description | Default
 `node.block-metadata-fetcher.source.retries` | uint                                                        number of retries in case of failure(0 mean one attempt) | `3`
 `node.block-metadata-fetcher.source.retry-delay` | duration                                                delay between retries | None
 `node.block-metadata-fetcher.source.retry-errors` | string                                                 Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
-`node.block-metadata-fetcher.source.timeout` | duration                                                    per-response timeout (0-disabled) | None
+`node.block-metadata-fetcher.source.timeout` | duration                                                    per-response timeout (0-disabled) | `10s`
 `node.block-metadata-fetcher.source.url` | string                                                          url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
 `node.block-metadata-fetcher.source.websocket-message-size-limit` | int                                    websocket message size limit used by the RPC client. 0 means no limit | `268435456`
 `node.block-metadata-fetcher.sync-interval` | duration                                                     minimum time between blockMetadata requests | `1m0s`
@@ -592,10 +650,11 @@ Option | Description | Default
 `node.block-validator.validation-server.retries` | uint                                                    number of retries in case of failure(0 mean one attempt) | `3`
 `node.block-validator.validation-server.retry-delay` | duration                                            delay between retries | None
 `node.block-validator.validation-server.retry-errors` | string                                             Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
-`node.block-validator.validation-server.timeout` | duration                                                per-response timeout (0-disabled) | None
+`node.block-validator.validation-server.timeout` | duration                                                per-response timeout (0-disabled) | `10s`
 `node.block-validator.validation-server.url` | string                                                      url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
 `node.block-validator.validation-server.websocket-message-size-limit` | int                                websocket message size limit used by the RPC client. 0 means no limit | `268435456`
 `node.block-validator.validation-spawning-allowed-attempts` | uint                                         number of attempts allowed when trying to spawn a validation before erroring out | `1`
+`node.block-validator.validation-spawning-allowed-timeouts` | uint                                         number of timeout errors allowed per validation attempt before treating it as a fatal error (separate from allowed-attempts) | `3`
 `node.bold.api` | enable api | None
 `node.bold.api-db-path` | string                                                                           bold api db path | `bold-api-db`
 `node.bold.api-host` | string                                                                              bold api host | `127.0.0.1`
@@ -621,64 +680,121 @@ Option | Description | Default
 `node.bold.state-provider-config.validator-name` | string                                                  name identifier for cosmetic purposes | `default-validator`
 `node.bold.track-challenge-parent-assertion-hashes` | strings                                              only track challenges/edges with these parent assertion hashes | None
 `node.consensus-execution-syncer.sync-interval` | duration                                                 Interval in which finality and sync data is pushed from consensus to execution | `300ms`
-`node.da-provider.data-stream.max-store-chunk-body-size` | int                                             maximum HTTP body size for chunked store requests | `5242880`
-`node.da-provider.data-stream.rpc-methods.finalize-stream` | string                                        name of the RPC method to finalize a chunked data stream | `daprovider_commitChunkedStore`
-`node.da-provider.data-stream.rpc-methods.start-stream` | string                                           name of the RPC method to start a chunked data stream | `daprovider_startChunkedStore`
-`node.da-provider.data-stream.rpc-methods.stream-chunk` | string                                           name of the RPC method to send a chunk of data | `daprovider_sendChunk`
-`node.da-provider.enable` | enable daprovider client | None
-`node.da-provider.rpc.arg-log-limit` | uint                                                                limit size of arguments in log entries | `2048`
-`node.da-provider.rpc.connection-wait` | duration                                                          how long to wait for initial connection | None
-`node.da-provider.rpc.jwtsecret` | string                                                                  path to file with jwtsecret for validation - ignored if url is self or self-auth | None
-`node.da-provider.rpc.retries` | uint                                                                      number of retries in case of failure(0 mean one attempt) | `3`
-`node.da-provider.rpc.retry-delay` | duration                                                              delay between retries | None
-`node.da-provider.rpc.retry-errors` | string                                                               Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
-`node.da-provider.rpc.timeout` | duration                                                                  per-response timeout (0-disabled) | None
-`node.da-provider.rpc.url` | string                                                                        url of server, use self for loopback websocket, self-auth for loopback with authentication | None
-`node.da-provider.rpc.websocket-message-size-limit` | int                                                  websocket message size limit used by the RPC client. 0 means no limit | `268435456`
-`node.da-provider.store-rpc-method` | string                                                               name of the store rpc method on the daprovider server (used when data streaming is disabled) | `daprovider_store`
-`node.da-provider.use-data-streaming` | use data streaming protocol for storing large payloads | None
-`node.da-provider.with-writer` | implies if the daprovider rpc server supports writer interface | None
+`node.da.anytrust.enable` | enable Anytrust Data Availability mode | None
+`node.da.anytrust.max-batch-size` | int                                                                    maximum batch size for AnyTrust DA (compressed) | `1000000`
+`node.da.anytrust.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
+`node.da.anytrust.request-timeout` | duration                                                              Data Availability Service timeout duration for Store requests | `5s`
+`node.da.anytrust.rest-aggregator.connection-wait` | duration                                              how long to wait for initial connection | `1s`
+`node.da.anytrust.rest-aggregator.enable` | enable retrieval of sequencer batch data from a list of remote REST endpoints; if other AnyTrust storage types are enabled, this mode is used as a fallback | None
+`node.da.anytrust.rest-aggregator.max-per-endpoint-stats` | int                                            number of stats entries (latency and success rate) to keep for each REST endpoint; controls whether strategy is faster or slower to respond to changing conditions | `20`
+`node.da.anytrust.rest-aggregator.online-url-list` | string                                                a URL to a list of URLs of REST AnyTrust endpoints that is checked at startup; additive with the url option | None
+`node.da.anytrust.rest-aggregator.online-url-list-fetch-interval` | duration                               time interval to periodically fetch url list from online-url-list | `1h0m0s`
+`node.da.anytrust.rest-aggregator.simple-explore-exploit-strategy.exploit-iterations` | uint32             number of consecutive GetByHash calls to the aggregator where each call will cause it to select from REST endpoints in order of best latency and success rate, before switching to explore mode | `1000`
+`node.da.anytrust.rest-aggregator.simple-explore-exploit-strategy.explore-iterations` | uint32             number of consecutive GetByHash calls to the aggregator where each call will cause it to randomly select from REST endpoints until one returns successfully, before switching to exploit mode | `20`
+`node.da.anytrust.rest-aggregator.strategy` | string                                                       strategy to use to determine order and parallelism of calling REST endpoint URLs; valid options are 'simple-explore-exploit' | `simple-explore-exploit`
+`node.da.anytrust.rest-aggregator.strategy-update-interval` | duration                                     how frequently to update the strategy with endpoint latency and error rate data | `10s`
+`node.da.anytrust.rest-aggregator.sync-to-storage.delay-on-error` | duration                               time to wait if encountered an error before retrying | `1s`
+`node.da.anytrust.rest-aggregator.sync-to-storage.eager` | eagerly sync batch data to this AnyTrust server's storage from the rest endpoints, using L1 as the index of batch data hashes; otherwise only sync lazily | None
+`node.da.anytrust.rest-aggregator.sync-to-storage.eager-lower-bound-block` | uint                          when eagerly syncing, start indexing forward from this L1 block. Only used if there is no sync state | None
+`node.da.anytrust.rest-aggregator.sync-to-storage.ignore-write-errors` | log only on failures to write when syncing; otherwise treat it as an error | `true`
+`node.da.anytrust.rest-aggregator.sync-to-storage.parent-chain-blocks-per-read` | uint                     when eagerly syncing, max l1 blocks to read per poll | `100`
+`node.da.anytrust.rest-aggregator.sync-to-storage.retention-period` | duration                             period to request storage to retain synced data | `360h0m0s`
+`node.da.anytrust.rest-aggregator.sync-to-storage.state-dir` | string                                      directory to store the sync state in, ie the block number currently synced up to, so that we don't sync from scratch each time | None
+`node.da.anytrust.rest-aggregator.sync-to-storage.sync-expired-data` | sync even data that is expired; needed for mirror configuration | `true`
+`node.da.anytrust.rest-aggregator.urls` | strings                                                          list of URLs including 'http://' or 'https://' prefixes and port numbers to REST AnyTrust endpoints; additive with the online-url-list option | None
+`node.da.anytrust.rest-aggregator.wait-before-try-next` | duration                                         time to wait until trying the next set of REST endpoints while waiting for a response; the next set of REST endpoints is determined by the strategy selected | `2s`
+`node.da.anytrust.rpc-aggregator.assumed-honest` | int                                                     Number of assumed honest backends (H). If there are N backends, K=N+1-H valid responses are required to consider an Store request to be successful. | None
+`node.da.anytrust.rpc-aggregator.backends` | backendConfigList                                             JSON RPC backend configuration. This can be specified on the command line as a JSON array, eg: [{"url": "...", "pubkey": "..."},...], or as a JSON array in the config file. | `null`
+`node.da.anytrust.rpc-aggregator.enable` | enable storage of sequencer batch data from a list of RPC endpoints; this should only be used by the batch poster and not in combination with other AnyTrust storage types | None
+`node.da.anytrust.rpc-aggregator.rpc-client.data-stream.max-store-chunk-body-size` | int                   maximum HTTP body size for chunked store requests | `5242880`
+`node.da.anytrust.rpc-aggregator.rpc-client.data-stream.rpc-methods.finalize-stream` | string              name of the RPC method to finalize a chunked data stream | `das_commitChunkedStore`
+`node.da.anytrust.rpc-aggregator.rpc-client.data-stream.rpc-methods.start-stream` | string                 name of the RPC method to start a chunked data stream | `das_startChunkedStore`
+`node.da.anytrust.rpc-aggregator.rpc-client.data-stream.rpc-methods.stream-chunk` | string                 name of the RPC method to send a chunk of data | `das_sendChunk`
+`node.da.anytrust.rpc-aggregator.rpc-client.enable-chunked-store` | enable data to be sent to AnyTrust in chunks instead of all at once | `true`
+`node.da.anytrust.rpc-aggregator.rpc-client.rpc.arg-log-limit` | uint                                      limit size of arguments in log entries | `2048`
+`node.da.anytrust.rpc-aggregator.rpc-client.rpc.connection-wait` | duration                                how long to wait for initial connection | None
+`node.da.anytrust.rpc-aggregator.rpc-client.rpc.jwtsecret` | string                                        path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`node.da.anytrust.rpc-aggregator.rpc-client.rpc.retries` | uint                                            number of retries in case of failure(0 mean one attempt) | `3`
+`node.da.anytrust.rpc-aggregator.rpc-client.rpc.retry-delay` | duration                                    delay between retries | None
+`node.da.anytrust.rpc-aggregator.rpc-client.rpc.retry-errors` | string                                     Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`node.da.anytrust.rpc-aggregator.rpc-client.rpc.timeout` | duration                                        per-response timeout (0-disabled) | `10s`
+`node.da.anytrust.rpc-aggregator.rpc-client.rpc.url` | string                                              url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
+`node.da.anytrust.rpc-aggregator.rpc-client.rpc.websocket-message-size-limit` | int                        websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`node.da.external-provider.data-stream.max-store-chunk-body-size` | int                                    maximum HTTP body size for chunked store requests | `5242880`
+`node.da.external-provider.data-stream.rpc-methods.finalize-stream` | string                               name of the RPC method to finalize a chunked data stream | `daprovider_commitChunkedStore`
+`node.da.external-provider.data-stream.rpc-methods.start-stream` | string                                  name of the RPC method to start a chunked data stream | `daprovider_startChunkedStore`
+`node.da.external-provider.data-stream.rpc-methods.stream-chunk` | string                                  name of the RPC method to send a chunk of data | `daprovider_sendChunk`
+`node.da.external-provider.enable` | enable daprovider client | None
+`node.da.external-provider.rpc.arg-log-limit` | uint                                                       limit size of arguments in log entries | `2048`
+`node.da.external-provider.rpc.connection-wait` | duration                                                 how long to wait for initial connection | None
+`node.da.external-provider.rpc.jwtsecret` | string                                                         path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`node.da.external-provider.rpc.retries` | uint                                                             number of retries in case of failure(0 mean one attempt) | `3`
+`node.da.external-provider.rpc.retry-delay` | duration                                                     delay between retries | None
+`node.da.external-provider.rpc.retry-errors` | string                                                      Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`node.da.external-provider.rpc.timeout` | duration                                                         per-response timeout (0-disabled) | None
+`node.da.external-provider.rpc.url` | string                                                               url of server, use self for loopback websocket, self-auth for loopback with authentication | None
+`node.da.external-provider.rpc.websocket-message-size-limit` | int                                         websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`node.da.external-provider.store-rpc-method` | string                                                      name of the store rpc method on the daprovider server (used when data streaming is disabled) | `daprovider_store`
+`node.da.external-provider.use-data-streaming` | use data streaming protocol for storing large payloads | None
+`node.da.external-provider.with-writer` | implies if the daprovider rpc server supports writer interface | None
 `node.dangerous.disable-blob-reader` | DANGEROUS! disables the EIP-4844 blob reader, which is necessary to read batches | None
 `node.dangerous.no-l1-listener` | DANGEROUS! disables listening to L1. To be used in test nodes only | None
 `node.dangerous.no-sequencer-coordinator` | DANGEROUS! allows sequencing without sequencer-coordinator | None
 `node.data-availability.enable` | enable Anytrust Data Availability mode | None
+`node.data-availability.max-batch-size` | int                                                              maximum batch size for AnyTrust DA (compressed) | `1000000`
 `node.data-availability.panic-on-error` | whether the Data Availability Service should fail immediately on errors (not recommended) | None
-`node.data-availability.parent-chain-connection-attempts` | int                                            parent chain RPC connection attempts (spaced out at least 1 second per attempt, 0 to retry infinitely), only used in standalone daserver; when running as part of a node that node's parent chain configuration is used | `15`
-`node.data-availability.parent-chain-node-url` | string                                                    URL for parent chain node, only used in standalone daserver and daprovider; when running as part of a node that node's L1 configuration is used | None
 `node.data-availability.request-timeout` | duration                                                        Data Availability Service timeout duration for Store requests | `5s`
-`node.data-availability.rest-aggregator.enable` | enable retrieval of sequencer batch data from a list of remote REST endpoints; if other DAS storage types are enabled, this mode is used as a fallback | None
+`node.data-availability.rest-aggregator.connection-wait` | duration                                        how long to wait for initial connection | `1s`
+`node.data-availability.rest-aggregator.enable` | enable retrieval of sequencer batch data from a list of remote REST endpoints; if other AnyTrust storage types are enabled, this mode is used as a fallback | None
 `node.data-availability.rest-aggregator.max-per-endpoint-stats` | int                                      number of stats entries (latency and success rate) to keep for each REST endpoint; controls whether strategy is faster or slower to respond to changing conditions | `20`
-`node.data-availability.rest-aggregator.online-url-list` | string                                          a URL to a list of URLs of REST das endpoints that is checked at startup; additive with the url option | None
+`node.data-availability.rest-aggregator.online-url-list` | string                                          a URL to a list of URLs of REST AnyTrust endpoints that is checked at startup; additive with the url option | None
 `node.data-availability.rest-aggregator.online-url-list-fetch-interval` | duration                         time interval to periodically fetch url list from online-url-list | `1h0m0s`
 `node.data-availability.rest-aggregator.simple-explore-exploit-strategy.exploit-iterations` | uint32       number of consecutive GetByHash calls to the aggregator where each call will cause it to select from REST endpoints in order of best latency and success rate, before switching to explore mode | `1000`
 `node.data-availability.rest-aggregator.simple-explore-exploit-strategy.explore-iterations` | uint32       number of consecutive GetByHash calls to the aggregator where each call will cause it to randomly select from REST endpoints until one returns successfully, before switching to exploit mode | `20`
 `node.data-availability.rest-aggregator.strategy` | string                                                 strategy to use to determine order and parallelism of calling REST endpoint URLs; valid options are 'simple-explore-exploit' | `simple-explore-exploit`
 `node.data-availability.rest-aggregator.strategy-update-interval` | duration                               how frequently to update the strategy with endpoint latency and error rate data | `10s`
 `node.data-availability.rest-aggregator.sync-to-storage.delay-on-error` | duration                         time to wait if encountered an error before retrying | `1s`
-`node.data-availability.rest-aggregator.sync-to-storage.eager` | eagerly sync batch data to this DAS's storage from the rest endpoints, using L1 as the index of batch data hashes; otherwise only sync lazily | None
+`node.data-availability.rest-aggregator.sync-to-storage.eager` | eagerly sync batch data to this AnyTrust server's storage from the rest endpoints, using L1 as the index of batch data hashes; otherwise only sync lazily | None
 `node.data-availability.rest-aggregator.sync-to-storage.eager-lower-bound-block` | uint                    when eagerly syncing, start indexing forward from this L1 block. Only used if there is no sync state | None
 `node.data-availability.rest-aggregator.sync-to-storage.ignore-write-errors` | log only on failures to write when syncing; otherwise treat it as an error | `true`
 `node.data-availability.rest-aggregator.sync-to-storage.parent-chain-blocks-per-read` | uint               when eagerly syncing, max l1 blocks to read per poll | `100`
 `node.data-availability.rest-aggregator.sync-to-storage.retention-period` | duration                       period to request storage to retain synced data | `360h0m0s`
 `node.data-availability.rest-aggregator.sync-to-storage.state-dir` | string                                directory to store the sync state in, ie the block number currently synced up to, so that we don't sync from scratch each time | None
 `node.data-availability.rest-aggregator.sync-to-storage.sync-expired-data` | sync even data that is expired; needed for mirror configuration | `true`
-`node.data-availability.rest-aggregator.urls` | strings                                                    list of URLs including 'http://' or 'https://' prefixes and port numbers to REST DAS endpoints; additive with the online-url-list option | None
+`node.data-availability.rest-aggregator.urls` | strings                                                    list of URLs including 'http://' or 'https://' prefixes and port numbers to REST AnyTrust endpoints; additive with the online-url-list option | None
 `node.data-availability.rest-aggregator.wait-before-try-next` | duration                                   time to wait until trying the next set of REST endpoints while waiting for a response; the next set of REST endpoints is determined by the strategy selected | `2s`
 `node.data-availability.rpc-aggregator.assumed-honest` | int                                               Number of assumed honest backends (H). If there are N backends, K=N+1-H valid responses are required to consider an Store request to be successful. | None
 `node.data-availability.rpc-aggregator.backends` | backendConfigList                                       JSON RPC backend configuration. This can be specified on the command line as a JSON array, eg: [{"url": "...", "pubkey": "..."},...], or as a JSON array in the config file. | `null`
-`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.max-store-chunk-body-size` | int         maximum HTTP body size for chunked store requests | `5242880`
-`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.finalize-stream` | string    name of the RPC method to finalize a chunked data stream | `das_commitChunkedStore`
-`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.start-stream` | string       name of the RPC method to start a chunked data stream | `das_startChunkedStore`
-`node.data-availability.rpc-aggregator.das-rpc-client.data-stream.rpc-methods.stream-chunk` | string       name of the RPC method to send a chunk of data | `das_sendChunk`
-`node.data-availability.rpc-aggregator.das-rpc-client.enable-chunked-store` | enable data to be sent to DAS in chunks instead of all at once | `true`
-`node.data-availability.rpc-aggregator.das-rpc-client.server-url` | string                                 URL of DAS server to connect to | None
-`node.data-availability.rpc-aggregator.enable` | enable storage of sequencer batch data from a list of RPC endpoints; this should only be used by the batch poster and not in combination with other DAS storage types | None
-`node.data-availability.sequencer-inbox-address` | string                                                  parent chain address of SequencerInbox contract | None
+`node.data-availability.rpc-aggregator.enable` | enable storage of sequencer batch data from a list of RPC endpoints; this should only be used by the batch poster and not in combination with other AnyTrust storage types | None
+`node.data-availability.rpc-aggregator.rpc-client.data-stream.max-store-chunk-body-size` | int             maximum HTTP body size for chunked store requests | `5242880`
+`node.data-availability.rpc-aggregator.rpc-client.data-stream.rpc-methods.finalize-stream` | string        name of the RPC method to finalize a chunked data stream | `das_commitChunkedStore`
+`node.data-availability.rpc-aggregator.rpc-client.data-stream.rpc-methods.start-stream` | string           name of the RPC method to start a chunked data stream | `das_startChunkedStore`
+`node.data-availability.rpc-aggregator.rpc-client.data-stream.rpc-methods.stream-chunk` | string           name of the RPC method to send a chunk of data | `das_sendChunk`
+`node.data-availability.rpc-aggregator.rpc-client.enable-chunked-store` | enable data to be sent to AnyTrust in chunks instead of all at once | `true`
+`node.data-availability.rpc-aggregator.rpc-client.rpc.arg-log-limit` | uint                                limit size of arguments in log entries | `2048`
+`node.data-availability.rpc-aggregator.rpc-client.rpc.connection-wait` | duration                          how long to wait for initial connection | None
+`node.data-availability.rpc-aggregator.rpc-client.rpc.jwtsecret` | string                                  path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`node.data-availability.rpc-aggregator.rpc-client.rpc.retries` | uint                                      number of retries in case of failure(0 mean one attempt) | `3`
+`node.data-availability.rpc-aggregator.rpc-client.rpc.retry-delay` | duration                              delay between retries | None
+`node.data-availability.rpc-aggregator.rpc-client.rpc.retry-errors` | string                               Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`node.data-availability.rpc-aggregator.rpc-client.rpc.timeout` | duration                                  per-response timeout (0-disabled) | `10s`
+`node.data-availability.rpc-aggregator.rpc-client.rpc.url` | string                                        url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
+`node.data-availability.rpc-aggregator.rpc-client.rpc.websocket-message-size-limit` | int                  websocket message size limit used by the RPC client. 0 means no limit | `268435456`
 `node.delayed-sequencer.enable` | enable delayed sequencer | None
+`node.delayed-sequencer.filtered-tx-full-retry-interval` | duration                                        how often to do a full re-execution when halted on a filtered delayed message | `30s`
 `node.delayed-sequencer.finalize-distance` | int                                                           how many blocks in the past L1 block is considered final (ignored when using Merge finality) | `20`
 `node.delayed-sequencer.require-full-finality` | whether to wait for full finality before sequencing delayed messages | None
 `node.delayed-sequencer.rescan-interval` | duration                                                        frequency to rescan for new delayed messages (the parent chain reader's poll-interval config is more important than this) | `1s`
 `node.delayed-sequencer.use-merge-finality` | whether to use The Merge's notion of finality before sequencing delayed messages | `true`
+`node.execution-rpc-client.arg-log-limit` | uint                                                           limit size of arguments in log entries | `2048`
+`node.execution-rpc-client.connection-wait` | duration                                                     how long to wait for initial connection | None
+`node.execution-rpc-client.jwtsecret` | string                                                             path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`node.execution-rpc-client.retries` | uint                                                                 number of retries in case of failure(0 mean one attempt) | `3`
+`node.execution-rpc-client.retry-delay` | duration                                                         delay between retries | None
+`node.execution-rpc-client.retry-errors` | string                                                          Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`node.execution-rpc-client.timeout` | duration                                                             per-response timeout (0-disabled) | None
+`node.execution-rpc-client.url` | string                                                                   url of server, use self for loopback websocket, self-auth for loopback with authentication | None
+`node.execution-rpc-client.websocket-message-size-limit` | int                                             websocket message size limit used by the RPC client. 0 means no limit | `268435456`
 `node.feed.input.enable-compression` | enable per message deflate compression support | `true`
 `node.feed.input.reconnect-initial-backoff` | duration                                                     initial duration to wait before reconnect | `1s`
 `node.feed.input.reconnect-maximum-backoff` | duration                                                     maximum duration to wait before reconnect | `1m4s`
@@ -714,7 +830,7 @@ Option | Description | Default
 `node.feed.output.read-timeout` | duration                                                                 duration to wait before timing out reading data (i.e. pings) from clients | `1s`
 `node.feed.output.require-compression` | require clients to use compression | None
 `node.feed.output.require-version` | don't connect if client version not present | None
-`node.feed.output.signed` | sign broadcast messages | None
+`node.feed.output.signed` | sign broadcast messages with the batch poster wallet | None
 `node.feed.output.workers` | int                                                                           number of threads to reserve for HTTP to WS upgrade | `100`
 `node.feed.output.write-timeout` | duration                                                                duration to wait before timing out writing data to clients | `2s`
 `node.inbox-reader.check-delay` | duration                                                                 the maximum time to wait between inbox checks (if not enough new blocks are found) | `1m0s`
@@ -732,6 +848,12 @@ Option | Description | Default
 `node.maintenance.lock.lockout-duration` | duration                                                        how long lock is held | `1m0s`
 `node.maintenance.lock.my-id` | string                                                                     this node's id prefix when acquiring the lock (optional) | None
 `node.maintenance.lock.refresh-duration` | duration                                                        how long between consecutive calls to redis | `10s`
+`node.message-extraction.blocks-to-prefetch` | uint                                                        the number of blocks to prefetch relevant logs from. Recommend using max allowed range for eth_getLogs rpc query | `499`
+`node.message-extraction.enable` | enable message extraction service | None
+`node.message-extraction.log-extraction-status-frequency-blocks` | uint                                    frequency of logging message extraction status in terms of number of blocks processed | `100`
+`node.message-extraction.read-mode` | string                                                               mode to only read latest or safe or finalized L1 blocks. Enabling safe or finalized disables feed input and output. Defaults to latest. Takes string input, valid strings- latest, safe, finalized | `latest`
+`node.message-extraction.retry-interval` | duration                                                        wait time before retring upon a failure | `500ms`
+`node.message-extraction.stall-tolerance` | uint                                                           max times the MEL fsm is allowed to be stuck without logging error | `10`
 `node.message-pruner.enable` | enable message pruning | `true`
 `node.message-pruner.min-batches-left` | uint                                                              min number of batches not pruned | `1000`
 `node.message-pruner.prune-interval` | duration                                                            interval for running message pruner | `1m0s`
@@ -745,6 +867,9 @@ Option | Description | Default
 `node.parent-chain-reader.tx-timeout` | duration                                                           timeout when waiting for a transaction | `5m0s`
 `node.parent-chain-reader.use-finality-data` | use l1 data about finalized/safe blocks | `true`
 `node.resource-mgmt.mem-free-limit` | string                                                               Decline RPC calls if free memory excluding the page cache is below this amount | None
+`node.rpc-server.authenticated` | rpc is authenticated | `true`
+`node.rpc-server.enable` | enable consensus node to serve over rpc | None
+`node.rpc-server.public` | rpc is public | None
 `node.seq-coordinator.block-metadata-duration` | duration                                                  expiration duration for block metadata keys in Redis | `240h0m0s`
 `node.seq-coordinator.chosen-healthcheck-addr` | string                                                    if non-empty, launch an HTTP service binding to this address that returns status code 200 when chosen and 503 otherwise | None
 `node.seq-coordinator.delete-finalized-msgs` | enable deleting of finalized messages from redis | `true`
@@ -832,6 +957,10 @@ Option | Description | Default
 `node.transaction-streamer.shutdown-on-blockhash-mismatch` | if set the node gracefully shuts down upon detecting mismatch in feed and locally computed blockhash. This is turned off by default | None
 `node.transaction-streamer.sync-till-block` | uint                                                         node will not sync past this block | None
 `node.transaction-streamer.track-block-metadata-from` | uint                                               block number to start saving blockmetadata, 0 to disable | None
+`node.version-alerter-server.enable` | enable arb_getMinRequiredNitroVersion endpoint that returns minimum required version of the nitro node software | None
+`node.version-alerter-server.min-required-nitro-by-date` | string                                          minimum required version of the nitro node software by date. Second string in the result of querying arb_getMinRequiredNitroVersion endpoint | None
+`node.version-alerter-server.min-required-nitro-by-version` | string                                       minimum required version of the nitro node software. First string in the result of querying arb_getMinRequiredNitroVersion endpoint | None
+`node.version-alerter-server.upgrade-deadline` | string                                                    deadline to upgrade the nitro node software. Third string in the result of querying arb_getMinRequiredNitroVersion endpoint | None
 `parent-chain.blob-client.authorization` | string                                                          Value to send with the HTTP Authorization: header for Beacon REST requests, must include both scheme and scheme parameters | None
 `parent-chain.blob-client.beacon-url` | string                                                             Beacon Chain RPC URL to use for fetching blobs (normally on port 3500) | None
 `parent-chain.blob-client.blob-directory` | string                                                         Full path of the directory to save fetched blobs | None
@@ -888,8 +1017,10 @@ Option | Description | Default
 `validation.arbitrator.execution.initial-steps` | uint                                                     initial steps between machines | `100000`
 `validation.arbitrator.output-path` | string                                                               path to write machines to | `./target/output`
 `validation.arbitrator.redis-validation-server-config.buffer-reads` | buffer reads (read next while working) | `true`
-`validation.arbitrator.redis-validation-server-config.consumer-config.idletime-to-autoclaim` | duration    After a message spends this amount of time in PEL (Pending Entries List i.e claimed by another consumer but not Acknowledged) it will be allowed to be autoclaimed by other consumers | `5m0s`
+`validation.arbitrator.redis-validation-server-config.consumer-config.idletime-to-autoclaim` | duration    After a message spends this amount of time in PEL (Pending Entries List i.e claimed by another consumer but not Acknowledged) it will be allowed to be autoclaimed by other consumers. This option should be set to the same value for all consumers and producers. | `5m0s`
+`validation.arbitrator.redis-validation-server-config.consumer-config.max-retry-count` | int               number of message retries after which this consumer will set an error response and Acknowledge the message (-1 = no limit) | `-1`
 `validation.arbitrator.redis-validation-server-config.consumer-config.response-entry-timeout` | duration   timeout for response entry | `1h0m0s`
+`validation.arbitrator.redis-validation-server-config.consumer-config.retry` | enables autoclaim for this consumer, if set to false this consumer will not check messages from PEL (Pending Entries List) | `true`
 `validation.arbitrator.redis-validation-server-config.module-roots` | strings                              Supported module root hashes | None
 `validation.arbitrator.redis-validation-server-config.redis-url` | string                                  url of redis server | None
 `validation.arbitrator.redis-validation-server-config.stream-prefix` | string                              prefix for stream name | None
@@ -904,7 +1035,19 @@ Option | Description | Default
 `validation.use-jit` | use jit for validation | `true`
 `validation.wasm.allowed-wasm-module-roots` | strings                                                      list of WASM module roots or machine base paths to match against on-chain WasmModuleRoot | None
 `validation.wasm.enable-wasmroots-check` | enable check for compatibility of on-chain WASM module root with node | `true`
-`validation.wasm.root-path` | string                                                                       path to machine folders, each containing wasm files (machine.wavm.br, replay.wasm) | None
+`validation.wasm.root-path` | string                                                                       path to machine folders, each containing wasm files (machine.v2.wavm.br, replay.wasm) | None
+`version-alerter.connection.arg-log-limit` | uint                                                          limit size of arguments in log entries | `2048`
+`version-alerter.connection.connection-wait` | duration                                                    how long to wait for initial connection | None
+`version-alerter.connection.jwtsecret` | string                                                            path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`version-alerter.connection.retries` | uint                                                                number of retries in case of failure(0 mean one attempt) | `3`
+`version-alerter.connection.retry-delay` | duration                                                        delay between retries | None
+`version-alerter.connection.retry-errors` | string                                                         Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`version-alerter.connection.timeout` | duration                                                            per-response timeout (0-disabled) | `10s`
+`version-alerter.connection.url` | string                                                                  url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
+`version-alerter.connection.websocket-message-size-limit` | int                                            websocket message size limit used by the RPC client. 0 means no limit | `268435456`
+`version-alerter.enable` | enable querying arb_getMinRequiredNitroVersion endpoint in regular intervals and firing alerts if the node software is below the required version | None
+`version-alerter.ping-interval` | duration                                                                 how often the nitro version alerter should ping arb_getMinRequiredNitroVersion for data | `5m0s`
+`version-alerter.upgrade-grace-period` | duration                                                          represents grace period up until the upgrade deadline received from arb_getMinRequiredNitroVersion, determines escalation of messages regarding node software upgrade | None
 `ws.addr` | string                                                                                         WS-RPC server listening interface | None
 `ws.api` | strings                                                                                         APIs offered over the WS-RPC interface | `[net,web3,eth,arb]`
 `ws.expose-all` | expose private api via websocket | None
