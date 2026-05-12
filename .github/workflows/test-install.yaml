@@ -100,8 +100,9 @@ jobs:
         id: chart-test
         continue-on-error: true
         run: |
-          ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS"
-          echo "CT_EXIT_CODE=$?" >> $GITHUB_ENV
+          EXIT=0
+          ct install --target-branch ${{ github.event.repository.default_branch }} --config ct.yaml --helm-extra-set-args "$HELM_EXTRA_SET_ARGS" || EXIT=$?
+          echo "CT_EXIT_CODE=$EXIT" >> $GITHUB_ENV
 
       - name: Determine test status
         id: test-status
@@ -109,7 +110,7 @@ jobs:
           if [[ "$HAS_CHANGES" == "false" ]]; then
             echo "STATUS=success" >> $GITHUB_ENV
             echo "STATUS_TEXT=No chart changes detected" >> $GITHUB_ENV
-          elif [[ "${CT_EXIT_CODE:-0}" == "0" ]]; then
+          elif [[ "${CT_EXIT_CODE:-1}" == "0" ]]; then
             echo "STATUS=success" >> $GITHUB_ENV
             echo "STATUS_TEXT=succeeded" >> $GITHUB_ENV
           else
