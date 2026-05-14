@@ -529,7 +529,7 @@ validator:
       ## @param validator.splitvalidator.global.stsAffinity.provider Cloud provider preset for topology keys. Built-in: kubernetes, aws, gcp, azure. All built-ins resolve to the standard Kubernetes well-known labels, which are populated by all major cloud providers. Use 'custom' with `topologyKeys` for vendor-specific labels.
       ## @param validator.splitvalidator.global.stsAffinity.topologyKeys.zone Direct override for the zone topology key. Takes precedence over the provider preset. Empty string uses the provider default; set to "-" to disable zone affinity.
       ## @param validator.splitvalidator.global.stsAffinity.topologyKeys.node Direct override for the node topology key. Takes precedence over the provider preset. Empty string uses the provider default; set to "-" to disable node affinity.
-      ## @param validator.splitvalidator.global.stsAffinity.zoneMode 'required' (recommended) forces same-zone scheduling — validator pods stay Pending on first install until the statefulset pod is scheduled. 'preferred' favors same-zone but allows fallback.
+      ## @param validator.splitvalidator.global.stsAffinity.zoneMode 'preferred' (default) favors same-zone scheduling but allows fallback to other zones if the preferred zone is unavailable. 'required' enforces same-zone strictly — validator pods will stay Pending on first install until the statefulset pod is scheduled (Helm creates Deployments before StatefulSets), and on disruption events validator pods may remain Pending if no capacity is available in the statefulset's zone.
       ## @param validator.splitvalidator.global.stsAffinity.weight Weight (1-100) for preferred affinity rules (same-node preference, and same-zone preference when zoneMode is 'preferred').
       stsAffinity:
         enabled: false
@@ -537,7 +537,7 @@ validator:
         topologyKeys:
           zone: ""
           node: ""
-        zoneMode: required
+        zoneMode: preferred
         weight: 100
 
 ## @skip ci
