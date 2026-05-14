@@ -525,6 +525,21 @@ validator:
       ## @param validator.splitvalidator.global.priorityClassName Priority class name for the stateless validator pod
       priorityClassName: ""
 
+      ## @param validator.splitvalidator.global.stsAffinity.enabled Co-locate validator pods with the nitro statefulset pods. The statefulset is the anchor (its PVC pins it to one zone); validator pods follow it to reduce cross-AZ traffic and latency.
+      ## @param validator.splitvalidator.global.stsAffinity.provider Cloud provider preset for topology keys. Built-in: kubernetes, aws, gcp, azure. All built-ins resolve to the standard Kubernetes well-known labels, which are populated by all major cloud providers. Use 'custom' with `topologyKeys` for vendor-specific labels.
+      ## @param validator.splitvalidator.global.stsAffinity.topologyKeys.zone Direct override for the zone topology key. Takes precedence over the provider preset. Empty string uses the provider default; set to "-" to disable zone affinity.
+      ## @param validator.splitvalidator.global.stsAffinity.topologyKeys.node Direct override for the node topology key. Takes precedence over the provider preset. Empty string uses the provider default; set to "-" to disable node affinity.
+      ## @param validator.splitvalidator.global.stsAffinity.zoneMode 'required' (recommended) forces same-zone scheduling — validator pods stay Pending on first install until the statefulset pod is scheduled. 'preferred' favors same-zone but allows fallback.
+      ## @param validator.splitvalidator.global.stsAffinity.weight Weight (1-100) for preferred affinity rules (same-node preference, and same-zone preference when zoneMode is 'preferred').
+      stsAffinity:
+        enabled: false
+        provider: kubernetes
+        topologyKeys:
+          zone: ""
+          node: ""
+        zoneMode: required
+        weight: 100
+
 ## @skip ci
 ci:
   secretManifest:
