@@ -525,6 +525,18 @@ validator:
       ## @param validator.splitvalidator.global.priorityClassName Priority class name for the stateless validator pod
       priorityClassName: ""
 
+      ## @param validator.splitvalidator.global.stsAffinity.enabled Co-locate validator pods with the nitro statefulset pods. The statefulset is the anchor (its PVC pins it to one zone); validator pods follow it to reduce cross-AZ traffic and latency.
+      ## @param validator.splitvalidator.global.stsAffinity.zoneTopologyKey Topology key for the zone-level same-zone rule. Default is the standard Kubernetes well-known label, which is populated by AWS, GCP, Azure, and other CNCF-conformant providers. Override for vendor-specific labels; set to empty string to disable zone affinity.
+      ## @param validator.splitvalidator.global.stsAffinity.nodeTopologyKey Topology key for the node-level same-node preference. Default is the standard Kubernetes well-known label. Override for vendor-specific labels; set to empty string to disable node affinity.
+      ## @param validator.splitvalidator.global.stsAffinity.zoneMode 'preferred' (default) favors same-zone scheduling but allows fallback to other zones if the preferred zone is unavailable. 'required' enforces same-zone strictly — validator pods will stay Pending on first install until the statefulset pod is scheduled (Helm creates Deployments before StatefulSets), and on disruption events validator pods may remain Pending if no capacity is available in the statefulset's zone.
+      ## @param validator.splitvalidator.global.stsAffinity.weight Weight (1-100) for preferred affinity rules (same-node preference, and same-zone preference when zoneMode is 'preferred').
+      stsAffinity:
+        enabled: false
+        zoneTopologyKey: topology.kubernetes.io/zone
+        nodeTopologyKey: kubernetes.io/hostname
+        zoneMode: preferred
+        weight: 100
+
 ## @skip ci
 ci:
   secretManifest:

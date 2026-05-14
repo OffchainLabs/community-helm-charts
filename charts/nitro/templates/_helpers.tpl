@@ -428,3 +428,94 @@ Currently primarily used for stateless validator configuration
 
 {{- define "nitro.lifecycle" -}}
 {{- end -}}
+
+{{/*
+Render the pod affinity object that co-locates validator pods with the
+nitro statefulset pods.
+
+The defaults (topology.kubernetes.io/zone, kubernetes.io/hostname) are the
+standard Kubernetes well-known labels — populated identically by AWS, GCP,
+Azure, and other CNCF-conformant providers. Override the topology keys for
+vendor-specific labels; set to empty to disable that term.
+
+Accepts a dict with `root` (the Helm root context for selectorLabels) and
+`stsAffinity` (the user config block). Emits only the `podAffinity`
+mapping when stsAffinity.enabled is true; otherwise emits nothing. The
+caller is responsible for merging this with any user-provided affinity.
+*/}}
+{{- define "nitro.validator.stsAffinity.podAffinity" -}}
+{{- $root := .root -}}
+{{- $sts := .stsAffinity -}}
+{{- if not $sts.enabled -}}
+{{- else -}}
+{{- $zoneKey := $sts.zoneTopologyKey -}}
+{{- $nodeKey := $sts.nodeTopologyKey -}}
+{{- $weight := $sts.weight | default 100 -}}
+{{- $mode := $sts.zoneMode | default "preferred" -}}
+{{- if not (or (eq $mode "required") (eq $mode "preferred")) -}}
+  {{- fail (printf "validator.splitvalidator.global.stsAffinity.zoneMode must be 'required' or 'preferred', got %q" $mode) -}}
+{{- end -}}
+{{- $selectorLabels := fromYaml (include "nitro.selectorLabels" $root) -}}
+{{- $matchLabels := merge (dict "function" "nitro") $selectorLabels -}}
+{{- $required := list -}}
+{{- $preferred := list -}}
+{{- if $zoneKey -}}
+  {{- $term := dict "labelSelector" (dict "matchLabels" $matchLabels) "topologyKey" $zoneKey -}}
+  {{- if eq $mode "required" -}}
+    {{- $required = append $required $term -}}
+  {{- else -}}
+    {{- $preferred = append $preferred (dict "weight" $weight "podAffinityTerm" $term) -}}
+  {{- end -}}
+{{- end -}}
+{{- if $nodeKey -}}
+  {{- $term := dict "labelSelector" (dict "matchLabels" $matchLabels) "topologyKey" $nodeKey -}}
+  {{- $preferred = append $preferred (dict "weight" $weight "podAffinityTerm" $term) -}}
+{{- end -}}
+{{- $podAff := dict -}}
+{{- if $required -}}
+  {{- $podAff = set $podAff "requiredDuringSchedulingIgnoredDuringExecution" $required -}}
+{{- end -}}
+{{- if $preferred -}}
+  {{- $podAff = set $podAff "preferredDuringSchedulingIgnoredDuringExecution" $preferred -}}
+{{- end -}}
+{{- if $podAff -}}
+podAffinity:
+{{ toYaml $podAff | indent 2 }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render the full affinity object for a validator deployment, merging the
+stsAffinity podAffinity with any user-provided affinity. User-provided
+podAffinity terms are preserved alongside the generated ones.
+
+Accepts a dict with `root` (Helm root context) and `merged` (the merged
+global+deployment values).
+*/}}
+{{- define "nitro.validator.affinity" -}}
+{{- $root := .root -}}
+{{- $merged := .merged -}}
+{{- $userAffinity := $merged.affinity | default dict -}}
+{{- $sts := $merged.stsAffinity | default dict -}}
+{{- $generated := fromYaml (include "nitro.validator.stsAffinity.podAffinity" (dict "root" $root "stsAffinity" $sts)) -}}
+{{- if and (not $generated) (not $userAffinity) -}}
+{{- else if not $generated -}}
+{{ toYaml $userAffinity }}
+{{- else -}}
+  {{- $result := deepCopy $userAffinity -}}
+  {{- $existingPodAff := $result.podAffinity | default dict -}}
+  {{- $generatedPodAff := $generated.podAffinity -}}
+  {{- $required := concat ($existingPodAff.requiredDuringSchedulingIgnoredDuringExecution | default list) ($generatedPodAff.requiredDuringSchedulingIgnoredDuringExecution | default list) -}}
+  {{- $preferred := concat ($existingPodAff.preferredDuringSchedulingIgnoredDuringExecution | default list) ($generatedPodAff.preferredDuringSchedulingIgnoredDuringExecution | default list) -}}
+  {{- $merged := dict -}}
+  {{- if $required -}}
+    {{- $merged = set $merged "requiredDuringSchedulingIgnoredDuringExecution" $required -}}
+  {{- end -}}
+  {{- if $preferred -}}
+    {{- $merged = set $merged "preferredDuringSchedulingIgnoredDuringExecution" $preferred -}}
+  {{- end -}}
+  {{- $_ := set $result "podAffinity" $merged -}}
+{{ toYaml $result }}
+{{- end -}}
+{{- end -}}
