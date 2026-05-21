@@ -378,9 +378,16 @@ Currently primarily used for stateless validator configuration
 
     {{- /* Create the validation server config list in the configmap */ -}}
     {{- $valconfig := dict "configmap" (dict "data" (dict "node" (dict "block-validator" (dict "validation-server-configs-list" (toJson $deployments | replace "\\" "")))) ) -}}
-    
+
     {{- /* Merge the new validation config into the original values */ -}}
     {{- $values = merge $values $valconfig -}}
+  {{- end -}}
+
+  {{- /* Auto-inject event-filter path when eventFilter.enabled is true */ -}}
+  {{- if .Values.eventFilter.enabled -}}
+    {{- $filterPath := printf "%s/%s" (trimSuffix "/" .Values.eventFilter.mountPath) .Values.eventFilter.fileName -}}
+    {{- $efConfig := dict "configmap" (dict "data" (dict "execution" (dict "transaction-filtering" (dict "event-filter" (dict "path" $filterPath))))) -}}
+    {{- $values = merge $values $efConfig -}}
   {{- end -}}
 {{- end -}}
 

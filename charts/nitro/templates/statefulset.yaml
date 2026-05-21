@@ -183,6 +183,11 @@ spec:
             subPath: {{ $filename }}
           {{- end }}
           {{- end }}
+          {{- if .Values.eventFilter.enabled }}
+          - name: event-filter
+            mountPath: {{ .Values.eventFilter.mountPath }}
+            readOnly: true
+          {{- end }}
           {{- if .Values.extraVolumeMounts }}
           {{- toYaml .Values.extraVolumeMounts | nindent 10}}
           {{- end }}
@@ -210,6 +215,11 @@ spec:
       - name: wallet-files
         secret:
           secretName: {{ include "nitro.fullname" . }}-wallets
+      {{- end }}
+      {{- if .Values.eventFilter.enabled }}
+      - name: event-filter
+        configMap:
+          name: {{ include "nitro.fullname" . }}-event-filter
       {{- end }}
       {{- if .Values.extraVolumes }}
       {{- toYaml .Values.extraVolumes | nindent 6 }}

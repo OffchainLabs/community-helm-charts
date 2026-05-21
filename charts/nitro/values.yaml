@@ -273,6 +273,16 @@ wallet:
 ## @param enableAutoConfigProcessing Enable intelligent automatic configuration processing
 enableAutoConfigProcessing: true
 
+## @param eventFilter.enabled Render an event-filter ConfigMap and wire it into the pod. Also auto-injects `execution.transaction-filtering.event-filter.path`; listing that key in `configmap.removeKeys` will strip the path from the rendered config even though the volume is still mounted.
+## @param eventFilter.rules Inline rules list, serialized to JSON as `{"rules": [...]}` and written to the ConfigMap. Schema is defined by Nitro.
+## @param eventFilter.mountPath Path inside the container where the rules file is mounted
+## @param eventFilter.fileName File name of the rules JSON inside the mount
+eventFilter:
+  enabled: false
+  rules: []
+  mountPath: /etc/nitro/event-filter
+  fileName: event-filter.json
+
 configmap:
   ## @param configmap.enabled Enable a configmap for the nitro container
   enabled: true
