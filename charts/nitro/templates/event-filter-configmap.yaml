@@ -1,0 +1,11 @@
+{{- if .Values.eventFilter.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nitro.fullname" . }}-event-filter
+  labels:
+    {{- include "nitro.labels" . | nindent 4 }}
+data:
+  {{ .Values.eventFilter.fileName }}: |
+    {{- dict "rules" .Values.eventFilter.rules | toPrettyJson | nindent 4 }}
+{{- end }}
