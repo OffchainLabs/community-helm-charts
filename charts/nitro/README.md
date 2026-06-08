@@ -360,6 +360,7 @@ Option | Description | Default
 `execution.forwarder.retry-interval` | duration                                                            minimal time between update retries | `100ms`
 `execution.forwarder.update-interval` | duration                                                           forwarding target update interval | `1s`
 `execution.forwarding-target` | string                                                                     transaction forwarding target URL, or "null" to disable forwarding (iff not sequencer) | None
+`execution.legacy-zero-base-fee-until` | uint                                                              orbit-chain compat: re-enables the pre-v3.7 behavior of treating ArbOS<=40 blocks with zero base fee as non-arbitrum, for blocks with unix timestamp strictly less than this value (0 disables; set to a timestamp past the last zero-basefee block on the chain) | None
 `execution.parent-chain-reader.dangerous.wait-for-tx-approval-safe-poll` | duration                        Dangerous! only meant to be used by system tests | None
 `execution.parent-chain-reader.enable` | enable reader connection | `true`
 `execution.parent-chain-reader.old-header-timeout` | duration                                              warns if the latest l1 block is at least this old | `5m0s`
@@ -455,7 +456,7 @@ Option | Description | Default
 `execution.transaction-filtering.address-filter.s3.region` | string                                        S3 region | None
 `execution.transaction-filtering.address-filter.s3.secret-key` | string                                    S3 secret key | None
 `execution.transaction-filtering.disable-delayed-sequencing-filter` | disable delayed sequencing filter | None
-`execution.transaction-filtering.enable-ethcall-filter` | enable address filtering for eth_estimateGas and eth_call | `true`
+`execution.transaction-filtering.enable-ethcall-filter` | enable address filtering for eth_estimateGas and eth_call | None
 `execution.transaction-filtering.event-filter.path` | string                                               path to JSON file containing event filter rules | None
 `execution.transaction-filtering.filtering-report-rpc-client.arg-log-limit` | uint                         limit size of arguments in log entries | `2048`
 `execution.transaction-filtering.filtering-report-rpc-client.connection-wait` | duration                   how long to wait for initial connection | None
