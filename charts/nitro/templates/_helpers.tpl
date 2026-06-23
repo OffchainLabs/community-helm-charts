@@ -210,7 +210,11 @@ nitro args
 {{- end }}
 
 {{/* CPU-based environment variables */}}
-{{- if .Values.env.nitro.goMaxProcs.enabled -}}
+{{- if and .Values.env.nitro.goMaxProcs.enabled .Values.env.nitro.goMaxProcs.value -}}
+{{/* Explicit override: pin GOMAXPROCS regardless of the CPU request/limit */}}
+- name: GOMAXPROCS
+  value: {{ .Values.env.nitro.goMaxProcs.value | quote }}
+{{- else if .Values.env.nitro.goMaxProcs.enabled -}}
 {{- $cpuRequest := 0.0 -}}
 {{- $cpuLimit := 0.0 -}}
 {{- $multiplier := $.Values.env.nitro.goMaxProcs.multiplier | default 2 -}}
@@ -283,7 +287,11 @@ nitro args
 {{- end }}
 
 {{/* CPU-based environment variables */}}
-{{- if .Values.env.splitvalidator.goMaxProcs.enabled -}}
+{{- if and .Values.env.splitvalidator.goMaxProcs.enabled .Values.env.splitvalidator.goMaxProcs.value -}}
+{{/* Explicit override: pin GOMAXPROCS regardless of the CPU request/limit */}}
+- name: GOMAXPROCS
+  value: {{ .Values.env.splitvalidator.goMaxProcs.value | quote }}
+{{- else if .Values.env.splitvalidator.goMaxProcs.enabled -}}
 {{- $cpuRequest := 0.0 -}}
 {{- $cpuLimit := 0.0 -}}
 {{- $multiplier := $.Values.env.splitvalidator.goMaxProcs.multiplier | default 2 -}}
