@@ -4,5 +4,5 @@ description: A Helm chart for Arbitrum Nitro relays
 maintainers:
   - name: OffchainLabs
 type: application
-version: 0.7.12
-appVersion: "v3.10.2-db30ef0"
+version: 0.7.13
+appVersion: "v3.11.0-a618155"
