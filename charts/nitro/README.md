@@ -450,6 +450,7 @@ Option | Description | Default
 `execution.transaction-filtering.address-filter.s3.chunk-size-mb` | int                                    S3 multipart download part size in MB | `32`
 `execution.transaction-filtering.address-filter.s3.concurrency` | int                                      S3 multipart download concurrency | `10`
 `execution.transaction-filtering.address-filter.s3.endpoint` | string                                      custom S3 endpoint URL (for MinIO, localstack, or other S3-compatible services) | None
+`execution.transaction-filtering.address-filter.s3.max-file-size-mb` | int                                 maximum allowed S3 object size in MB; if the object is larger, skip the download (0 disables the check) | None
 `execution.transaction-filtering.address-filter.s3.max-retries` | int                                      maximum retries for S3 part body download | `3`
 `execution.transaction-filtering.address-filter.s3.object-key` | string                                    S3 object key (path) to the file | None
 `execution.transaction-filtering.address-filter.s3.region` | string                                        S3 region | None
@@ -964,7 +965,7 @@ Option | Description | Default
 `node.transaction-streamer.execute-message-loop-delay` | duration                                          delay when polling calls to execute messages | `100ms`
 `node.transaction-streamer.max-broadcaster-queue-size` | int                                               maximum cache of pending broadcaster messages | `50000`
 `node.transaction-streamer.max-reorg-resequence-depth` | int                                               maximum number of messages to attempt to resequence on reorg (0 = never resequence, -1 = always resequence) | `1024`
-`node.transaction-streamer.shutdown-on-blockhash-mismatch` | if set the node gracefully shuts down upon detecting mismatch in feed and locally computed blockhash. This is turned off by default | None
+`node.transaction-streamer.shutdown-on-blockhash-mismatch` | when true (default), on a feed-vs-local block hash mismatch the node refuses to process further messages and shuts down gracefully; set to false only if you trust local execution over the feed and want to keep processing | `true`
 `node.transaction-streamer.sync-till-block` | uint                                                         node will not sync past this block | None
 `node.transaction-streamer.track-block-metadata-from` | uint                                               block number to start saving blockmetadata, 0 to disable | None
 `node.version-alerter-server.enable` | enable arb_getMinRequiredNitroVersion endpoint that returns minimum required version of the nitro node software | None
