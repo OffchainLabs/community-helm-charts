@@ -444,7 +444,6 @@ Option | Description | Default
 `execution.transaction-filtering.address-filter.address-checker-queue-size` | int                          work queue size for address checker | `8192`
 `execution.transaction-filtering.address-filter.address-checker-worker-count` | int                        number of workers for address checker | `4`
 `execution.transaction-filtering.address-filter.cache-size` | int                                          LRU cache size for address lookup results | `10000`
-`execution.transaction-filtering.address-filter.enable` | enable restricted address synchronization service | None
 `execution.transaction-filtering.address-filter.poll-interval` | duration                                  interval between polling S3 for hash list updates | `5m0s`
 `execution.transaction-filtering.address-filter.s3.access-key` | string                                    S3 access key | None
 `execution.transaction-filtering.address-filter.s3.bucket` | string                                        S3 bucket name | None
@@ -456,6 +455,7 @@ Option | Description | Default
 `execution.transaction-filtering.address-filter.s3.region` | string                                        S3 region | None
 `execution.transaction-filtering.address-filter.s3.secret-key` | string                                    S3 secret key | None
 `execution.transaction-filtering.disable-delayed-sequencing-filter` | disable delayed sequencing filter | None
+`execution.transaction-filtering.enable` | enable transaction filtering | None
 `execution.transaction-filtering.enable-ethcall-filter` | enable address filtering for eth_estimateGas and eth_call | None
 `execution.transaction-filtering.event-filter.path` | string                                               path to JSON file containing event filter rules | None
 `execution.transaction-filtering.filtering-report-rpc-client.arg-log-limit` | uint                         limit size of arguments in log entries | `2048`
