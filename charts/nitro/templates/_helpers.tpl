@@ -210,10 +210,15 @@ nitro args
 {{- end }}
 
 {{/* CPU-based environment variables */}}
-{{- if .Values.env.nitro.goMaxProcs.enabled -}}
+{{- if and .Values.env.nitro.goMaxProcs.enabled .Values.env.nitro.goMaxProcs.value -}}
+{{/* Explicit override: pin GOMAXPROCS regardless of the CPU request/limit */}}
+- name: GOMAXPROCS
+  value: {{ .Values.env.nitro.goMaxProcs.value | quote }}
+{{- else if .Values.env.nitro.goMaxProcs.enabled -}}
 {{- $cpuRequest := 0.0 -}}
 {{- $cpuLimit := 0.0 -}}
 {{- $multiplier := $.Values.env.nitro.goMaxProcs.multiplier | default 2 -}}
+{{- $rounding := $.Values.env.nitro.goMaxProcs.rounding | default "ceil" -}}
 
 {{/* Get CPU request if set */}}
 {{- if and .Values.resources .Values.resources.requests .Values.resources.requests.cpu -}}
@@ -248,12 +253,18 @@ nitro args
 {{- if or (gt $cpuRequest 0.0) (gt $cpuLimit 0.0) -}}
   {{/* Use the higher value between CPU request*multiplier and CPU limit */}}
   {{- $maxProcs := 0 -}}
+  {{- $rawProcs := 0.0 -}}
   {{- if gt $cpuRequest $cpuLimit -}}
-    {{- $maxProcs = ceil $cpuRequest | int -}}
+    {{- $rawProcs = $cpuRequest -}}
   {{- else if gt $cpuLimit 0.0 -}}
-    {{- $maxProcs = ceil $cpuLimit | int -}}
+    {{- $rawProcs = $cpuLimit -}}
   {{- else if gt $cpuRequest 0.0 -}}
-    {{- $maxProcs = ceil $cpuRequest | int -}}
+    {{- $rawProcs = $cpuRequest -}}
+  {{- end -}}
+  {{- if eq $rounding "floor" -}}
+    {{- $maxProcs = floor $rawProcs | int -}}
+  {{- else -}}
+    {{- $maxProcs = ceil $rawProcs | int -}}
   {{- end -}}
 
   {{/* Ensure GOMAXPROCS is at least 1 */}}
@@ -283,10 +294,15 @@ nitro args
 {{- end }}
 
 {{/* CPU-based environment variables */}}
-{{- if .Values.env.splitvalidator.goMaxProcs.enabled -}}
+{{- if and .Values.env.splitvalidator.goMaxProcs.enabled .Values.env.splitvalidator.goMaxProcs.value -}}
+{{/* Explicit override: pin GOMAXPROCS regardless of the CPU request/limit */}}
+- name: GOMAXPROCS
+  value: {{ .Values.env.splitvalidator.goMaxProcs.value | quote }}
+{{- else if .Values.env.splitvalidator.goMaxProcs.enabled -}}
 {{- $cpuRequest := 0.0 -}}
 {{- $cpuLimit := 0.0 -}}
 {{- $multiplier := $.Values.env.splitvalidator.goMaxProcs.multiplier | default 2 -}}
+{{- $rounding := $.Values.env.splitvalidator.goMaxProcs.rounding | default "ceil" -}}
 
 {{/* Get CPU request if set */}}
 {{- if and .Values.validator.splitvalidator.global.resources .Values.validator.splitvalidator.global.resources.requests .Values.validator.splitvalidator.global.resources.requests.cpu -}}
@@ -321,12 +337,18 @@ nitro args
 {{- if or (gt $cpuRequest 0.0) (gt $cpuLimit 0.0) -}}
   {{/* Use the higher value between CPU request*multiplier and CPU limit */}}
   {{- $maxProcs := 0 -}}
+  {{- $rawProcs := 0.0 -}}
   {{- if gt $cpuRequest $cpuLimit -}}
-    {{- $maxProcs = ceil $cpuRequest | int -}}
+    {{- $rawProcs = $cpuRequest -}}
   {{- else if gt $cpuLimit 0.0 -}}
-    {{- $maxProcs = ceil $cpuLimit | int -}}
+    {{- $rawProcs = $cpuLimit -}}
   {{- else if gt $cpuRequest 0.0 -}}
-    {{- $maxProcs = ceil $cpuRequest | int -}}
+    {{- $rawProcs = $cpuRequest -}}
+  {{- end -}}
+  {{- if eq $rounding "floor" -}}
+    {{- $maxProcs = floor $rawProcs | int -}}
+  {{- else -}}
+    {{- $maxProcs = ceil $rawProcs | int -}}
   {{- end -}}
 
   {{/* Ensure GOMAXPROCS is at least 1 */}}

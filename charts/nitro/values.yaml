@@ -53,6 +53,8 @@ updateStrategy:
 ## @param env.splitvalidator.goMemLimit.multiplier The multiplier of available memory to use for the split validator
 ## @param env.splitvalidator.goMaxProcs.enabled Enable setting GOMAXPROCS for the split validator
 ## @param env.splitvalidator.goMaxProcs.multiplier The multiplier to use for CPU request (default 2)
+## @param env.splitvalidator.goMaxProcs.value Explicit GOMAXPROCS for the split validator; when set (and enabled), overrides the CPU-based calculation
+## @param env.splitvalidator.goMaxProcs.rounding Rounding mode for the split validator GOMAXPROCS calculation: "ceil" (default) or "floor"
 ## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
 ## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
 ## @param env.nitro.goMemLimit.nonGoMemory.enabled Enable non-Go memory subtraction from GOMEMLIMIT calculation
@@ -65,6 +67,8 @@ updateStrategy:
 ## @param env.nitro.mallocArenaMax.value Value for MALLOC_ARENA_MAX
 ## @param env.nitro.goMaxProcs.enabled Enable setting GOMAXPROCS for nitro
 ## @param env.nitro.goMaxProcs.multiplier The multiplier to use for CPU request (default 2)
+## @param env.nitro.goMaxProcs.value Explicit GOMAXPROCS for nitro; when set (and enabled), overrides the CPU-based calculation
+## @param env.nitro.goMaxProcs.rounding Rounding mode for the nitro GOMAXPROCS calculation: "ceil" (default) or "floor"
 ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
 ## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
 ## @param env.blockValidatorMemFreeLimit.enabled Enable block validator memory management
@@ -77,6 +81,8 @@ env:
     goMaxProcs:
       enabled: true
       multiplier: 2
+      value: ""
+      rounding: ceil
   nitro:
     goMemLimit:
       enabled: true
@@ -95,6 +101,8 @@ env:
     goMaxProcs:
       enabled: false
       multiplier: 2
+      value: ""
+      rounding: ceil
   resourceMgmtMemFreeLimit:
     enabled: false
     multiplier: 0.05
