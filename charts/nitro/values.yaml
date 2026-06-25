@@ -57,6 +57,8 @@ updateStrategy:
 ## @param env.splitvalidator.goMaxProcs.rounding Rounding mode for the split validator GOMAXPROCS calculation: "ceil" (default) or "floor"
 ## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
 ## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
+## @param env.nitro.goMemLimit.addressFilter.enabled Reserve Go-heap headroom for an in-node address-filter list reload; no-op unless execution.transaction-filtering.address-filter.s3.max-file-size-mb is set
+## @param env.nitro.goMemLimit.addressFilter.multiplier Reload reserve as a multiple of max-file-size-mb subtracted from the GOMEMLIMIT budget (4x = worst-case peak for the current non-streaming parser)
 ## @param env.nitro.goMemLimit.nonGoMemory.enabled Enable non-Go memory subtraction from GOMEMLIMIT calculation
 ## @param env.nitro.goMemLimit.nonGoMemory.defaults.databaseCache Default Pebble block cache size in MiB (CGO)
 ## @param env.nitro.goMemLimit.nonGoMemory.defaults.trieCleanCache Default trie-clean-cache size in MiB (fastcache/mmap)
@@ -87,6 +89,9 @@ env:
     goMemLimit:
       enabled: true
       multiplier: 0.9
+      addressFilter:
+        enabled: true
+        multiplier: 4.0
       nonGoMemory:
         enabled: true
         defaults:

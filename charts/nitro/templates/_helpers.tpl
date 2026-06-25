@@ -171,11 +171,44 @@ nitro args
 
 {{- end -}}
 
-{{/* GOMEMLIMIT = (memoryLimitMiB - nonGoMiB) * multiplier */}}
-{{/* When nonGoMemory is disabled, nonGoMiB is 0, so formula reduces to memoryLimitMiB * multiplier */}}
-{{- $goAvailable := subf $valueMi $nonGoMiB -}}
+{{/* Calculate address-filter reload reservation if enabled.
+     The in-node address-filter (execution.transaction-filtering.address-filter) loads an S3 hash
+     list into the Go heap. A reload transiently holds the old map (still being served) plus the
+     downloaded bytes, parsed struct, and new map built during the atomic swap, peaking at several
+     multiples of the file size with the current non-streaming parser. We reserve
+     (multiplier * max-file-size-mb) MiB of Go-heap headroom, keyed off the configured cap (worst
+     case, not the current list size), so a reload at the cap cannot push RSS past the container
+     memory limit. No-op unless max-file-size-mb is set. Pair with a memory limit of
+     baseline + multiplier * max-file-size-mb to keep the steady-state GOMEMLIMIT at its pre-filter
+     value. */}}
+{{- $filterReserveMiB := 0.0 -}}
+{{- if and .Values.env.nitro.goMemLimit.addressFilter (get .Values.env.nitro.goMemLimit.addressFilter "enabled") -}}
+  {{- $maxFileSizeMb := 0.0 -}}
+  {{- if hasKey .Values.configmap.data "execution" -}}
+    {{- $execution := index .Values.configmap.data "execution" -}}
+    {{- if hasKey $execution "transaction-filtering" -}}
+      {{- $tf := index $execution "transaction-filtering" -}}
+      {{- if hasKey $tf "address-filter" -}}
+        {{- $af := index $tf "address-filter" -}}
+        {{- if hasKey $af "s3" -}}
+          {{- $s3 := index $af "s3" -}}
+          {{- if hasKey $s3 "max-file-size-mb" -}}
+            {{- $maxFileSizeMb = index $s3 "max-file-size-mb" | float64 -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if gt $maxFileSizeMb 0.0 -}}
+    {{- $filterReserveMiB = mulf $maxFileSizeMb ($.Values.env.nitro.goMemLimit.addressFilter.multiplier | default 4.0) -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* GOMEMLIMIT = (memoryLimitMiB - nonGoMiB - filterReserveMiB) * multiplier */}}
+{{/* nonGoMiB and filterReserveMiB are 0 when their features are disabled or unconfigured. */}}
+{{- $goAvailable := subf $valueMi $nonGoMiB $filterReserveMiB -}}
 {{- if le $goAvailable 0.0 -}}
-{{- fail (printf "non-Go memory (%dMiB) exceeds or equals container memory limit (%dMiB). Reduce cache sizes or increase memory limit." (int $nonGoMiB) (int $valueMi)) -}}
+{{- fail (printf "non-Go memory (%dMiB) + address-filter reload reserve (%dMiB) exceeds or equals container memory limit (%dMiB). Reduce cache sizes, lower address-filter max-file-size-mb or multiplier, or increase the memory limit." (int $nonGoMiB) (int $filterReserveMiB) (int $valueMi)) -}}
 {{- end -}}
 - name: GOMEMLIMIT
   value: {{ printf "%dMiB" (int (mulf $goAvailable ($.Values.env.nitro.goMemLimit.multiplier | default 0.9))) | quote }}
