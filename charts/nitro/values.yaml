@@ -201,6 +201,39 @@ pdb:
   minAvailable: "75%"
   maxUnavailable: ""
 
+## @param verticalPodAutoscaler.enabled Enable a VerticalPodAutoscaler for the nitro statefulset. Requires the VPA CRDs (`autoscaling.k8s.io`) to be installed in the cluster.
+## @param verticalPodAutoscaler.apiVersion API version of the VerticalPodAutoscaler resource. Override for clusters running an older VPA API.
+## @param verticalPodAutoscaler.nameOverride [string, nullable] Override the name of the VPA object. Defaults to the chart fullname.
+## @param verticalPodAutoscaler.labels Additional labels to add to the VPA object (merged with the chart's common labels).
+## @param verticalPodAutoscaler.annotations Annotations to add to the VPA object.
+## @param verticalPodAutoscaler.targetRef [object] Workload the VPA scales. Defaults to this chart's StatefulSet when left empty; set it to point the VPA at a different workload.
+## @param verticalPodAutoscaler.updatePolicy.updateMode How the VPA applies recommendations: `Off` (recommend only, no changes), `Initial` (apply at pod creation), `Recreate`, or `Auto`. Defaults to `Off` so enabling the VPA never evicts the stateful node until you opt in.
+## @param verticalPodAutoscaler.updatePolicy.minReplicas [nullable] Minimum number of running replicas the VPA must leave untouched before it will evict a pod to apply a recommendation.
+## @param verticalPodAutoscaler.resourcePolicy.containerPolicies [array] Per-container resource policies. The default `*` entry applies to every container; add named entries to override individual containers. Each entry accepts the standard VPA fields (`mode`, `controlledResources`, `controlledValues`, `minAllowed`, `maxAllowed`).
+## @param verticalPodAutoscaler.recommenders [array] Alternate recommenders to use instead of the default. Each entry is `{ name: <recommender> }`. Leave empty to use the cluster default recommender.
+## @param verticalPodAutoscaler.extraSpec [object] Freeform spec fields deep-merged over the generated spec. Use this to set any VPA field not modeled above (or override one that is) without editing the template.
+verticalPodAutoscaler:
+  enabled: false
+  apiVersion: autoscaling.k8s.io/v1
+  nameOverride: null
+  labels: {}
+  annotations: {}
+  targetRef: {}
+  updatePolicy:
+    updateMode: "Off"
+    minReplicas: null
+  resourcePolicy:
+    containerPolicies:
+      - containerName: "*"
+        controlledValues: RequestsAndLimits
+        controlledResources:
+          - cpu
+          - memory
+        minAllowed: {}
+        maxAllowed: {}
+  recommenders: []
+  extraSpec: {}
+
 ## @param serviceAccount.create Create a service account
 ## @param serviceAccount.annotations Annotations for the service account
 ## @param serviceAccount.name Name of the service account

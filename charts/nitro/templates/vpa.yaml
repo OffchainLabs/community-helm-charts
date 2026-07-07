@@ -1,0 +1,45 @@
+{{- if .Values.verticalPodAutoscaler.enabled }}
+{{- /*
+  VerticalPodAutoscaler for the nitro StatefulSet.
+
+  This template is intentionally thin: it renders a small set of well-known,
+  documented fields with safe defaults, then deep-merges a freeform `extraSpec`
+  escape hatch over the top. That means every VPA spec field — including ones
+  not modeled here or added in future VPA API versions — can be set without
+  editing this template. See values.yaml for the full parameter list.
+*/}}
+{{- $vpa := deepCopy .Values.verticalPodAutoscaler }}
+{{- /* Default the targetRef at this chart's StatefulSet; allow full override. */}}
+{{- $targetRef := $vpa.targetRef | default (dict "apiVersion" "apps/v1" "kind" "StatefulSet" "name" (include "nitro.fullname" .)) }}
+{{- /* Assemble the spec from documented fields, dropping any that are empty. */}}
+{{- $spec := dict "targetRef" $targetRef }}
+{{- /*
+  Drop nil-valued keys (e.g. an unset minReplicas) so we never emit `key: null`,
+  which the VPA API rejects, while still passing every non-nil key through
+  verbatim — including fields not modeled here.
+*/}}
+{{- $updatePolicy := dict }}
+{{- range $k, $v := $vpa.updatePolicy }}
+  {{- if not (kindIs "invalid" $v) }}{{- $updatePolicy = set $updatePolicy $k $v }}{{- end }}
+{{- end }}
+{{- if $updatePolicy }}{{- $spec = set $spec "updatePolicy" $updatePolicy }}{{- end }}
+{{- with $vpa.resourcePolicy }}{{- $spec = set $spec "resourcePolicy" . }}{{- end }}
+{{- with $vpa.recommenders }}{{- $spec = set $spec "recommenders" . }}{{- end }}
+{{- /* Deep-merge the escape hatch last so it can override anything above. */}}
+{{- with $vpa.extraSpec }}{{- $spec = mergeOverwrite $spec (deepCopy .) }}{{- end }}
+apiVersion: {{ $vpa.apiVersion | default "autoscaling.k8s.io/v1" }}
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ $vpa.nameOverride | default (include "nitro.fullname" .) }}
+  labels:
+    {{- include "nitro.labels" . | nindent 4 }}
+    {{- with $vpa.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with $vpa.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- toYaml $spec | nindent 2 }}
+{{- end }}
