@@ -457,6 +457,7 @@ Option | Description | Default
 `execution.transaction-filtering.address-filter.s3.max-file-size-mb` | int                                 maximum allowed S3 object size in MB; if the object is larger, skip the download (0 disables the check) | None
 `execution.transaction-filtering.address-filter.s3.max-retries` | int                                      maximum retries for S3 part body download | `3`
 `execution.transaction-filtering.address-filter.s3.object-key` | string                                    S3 object key (path) to the file | None
+`execution.transaction-filtering.address-filter.s3.preallocate-memory` | preallocate the download buffer at startup, so downloads reuse it instead of allocating a per-object buffer; engages only when max-file-size-mb is set | `true`
 `execution.transaction-filtering.address-filter.s3.region` | string                                        S3 region | None
 `execution.transaction-filtering.address-filter.s3.secret-key` | string                                    S3 secret key | None
 `execution.transaction-filtering.disable-delayed-sequencing-filter` | disable delayed sequencing filter | None
@@ -496,7 +497,7 @@ Option | Description | Default
 `file-logging.file` | string                                                                               path to log file | `nitro.log`
 `file-logging.local-time` | if true: local time will be used in old log filename timestamps | None
 `file-logging.max-age` | int                                                                               maximum number of days to retain old log files based on the timestamp encoded in their filename (0 = no limit) | None
-`file-logging.max-backups` | int                                                                           maximum number of old log files to retain (0 = no limit) | `20`
+`file-logging.max-backups` | int                                                                           maximum number of old log files to retain (0 = no limit) | `40`
 `file-logging.max-size` | int                                                                              log file size in Mb that will trigger log file rotation (0 = trigger disabled) | `5`
 `graphql.corsdomain` | strings                                                                             Comma separated list of domains from which to accept cross origin requests (browser enforced) | None
 `graphql.enable` | Enable graphql endpoint on the rpc endpoint | None
@@ -752,6 +753,7 @@ Option | Description | Default
 `node.da.external-provider.store-rpc-method` | string                                                      name of the store rpc method on the daprovider server (used when data streaming is disabled) | `daprovider_store`
 `node.da.external-provider.use-data-streaming` | use data streaming protocol for storing large payloads | None
 `node.da.external-provider.with-writer` | implies if the daprovider rpc server supports writer interface | None
+`node.dangerous.always-fallback-to-parent-chain-da` | DANGEROUS! for chains being retired off AnyTrust: suppresses the AnyTrust writer and halts on any AnyTrust batch when rest-aggregator is disabled | None
 `node.dangerous.disable-blob-reader` | DANGEROUS! disables the EIP-4844 blob reader, which is necessary to read batches | None
 `node.dangerous.no-l1-listener` | DANGEROUS! disables listening to L1. To be used in test nodes only | None
 `node.dangerous.no-sequencer-coordinator` | DANGEROUS! allows sequencing without sequencer-coordinator | None
