@@ -31,13 +31,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: Generate GitHub App Token (if using GitHub App)
         id: generate-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         with:
           app-id: ${{ secrets.RENOVATE_APP_ID }}
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
@@ -45,7 +45,7 @@ jobs:
           repositories: community-helm-charts
 
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@v43.0.7
+        uses: renovatebot/github-action@316d7cd859606d6039a2182b7d69199e9b036835 # v46.2.1
         with:
           token: ${{ steps.generate-token.outputs.token || secrets.RENOVATE_TOKEN || secrets.GITHUB_TOKEN }}
           renovate-version: 41.59.0
