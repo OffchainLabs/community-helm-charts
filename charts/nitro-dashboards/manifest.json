@@ -1,0 +1,61 @@
+{
+  "version": "1.0.1",
+  "sourceCommit": "bdf1ec99a46d68a306cd1050402a0321cefcade2",
+  "dashboards": [
+    {
+      "uid": "community-nitro_overview",
+      "title": "Nitro Overview",
+      "description": "Landing page for the community dashboard suite: key chain health panels and links to every published dashboard"
+    },
+    {
+      "uid": "community-nitro_detail",
+      "title": "Nitro Node Detail",
+      "description": "Detailed nitro metrics"
+    },
+    {
+      "uid": "community-nitro_summary",
+      "title": "Nitro Node RPC Summary",
+      "description": "Nitro performance metrics"
+    },
+    {
+      "uid": "community-relays_detail",
+      "title": "Relays Detail",
+      "description": "Detailed relay metrics"
+    },
+    {
+      "uid": "community-relays_summary",
+      "title": "Relays Summary",
+      "description": "Relay performance metrics"
+    },
+    {
+      "uid": "community-sequencer_detail",
+      "title": "Sequencer Detail",
+      "description": "Detailed sequencer metrics"
+    },
+    {
+      "uid": "community-sequencer_summary",
+      "title": "Sequencer Summary",
+      "description": "Sequencer performance metrics"
+    },
+    {
+      "uid": "community-timeboost_summary",
+      "title": "Timeboost Summary",
+      "description": "Timeboost metrics"
+    },
+    {
+      "uid": "community-validator_detail",
+      "title": "Validator Detail",
+      "description": "Detailed validator metrics"
+    },
+    {
+      "uid": "community-validator_streams",
+      "title": "Redis Stream Validator Overview",
+      "description": "Validator stream metrics"
+    },
+    {
+      "uid": "community-validator_summary",
+      "title": "Validator Summary",
+      "description": "Validator performance metrics"
+    }
+  ]
+}

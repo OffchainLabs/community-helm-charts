@@ -1,0 +1,729 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", type=\"Warning\", kind=\"Pod\", name=~\"$pod\"} | logfmt | line_format \"{{.reason}}: {{.name}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(130, 130, 140, 0.5)",
+        "name": "K8s Warning Events",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", type=\"Normal\", kind=\"Pod\", name=~\"$pod\"} | logfmt | reason=\"Killing\" | line_format \"Killing {{.name}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(140, 120, 180, 0.6)",
+        "name": "Pod Killed",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", kind=~\"Deployment|StatefulSet\", name=~\"($pod_controller).*\"} | logfmt | line_format \"{{.kind}} {{.name}}: {{.reason}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(90, 150, 220, 0.7)",
+        "name": "Rollouts / Deployments",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$Source"
+        },
+        "enable": false,
+        "expr": "increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}[$__rate_interval]) > 0",
+        "hide": false,
+        "iconColor": "rgba(235, 175, 60, 0.8)",
+        "name": "Pod Restarts",
+        "tagKeys": "namespace,pod,container,cluster",
+        "titleFormat": "{{pod}} / {{container}}"
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$Source"
+        },
+        "enable": false,
+        "expr": "(increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}[$__rate_interval]) > 0) and on (cluster, namespace, pod, container) (kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\", reason=\"OOMKilled\"} == 1)",
+        "hide": false,
+        "iconColor": "rgba(220, 70, 70, 0.9)",
+        "name": "OOMKilled",
+        "tagKeys": "namespace,pod,container,cluster",
+        "titleFormat": "{{pod}} / {{container}}"
+      }
+    ]
+  },
+  "description": "Detailed sequencer metrics",
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 0,
+      "panels": null,
+      "repeat": "sequencerjob",
+      "title": "Sequencer Detail [$sequencerjob]",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(arb_sequencer_noncefailurecache_size{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "NonceFailureCache",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(image, cluster) (kube_pod_container_info{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",pod=~\"$sequencerjob.*\",image=~\".*/nitro-node:.*\"})",
+          "legendFormat": "{{image}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Sequencer Version",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(chain_head_block{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Block Rate",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(arb_sequencer_active{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Active",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(chain_head_block{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}) - min(chain_head_block{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"})",
+          "legendFormat": "Blocks",
+          "refId": "A"
+        }
+      ],
+      "title": "Block Range",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(arb_sequencer_noncefailurecache_overflow{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Nonce Failure Cache Overflow",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(arb_sequencer_block_creation{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\",quantile=\"0.9999\"}) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Block Creation time p9999",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(arb_feed_clients_connected{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}} - Connected",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(arb_feed_clients_current{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}} - Current",
+          "refId": "B"
+        }
+      ],
+      "title": "Feed Clients",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 13
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_fs_reads_bytes_total{cluster=~\"$cluster\",container!=\"\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", namespace=~\"$namespacepattern\", pod=~\"$sequencerjob-.*\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}-R",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_fs_writes_bytes_total{cluster=~\"$cluster\",container!=\"\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", namespace=~\"$namespacepattern\", pod=~\"$sequencerjob-.*\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}-W",
+          "refId": "B"
+        }
+      ],
+      "title": "Storage R/W Rate",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 13
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(pod, chain) (arb_sequencer_currentsurplus{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"}) and on(pod) (arb_sequencer_active{} == 1)",
+          "legendFormat": "Current: {{chain}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by(pod, chain) (arb_sequencer_expectedsurplus{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"}) and on (pod) (arb_sequencer_active{} == 1)",
+          "legendFormat": "Expected: {{chain}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Current & Expected Surplus",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 13
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(chain, cluster) (rate(arb_sequencer_timeboost_auctionresolution{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}[$__rate_interval]))",
+          "legendFormat": "{{pod}} - {{cluster}}-R",
+          "refId": "A"
+        }
+      ],
+      "title": "Timeboost Auction Resolution Rate",
+      "transparent": false,
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "label": "Source",
+        "multi": false,
+        "name": "Source",
+        "query": "prometheus",
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "arb1-.*"
+          ],
+          "value": [
+            "arb1-.*"
+          ]
+        },
+        "label": "Namespace Pattern",
+        "name": "namespacepattern",
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Clusters",
+        "multi": true,
+        "name": "cluster",
+        "query": "label_values(arb_feed_clients_current{namespace=~\"$namespacepattern\"}, cluster)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Sequencer Jobs",
+        "multi": true,
+        "name": "sequencerjob",
+        "query": "label_values(chain_head_block{namespace=~\"$namespacepattern\", cluster=~\"$cluster\", pod=~\".*seq.*\", pod!~\".*batch.*\"}, job)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "hide": 0,
+        "label": "Loki Datasource",
+        "multi": false,
+        "name": "loki_datasource",
+        "query": "loki",
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Pods",
+        "multi": true,
+        "name": "pod",
+        "query": "label_values(chain_head_block{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", job=~\"$sequencerjob\"}, pod)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "hide": 2,
+        "includeAll": true,
+        "label": "Pod Controller",
+        "multi": true,
+        "name": "pod_controller",
+        "query": "label_values(chain_head_block{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", job=~\"$sequencerjob\", pod=~\"$pod\"}, pod)",
+        "refresh": 2,
+        "regex": "/^(.*?)(?:-[a-z0-9]+-[a-z0-9]{5}|-[0-9]+)$/",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "utc",
+  "title": "Sequencer Detail",
+  "uid": "community-sequencer_detail"
+}

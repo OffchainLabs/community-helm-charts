@@ -1,0 +1,815 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", type=\"Warning\", kind=\"Pod\", name=~\"$pod\"} | logfmt | line_format \"{{.reason}}: {{.name}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(130, 130, 140, 0.5)",
+        "name": "K8s Warning Events",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", type=\"Normal\", kind=\"Pod\", name=~\"$pod\"} | logfmt | reason=\"Killing\" | line_format \"Killing {{.name}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(140, 120, 180, 0.6)",
+        "name": "Pod Killed",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", kind=~\"Deployment|StatefulSet\", name=~\"($pod_controller).*\"} | logfmt | line_format \"{{.kind}} {{.name}}: {{.reason}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(90, 150, 220, 0.7)",
+        "name": "Rollouts / Deployments",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$Source"
+        },
+        "enable": false,
+        "expr": "increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}[$__rate_interval]) > 0",
+        "hide": false,
+        "iconColor": "rgba(235, 175, 60, 0.8)",
+        "name": "Pod Restarts",
+        "tagKeys": "namespace,pod,container,cluster",
+        "titleFormat": "{{pod}} / {{container}}"
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$Source"
+        },
+        "enable": false,
+        "expr": "(increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}[$__rate_interval]) > 0) and on (cluster, namespace, pod, container) (kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\", reason=\"OOMKilled\"} == 1)",
+        "hide": false,
+        "iconColor": "rgba(220, 70, 70, 0.9)",
+        "name": "OOMKilled",
+        "tagKeys": "namespace,pod,container,cluster",
+        "titleFormat": "{{pod}} / {{container}}"
+      }
+    ]
+  },
+  "description": "Timeboost metrics",
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 0,
+      "panels": null,
+      "title": "Auctioneer Summary",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(chain, cluster, namespace, pod) (arb_auctioneer_bids_firstbidvalue{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",pod=~\".*auctioneer.*\"}) / 1000000000000000000",
+          "refId": "A"
+        }
+      ],
+      "title": "First Bid Value (ETH)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(chain, cluster, namespace, pod) (arb_auctioneer_bids_secondbidvalue{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",pod=~\".*auctioneer.*\"}) / 1000000000000000000",
+          "refId": "A"
+        }
+      ],
+      "title": "Second Bid Value (ETH)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(chain, cluster, namespace, pod) (rate(arb_auctioneer_bids_received{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",pod=~\".*bid-validator.*\"}[$__rate_interval]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Bids Received",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(chain, cluster, namespace, pod) (rate(arb_auctioneer_bids_validated{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",pod=~\".*bid-validator.*\"}[$__rate_interval]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Bids Validated",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(chain, cluster, namespace, pod) (changes(rpc_duration_auctioneer_submitAuctionResolutionTransaction_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"}[1m])) and on (pod) (arb_sequencer_active{} == 1)",
+          "refId": "A"
+        }
+      ],
+      "title": "Auctions Resolved",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(chain, cluster, namespace, pod) (rate(rpc_duration_auctioneer_submitAuctionResolutionTransaction_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"}[1m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Auction Resolution Failure Rate",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(rpc_duration_auctioneer_submitBid_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"}[$__rate_interval]) / (rate(rpc_duration_auctioneer_submitBid_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"}[$__rate_interval]) + rate(rpc_duration_auctioneer_submitBid_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"}[$__rate_interval]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Bid Submission Failure Rate Ratio",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 0,
+      "panels": null,
+      "repeat": "tbjob",
+      "title": "RPC Metrics - [$tbjob]",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 14
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(rpc_duration_timeboost_sendExpressLaneTransaction_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$tbjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "timeboost_sendExpressLaneTransaction - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "RPC Methods - Success",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 14
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(rpc_duration_timeboost_sendExpressLaneTransaction_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$tbjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "timeboost_sendExpressLaneTransaction - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "RPC Methods - Failure",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "ns"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 14
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(rpc_duration_timeboost_sendExpressLaneTransaction_success{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$tbjob\",quantile=\"0.9999\"}) by (cluster)",
+          "legendFormat": "timeboost_sendExpressLaneTransaction - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "RPC Latency - Success",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "ns"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 14
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(rpc_duration_timeboost_sendExpressLaneTransaction_failure{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$tbjob\",quantile=\"0.9999\"}) by (cluster)",
+          "legendFormat": "timeboost_sendExpressLaneTransaction - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "RPC Latency - Failure",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 20
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_lb_rpc_timeboost_sendExpressLaneTransaction_block{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$tbjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "timeboost_sendExpressLaneTransaction - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "RPC Methods - Blocked",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 20
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_lb_rpc_timeboost_sendExpressLaneTransaction_deny{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$tbjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "timeboost_sendExpressLaneTransaction - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "RPC Methods - Denied",
+      "transparent": false,
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "label": "Source",
+        "multi": false,
+        "name": "Source",
+        "query": "prometheus",
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "arb1-.*"
+          ],
+          "value": [
+            "arb1-.*"
+          ]
+        },
+        "label": "Namespace Pattern",
+        "name": "namespacepattern",
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Clusters",
+        "multi": true,
+        "name": "cluster",
+        "query": "label_values(arb_feed_clients_current{namespace=~\"$namespacepattern\"}, cluster)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Timeboost Jobs",
+        "multi": true,
+        "name": "tbjob",
+        "query": "label_values(rpc_duration_timeboost_sendExpressLaneTransaction_success_count{namespace=~\"$namespacepattern\", cluster=~\"$cluster\"}, job)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "hide": 0,
+        "label": "Loki Datasource",
+        "multi": false,
+        "name": "loki_datasource",
+        "query": "loki",
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Pods",
+        "multi": true,
+        "name": "pod",
+        "query": "label_values(container_memory_rss{cluster=~\"$cluster\", namespace=~\"$namespacepattern\"}, pod)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "hide": 2,
+        "includeAll": true,
+        "label": "Pod Controller",
+        "multi": true,
+        "name": "pod_controller",
+        "query": "label_values(container_memory_rss{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}, pod)",
+        "refresh": 2,
+        "regex": "/^(.*?)(?:-[a-z0-9]+-[a-z0-9]{5}|-[0-9]+)$/",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "utc",
+  "title": "Timeboost Summary",
+  "uid": "community-timeboost_summary"
+}
