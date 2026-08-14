@@ -5,20 +5,28 @@
 
 set -e
 
+YQ_VERSION="v4.53.3"
+YQ_SHA256="fa52a4e758c63d38299163fbdd1edfb4c4963247918bf9c1c5d31d84789eded4"
+HELM_VERSION="v3.13.0"
+HELM_SHA256="138676351483e61d12dfade70da6c03d471bbdcac84eaadeb5e1d06fa114a24f"
+PYYAML_VERSION="6.0.3"
+
 # Install yq in the container
-echo "Installing yq..."
-curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
+echo "Installing yq ${YQ_VERSION}..."
+curl -fsSL "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -o /usr/local/bin/yq
+echo "${YQ_SHA256}  /usr/local/bin/yq" | sha256sum -c -
 chmod +x /usr/local/bin/yq
 
 # Install Python and dependencies for README generation
 echo "Installing Python and dependencies..."
 apt-get update -qq
 apt-get install -y -qq python3 python3-pip > /dev/null 2>&1
-pip3 install -q --break-system-packages pyyaml
+pip3 install -q --break-system-packages "pyyaml==${PYYAML_VERSION}"
 
 # Install Helm for chart rendering
-echo "Installing Helm..."
-curl -sL https://get.helm.sh/helm-v3.13.0-linux-amd64.tar.gz -o helm.tar.gz
+echo "Installing Helm ${HELM_VERSION}..."
+curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz
+echo "${HELM_SHA256}  helm.tar.gz" | sha256sum -c -
 tar -zxf helm.tar.gz
 mv linux-amd64/helm /usr/local/bin/helm
 chmod +x /usr/local/bin/helm
