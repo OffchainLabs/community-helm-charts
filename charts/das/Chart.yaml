@@ -4,5 +4,5 @@ description: A Helm chart for Arbitrum Nitro DAS and DAS Mirrors
 maintainers:
   - name: OffchainLabs
 type: application
-version: 1.0.5
-appVersion: "v3.11.2-3599aca"
+version: 1.0.6
+appVersion: "v3.11.3-beb2108"
