@@ -21,6 +21,15 @@ extraAnnotations: {}
 ## @param excludeDashboards List of dashboard file names to skip, with or without the .json extension (e.g. timeboost-summary)
 excludeDashboards: []
 
+## @param extraObjects Additional Kubernetes objects to deploy alongside the dashboards (rendered through tpl)
+extraObjects: []
+
+## @section Testing
+
+## @param tests.grafanaUrl When set, helm test verifies every packaged dashboard is loaded in the Grafana instance at this URL (used by CI)
+tests:
+  grafanaUrl: ""
+
 ## @section Naming
 
 ## @param nameOverride String to partially override nitro-dashboards fullname

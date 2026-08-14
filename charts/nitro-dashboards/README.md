@@ -41,6 +41,13 @@ helm install <my-release> offchainlabs/nitro-dashboards \
 | `extraLabels`        | Additional labels to add to every dashboard ConfigMap                                                                                           | `{}`                |
 | `extraAnnotations`   | Additional annotations to add to every dashboard ConfigMap                                                                                      | `{}`                |
 | `excludeDashboards`  | List of dashboard file names to skip, with or without the .json extension (e.g. timeboost-summary)                                              | `[]`                |
+| `extraObjects`       | Additional Kubernetes objects to deploy alongside the dashboards (rendered through tpl)                                                         | `[]`                |
+
+### Testing
+
+| Name               | Description                                                                                                      | Value |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------- | ----- |
+| `tests.grafanaUrl` | When set, helm test verifies every packaged dashboard is loaded in the Grafana instance at this URL (used by CI) | `""`  |
 
 ### Naming
 
