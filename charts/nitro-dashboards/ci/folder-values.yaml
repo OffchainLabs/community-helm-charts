@@ -1,0 +1,7 @@
+grafanaFolder: Arbitrum
+extraLabels:
+  release: kube-prometheus-stack
+extraAnnotations:
+  example.com/provisioned-by: ci
+excludeDashboards:
+  - timeboost-summary

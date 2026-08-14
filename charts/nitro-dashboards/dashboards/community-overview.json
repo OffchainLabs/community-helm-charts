@@ -1,0 +1,687 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", type=\"Warning\", kind=\"Pod\", name=~\"$pod\"} | logfmt | line_format \"{{.reason}}: {{.name}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(130, 130, 140, 0.5)",
+        "name": "K8s Warning Events",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", type=\"Normal\", kind=\"Pod\", name=~\"$pod\"} | logfmt | reason=\"Killing\" | line_format \"Killing {{.name}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(140, 120, 180, 0.6)",
+        "name": "Pod Killed",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", kind=~\"Deployment|StatefulSet\", name=~\"($pod_controller).*\"} | logfmt | line_format \"{{.kind}} {{.name}}: {{.reason}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(90, 150, 220, 0.7)",
+        "name": "Rollouts / Deployments",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$Source"
+        },
+        "enable": false,
+        "expr": "increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}[$__rate_interval]) > 0",
+        "hide": false,
+        "iconColor": "rgba(235, 175, 60, 0.8)",
+        "name": "Pod Restarts",
+        "tagKeys": "namespace,pod,container,cluster",
+        "titleFormat": "{{pod}} / {{container}}"
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$Source"
+        },
+        "enable": false,
+        "expr": "(increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}[$__rate_interval]) > 0) and on (cluster, namespace, pod, container) (kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\", reason=\"OOMKilled\"} == 1)",
+        "hide": false,
+        "iconColor": "rgba(220, 70, 70, 0.9)",
+        "name": "OOMKilled",
+        "tagKeys": "namespace,pod,container,cluster",
+        "titleFormat": "{{pod}} / {{container}}"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 0,
+      "panels": null,
+      "title": "Chain Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Block sequencing time as reported from the active sequencer",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "ns"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(arb_sequencer_block_creation{namespace=~\"$namespacepattern.*\"} and on (pod) (arb_sequencer_active{} == 1)) by (quantile, chain)",
+          "legendFormat": "{{chain}} - {{ quantile }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Block Creation Time By Quantile",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Gas rate (gas/s) as reported by the active sequencer. For the ArbOS gas-pricing target band, base-fee-vs-floor congestion and per-constraint saturation, see the Gas Pricing dashboard.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "short"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(rate(arb_gas_used{cluster=~\"$cluster\", namespace=~\"$namespacepattern.*\"}[$__rate_interval]) and on (pod) (arb_sequencer_active{} == 1)) by (pod, cluster)",
+          "legendFormat": "{{ pod }} - {{ cluster }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Sequencer Gas Rate",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_validator_msg_count_validated{cluster=~\"$cluster\", namespace=~\"$namespacepattern.*\", namespace=~\".*val.*\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{ pod }} - {{ cluster }}",
+          "refId": "B"
+        }
+      ],
+      "title": "Validation Rate",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(arb_sequencenumber_latest{cluster=~\"$cluster\", namespace=~\"$namespacepattern.*\",job=~\".*relay.*\"} - arb_sequencenumber_confirmed{namespace=~\"$namespacepattern.*\",job=~\".*relay.*\"}) by (pod, cluster)",
+          "legendFormat": "{{ pod }} - {{ cluster }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Relay Confirmation Lag",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(rpc_requests{cluster=~\"$cluster\", namespace=~\"$namespacepattern\"}[$__rate_interval])) by (job, cluster)",
+          "legendFormat": "{{job}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "RPC Requests",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(rpc_success{cluster=~\"$cluster\", namespace=~\"$namespacepattern\"}[$__rate_interval])) by (job, cluster) / sum(rate(rpc_requests{namespace=~\"$namespacepattern\"}[$__rate_interval])) by (job, cluster)",
+          "legendFormat": "{{job}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "RPC Success Rate",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "10m avg. Excludes some containers",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum (rate (container_cpu_usage_seconds_total{cluster=~\"$cluster\", container!~\"nitro-stateless|pruner\", namespace=~\"$namespacepattern\",image!=\"\"}[10m])) by (pod, container, cluster) / sum(kube_pod_container_resource_requests{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", resource=\"cpu\"}) by (pod, container, cluster) > .9",
+          "legendFormat": "{{pod}} - {{container}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Over 90% Requests",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(container_memory_rss{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", container!=\"POD\"}) by (pod, container, cluster) / sum(kube_pod_container_resource_limits{cluster=~\"$cluster\", namespace=~\"$namespacepattern\"}) by (pod, container, cluster) > .85",
+          "legendFormat": "{{pod}} - {{container}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Over 85%",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 0,
+      "panels": null,
+      "title": "Dashboards",
+      "type": "row"
+    },
+    {
+      "gridPos": {
+        "h": 18,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "options": {
+        "content": "# Nitro Overview\n\nDashboards for the publicly released Nitro components, published from\n[OffchainLabs/ocl-dashboards](https://github.com/OffchainLabs/ocl-dashboards).\nSee the README shipped alongside these dashboards for the label, pod-naming and\nevent-stream conventions they expect.\n\nBelow are links for each component. These links include your currently selected variables and time range.\n\n## Validator\n\n- [Validator Summary](/d/community-validator_summary?orgId=1&${__url_time_range}&${validatorjob:queryparam}&${namespacepattern:queryparam}&${cluster:queryparam}&${Source:queryparam})\n- [Validator Detail](/d/community-validator_detail?orgId=1&${__url_time_range}&${validatorjob:queryparam}&${namespacepattern:queryparam}&${cluster:queryparam}&${Source:queryparam})\n- [Validator Streams](/d/community-validator_streams?orgId=1&${__url_time_range}&${validatorjob:queryparam}&${namespacepattern:queryparam}&${cluster:queryparam}&${Source:queryparam})\n\n## Sequencer\n\n- [Sequencer Summary](/d/community-sequencer_summary?orgId=1&${__url_time_range}&${sequencerjob:queryparam}&${namespacepattern:queryparam}&${cluster:queryparam}&${Source:queryparam})\n- [Sequencer Detail](/d/community-sequencer_detail?orgId=1&${__url_time_range}&${sequencerjob:queryparam}&${namespacepattern:queryparam}&${cluster:queryparam}&${Source:queryparam})\n\n## Relay\n\n- [Relay Summary](/d/community-relays_summary?orgId=1&${__url_time_range}&${relayjob:queryparam}&${namespacepattern:queryparam}&${cluster:queryparam}&${Source:queryparam})\n- [Relay Detail](/d/community-relays_detail?orgId=1&${__url_time_range}&${relayjob:queryparam}&${namespacepattern:queryparam}&${cluster:queryparam}&${Source:queryparam})\n\n## Nitro Node\n\n- [Nitro Node Summary](/d/community-nitro_summary?orgId=1&${__url_time_range}&${nitronodejob:queryparam}&${namespacepattern:queryparam}&${cluster:queryparam}&${Source:queryparam})\n- [Nitro Node Detail](/d/community-nitro_detail?orgId=1&${__url_time_range}&${nitronodejob:queryparam}&${namespacepattern:queryparam}&${cluster:queryparam}&${Source:queryparam})\n\n## Timeboost\n\n- [Timeboost Summary](/d/community-timeboost_summary?orgId=1&${__url_time_range}&${namespacepattern:queryparam}&${cluster:queryparam}&${Source:queryparam})\n",
+        "mode": "markdown"
+      },
+      "title": " ",
+      "transparent": false,
+      "type": "text"
+    }
+  ],
+  "schemaVersion": 39,
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "label": "Source",
+        "multi": false,
+        "name": "Source",
+        "query": "prometheus",
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "arb1-.*"
+          ],
+          "value": [
+            "arb1-.*"
+          ]
+        },
+        "label": "Namespace Pattern",
+        "name": "namespacepattern",
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Clusters",
+        "multi": true,
+        "name": "cluster",
+        "query": "label_values(arb_feed_clients_current{namespace=~\"$namespacepattern\"}, cluster)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Sequencer Jobs",
+        "multi": true,
+        "name": "sequencerjob",
+        "query": "label_values(chain_head_block{namespace=~\"$namespacepattern\", cluster=~\"$cluster\", pod=~\".*seq.*\", pod!~\".*batch.*\"}, job)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Validator Jobs",
+        "multi": true,
+        "name": "validatorjob",
+        "query": "label_values(chain_head_block{namespace=~\"$namespacepattern\", cluster=~\"$cluster\", pod=~\".*val.*\", job!~\".*current.*|.*timeboost.*\"}, job)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Relay Jobs",
+        "multi": true,
+        "name": "relayjob",
+        "query": "label_values(arb_feed_clients_connect{namespace=~\"$namespacepattern\", cluster=~\"$cluster\", pod=~\".*relay.*|.*feed.*\"}, job)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Nitro Node Jobs",
+        "multi": true,
+        "name": "nitronodejob",
+        "query": "label_values(chain_head_block{namespace=~\"$namespacepattern\", cluster=~\"$cluster\"}, job)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "hide": 0,
+        "label": "Loki Datasource",
+        "multi": false,
+        "name": "loki_datasource",
+        "query": "loki",
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Pods",
+        "multi": true,
+        "name": "pod",
+        "query": "label_values(container_memory_rss{cluster=~\"$cluster\", namespace=~\"$namespacepattern\"}, pod)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "hide": 2,
+        "includeAll": true,
+        "label": "Pod Controller",
+        "multi": true,
+        "name": "pod_controller",
+        "query": "label_values(container_memory_rss{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}, pod)",
+        "refresh": 2,
+        "regex": "/^(.*?)(?:-[a-z0-9]+-[a-z0-9]{5}|-[0-9]+)$/",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "utc",
+  "title": "Nitro Overview",
+  "uid": "community-nitro_overview"
+}

@@ -1,0 +1,1033 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", type=\"Warning\", kind=\"Pod\", name=~\"$pod\"} | logfmt | line_format \"{{.reason}}: {{.name}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(130, 130, 140, 0.5)",
+        "name": "K8s Warning Events",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", type=\"Normal\", kind=\"Pod\", name=~\"$pod\"} | logfmt | reason=\"Killing\" | line_format \"Killing {{.name}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(140, 120, 180, 0.6)",
+        "name": "Pod Killed",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", kind=~\"Deployment|StatefulSet\", name=~\"($pod_controller).*\"} | logfmt | line_format \"{{.kind}} {{.name}}: {{.reason}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(90, 150, 220, 0.7)",
+        "name": "Rollouts / Deployments",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$Source"
+        },
+        "enable": false,
+        "expr": "increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}[$__rate_interval]) > 0",
+        "hide": false,
+        "iconColor": "rgba(235, 175, 60, 0.8)",
+        "name": "Pod Restarts",
+        "tagKeys": "namespace,pod,container,cluster",
+        "titleFormat": "{{pod}} / {{container}}"
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$Source"
+        },
+        "enable": false,
+        "expr": "(increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}[$__rate_interval]) > 0) and on (cluster, namespace, pod, container) (kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\", reason=\"OOMKilled\"} == 1)",
+        "hide": false,
+        "iconColor": "rgba(220, 70, 70, 0.9)",
+        "name": "OOMKilled",
+        "tagKeys": "namespace,pod,container,cluster",
+        "titleFormat": "{{pod}} / {{container}}"
+      }
+    ]
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 0,
+      "panels": null,
+      "repeat": "relayjob",
+      "title": "Relays Detail [$relayjob]",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Connected clients (`arb_feed_clients_current`) and, on the rust relay only, the caught-up subset being served new messages live (`arb_feed_clients_live`). A large current-minus-live gap means many clients are still draining backlog. Go relays export no `_live` series, so that series is absent on a nitro-node row.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "arb_feed_clients_current{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}",
+          "legendFormat": "current - {{pod}}",
+          "refId": "A"
+        },
+        {
+          "expr": "arb_feed_clients_live{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}",
+          "legendFormat": "live (caught up) - {{pod}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Connections",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "arb_feed_sources_connected{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Sources Connected",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(arb_sequencenumber_latest{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) - min(arb_sequencenumber_latest{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"})",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Range",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(arb_sequencenumber_latest{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Block Rate",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_feed_clients_connect{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "connect - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(arb_feed_clients_disconnect{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "disconnect - {{cluster}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Connect/Disconnect Rate",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Client connections rejected for exceeding the per-IP connection limit. The Go relay (nitro-node) exports `arb_feed_clients_limited`; the rust relay (arb-relay, v0.5+) exports `arb_feed_clients_limit_rejected` for `--ip-connections-limit`. Only one series exists per relay job, so a flat line on one of them is expected — but *both* empty means the relay is older than v0.5 or the limiter is inert, not that nothing is being rejected. Check **IP Limit Enforcement** before reading this as zero.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_feed_clients_limited{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "limited (go relay) - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(arb_feed_clients_limit_rejected{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "limit rejected (rust relay) - {{cluster}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Connection Limit Rate",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Why the rust relay's `--ip-connections-limit` did or did not apply to a connection. **unknown ip** — the `--client-ip-header` was missing, so the limit was *not enforced*; a configured limiter that is inert shows up here. **malformed ip header** — the header could not be parsed, so the limit was enforced against the TCP peer address (typically the proxy, i.e. shared across clients). **exempt ip** — client IP is private or loopback. Sustained unknown/malformed rates mean the rejection count in **Connection Limit Rate** understates reality. Empty on Go relays and on rust relays before v0.5.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_feed_clients_limit_unknown_ip{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "unknown ip (limit NOT enforced) - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(arb_feed_clients_malformed_ip_header{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "malformed ip header (fell back to peer) - {{cluster}}",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(arb_feed_clients_limit_exempt_ip{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "exempt ip (private/loopback) - {{cluster}}",
+          "refId": "C"
+        }
+      ],
+      "title": "IP Limit Enforcement (rust relay)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(arb_feed_clients_duration{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$relayjob\"}) by (quantile, cluster)",
+          "legendFormat": "{{quantile}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Feed Clients Duration",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "decbytes"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 13
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_network_transmit_bytes_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", pod=~\"$relayjob.*\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "bytes - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Transmit Rate",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Pod egress divided by connected clients — the average bandwidth one feed subscriber costs. Useful for capacity work (egress per additional client) and for spotting a feed whose per-client cost has jumped. Two caveats: the numerator is *total* pod egress from cAdvisor, so it also carries metric scrapes, health checks and upstream chatter — a fixed overhead that is negligible at thousands of clients but dominates at a handful (the arb1 Go feeds sit at ~12 KB/s with zero clients attached). And at zero connected clients the ratio is undefined, so the line breaks rather than spiking.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "Bps"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 13
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_network_transmit_bytes_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"}[$__rate_interval]) and on (pod) arb_feed_clients_current{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) by (cluster) / (sum(arb_feed_clients_current{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) by (cluster) > 0)",
+          "legendFormat": "per connection - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Bandwidth per Connection",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Go relay (nitro-node) client connections dropped because its worker pool was exhausted (`arb_feed_clients_failed_worker`). The rust relay has no worker pool and exports no equivalent, so this panel is empty — *not zero* — on a rust relay job (`*-rust-relay`, `robinhood-feed-*`, `rh-test-v1-feed-*`).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 13
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(irate(arb_feed_clients_failed_worker{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "{{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Out of Workers (Go relay only)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 13
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(arb_feed_clients_cache_sent{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) by (quantile, cluster)",
+          "legendFormat": "{{quantile}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Feed Clients Cached Messages Sent",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "HTTP→WebSocket upgrade failures, split into disjoint parts that stack to the `arb_feed_clients_failed_upgrade` total. **rate limited** is the per-IP limit rejections (`arb_feed_clients_limit_rejected`, rust v0.5+), which are a *subset* of failed upgrades — so it is broken out here rather than counted twice alongside **other** (TLS/mTLS handshake and protocol errors). On relays with no rejection counter the whole total shows as **other**.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 19
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(irate(arb_feed_clients_limit_rejected{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "rate limited - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(irate(arb_feed_clients_failed_upgrade{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster) - (sum(irate(arb_feed_clients_limit_rejected{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster) or sum(irate(arb_feed_clients_failed_upgrade{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster) * 0)",
+          "legendFormat": "other (TLS/mTLS, protocol) - {{cluster}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Failed WS Upgrade",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Upstream feed divergence as seen by the rust relay — the fastest way to clear or implicate the relay during a feed incident. **reorgs** are confirmed (changed `blockHash`) replacements; **possible reorgs** are replacements of undetermined severity; **below-confirmed reorgs** changed a blockHash for an already-confirmed, trimmed sequence number and *cannot be rebroadcast* (counts messages, so a replaying upstream re-counts each pass); **flaps** are benign feed flaps. Any non-zero reorg rate here means the divergence originates upstream of the relay. Empty on Go relays.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 19
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_feed_reorgs_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "reorgs - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(arb_feed_possible_reorgs_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "possible reorgs - {{cluster}}",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(arb_feed_below_confirmed_reorgs_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "below-confirmed reorgs - {{cluster}}",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(arb_feed_flaps_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "flaps - {{cluster}}",
+          "refId": "D"
+        }
+      ],
+      "title": "Feed Reorgs & Flaps (rust relay)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Buffered sequence numbers whose payload diverges from what was already broadcast live — un-adopted possible reorgs (`arb_feed_diverged_seqs_current`). This is a gauge, not a rate: a value that stays above zero means the relay's backlog and its live broadcast disagree, so clients replaying from cache can receive different bytes than clients that were live. Empty on Go relays.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 19
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(arb_feed_diverged_seqs_current{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Diverged Sequence Numbers (rust relay)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "**old messages dropped** — below-window messages too old to classify or rebroadcast (`arb_feed_old_messages_dropped_total`); a sustained rate means an upstream is replaying far behind the relay's window. **duplicates** — byte-identical messages received again while still buffered and deduped, never rebroadcast (`arb_feed_duplicates_total`); benign on its own, but a jump usually accompanies an upstream reconnect. Empty on Go relays.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 19
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_feed_old_messages_dropped_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "old messages dropped - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(arb_feed_duplicates_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "duplicates deduped - {{cluster}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Dropped & Deduped Messages (rust relay)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 25
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(image, cluster) (kube_pod_container_info{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",pod=~\"$relayjob.*\",image=~\".*/nitro-node:.*\"})",
+          "legendFormat": "{{image}} - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by(image, cluster) (kube_pod_container_info{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",pod=~\"$relayjob.*\",image=~\".*/arb-relay:.*\"})",
+          "legendFormat": "{{image}} - {{cluster}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Version",
+      "transparent": false,
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "label": "Source",
+        "multi": false,
+        "name": "Source",
+        "query": "prometheus",
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "arb1-.*"
+          ],
+          "value": [
+            "arb1-.*"
+          ]
+        },
+        "label": "Namespace Pattern",
+        "name": "namespacepattern",
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Clusters",
+        "multi": true,
+        "name": "cluster",
+        "query": "label_values(arb_feed_clients_current{namespace=~\"$namespacepattern\"}, cluster)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Relay Jobs",
+        "multi": true,
+        "name": "relayjob",
+        "query": "label_values(arb_feed_clients_connect{namespace=~\"$namespacepattern\", cluster=~\"$cluster\", pod=~\".*relay.*|.*feed.*\"}, job)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "hide": 0,
+        "label": "Loki Datasource",
+        "multi": false,
+        "name": "loki_datasource",
+        "query": "loki",
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Pods",
+        "multi": true,
+        "name": "pod",
+        "query": "label_values(arb_feed_clients_connect{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", job=~\"$relayjob\"}, pod)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "hide": 2,
+        "includeAll": true,
+        "label": "Pod Controller",
+        "multi": true,
+        "name": "pod_controller",
+        "query": "label_values(arb_feed_clients_connect{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", job=~\"$relayjob\", pod=~\"$pod\"}, pod)",
+        "refresh": 2,
+        "regex": "/^(.*?)(?:-[a-z0-9]+-[a-z0-9]{5}|-[0-9]+)$/",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "utc",
+  "title": "Relays Detail",
+  "uid": "community-relays_detail"
+}

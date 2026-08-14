@@ -1,0 +1,30 @@
+## @section Dashboard provisioning
+
+## @param sidecar.label Label key the Grafana dashboard sidecar watches for
+## @param sidecar.labelValue Label value the Grafana dashboard sidecar matches on
+sidecar:
+  label: grafana_dashboard
+  labelValue: "1"
+
+## @param grafanaFolder Grafana folder to file the dashboards into. When set, it is added to every dashboard ConfigMap as the annotation configured by folderAnnotation
+grafanaFolder: ""
+
+## @param folderAnnotation Annotation key the Grafana dashboard sidecar reads the target folder from
+folderAnnotation: grafana_folder
+
+## @param extraLabels Additional labels to add to every dashboard ConfigMap
+extraLabels: {}
+
+## @param extraAnnotations Additional annotations to add to every dashboard ConfigMap
+extraAnnotations: {}
+
+## @param excludeDashboards List of dashboard file names to skip, with or without the .json extension (e.g. timeboost-summary)
+excludeDashboards: []
+
+## @section Naming
+
+## @param nameOverride String to partially override nitro-dashboards fullname
+nameOverride: ""
+
+## @param fullnameOverride String to fully override nitro-dashboards fullname
+fullnameOverride: ""
