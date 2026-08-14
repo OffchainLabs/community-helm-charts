@@ -93,6 +93,7 @@
       }
     ]
   },
+  "description": "Validator performance metrics",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,

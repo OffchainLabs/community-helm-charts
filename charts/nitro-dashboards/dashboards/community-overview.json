@@ -93,6 +93,7 @@
       }
     ]
   },
+  "description": "Landing page for the community dashboard suite: key chain health panels and links to every published dashboard",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
