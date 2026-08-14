@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Generate GitHub App Token (if using GitHub App)
         id: generate-token
@@ -41,9 +43,6 @@ jobs:
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: community-helm-charts
-
-      # Commit all changed files back to the repository
-      - uses: stefanzweifel/git-auto-commit-action@v5
 
       - name: Self-hosted Renovate
         uses: renovatebot/github-action@v43.0.7
@@ -81,14 +80,18 @@ jobs:
 
       - name: Renovate Summary
         if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          TARGET_REPOSITORIES: ${{ github.event.inputs.repositories || 'OffchainLabs/community-helm-charts' }}
+          RUN_LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
         run: |
-          echo "## Renovate Run Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Triggered**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Repository Owner**: ${{ github.repository_owner }}" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ github.event.inputs.repositories }}" != "" ]; then
-            echo "- **Target Repositories**: ${{ github.event.inputs.repositories }}" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- **Target Repositories**: OffchainLabs/community-helm-charts" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "- **Log Level**: ${{ github.event.inputs.log_level || 'info' }}" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Renovate Run Summary"
+            echo "- **Status**: ${JOB_STATUS}"
+            echo "- **Triggered**: ${EVENT_NAME}"
+            echo "- **Repository Owner**: ${REPO_OWNER}"
+            echo "- **Target Repositories**: ${TARGET_REPOSITORIES}"
+            echo "- **Log Level**: ${RUN_LOG_LEVEL}"
+          } >> "$GITHUB_STEP_SUMMARY"
