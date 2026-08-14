@@ -7,76 +7,91 @@ on:
     paths:
       - "charts/**"
 
-# Limit permissions to only what's needed
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: readme-check-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:
-  check-readme-updates:
+  check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      has_changes: ${{ steps.get-modified-charts.outputs.has_changes }}
+      charts: ${{ steps.get-modified-charts.outputs.charts }}
+      changes_needed: ${{ steps.check-changes.outputs.changes_needed }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # No need to specify ref, as pull_request automatically checks out the PR
+          persist-credentials: false
 
       - name: Install readme-generator-for-helm
         run: npm install -g @bitnami/readme-generator-for-helm
-        
+
       - name: Get modified charts
         id: get-modified-charts
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          # GitHub Actions checks out a merge commit by default
-          # We can use git diff against the PR base to find changed files
-          BASE_SHA=$(git merge-base "$PR_BASE_SHA" HEAD)
-          
-          # Get all modified values.yaml files
-          paths=$(git diff --name-only $BASE_SHA HEAD | grep 'charts/.*/values.yaml' | cut -d/ -f1,2 | uniq | tr '\n' ' ')
-          
-          echo "Modified charts: $paths"
-          echo "paths=${paths}" >> $GITHUB_ENV
-          
-          if [[ -n "$paths" ]]; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+          set -f
+          base_sha=$(git merge-base "$PR_BASE_SHA" HEAD)
+
+          charts=()
+          while IFS= read -r -d '' file; do
+            [[ "$file" == charts/*/values.yaml ]] || continue
+            IFS=/ read -r _ name _ <<< "$file"
+            if [[ ! "$name" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+              echo "::error::Refusing to process chart directory with unexpected characters: ${file}"
+              exit 1
+            fi
+            charts+=("charts/${name}")
+          done < <(git diff --name-only -z "$base_sha" HEAD)
+
+          paths=""
+          if [[ ${#charts[@]} -gt 0 ]]; then
+            paths=$(printf '%s\n' "${charts[@]}" | sort -u | tr '\n' ' ' | sed 's/ *$//')
           fi
 
-      # Check if README updates are needed
+          echo "Modified charts: ${paths}"
+          echo "charts=${paths}" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$paths" ]]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check README changes needed
-        if: env.paths != ''
+        if: steps.get-modified-charts.outputs.has_changes == 'true'
         id: check-changes
+        env:
+          MODIFIED_CHARTS: ${{ steps.get-modified-charts.outputs.charts }}
         run: |
-          # Create a temporary directory
           mkdir -p temp_readme_files
 
           changes_needed=false
           generator_failed=false
           changes_details=()
 
-          IFS=' ' read -ra ADDR <<< "$paths"
+          IFS=' ' read -ra ADDR <<< "$MODIFIED_CHARTS"
           for chart in "${ADDR[@]}"; do
             echo "Checking README changes for ${chart}"
 
-            # Copy the existing README to a temporary file
-            cp "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md"
+            generated="temp_readme_files/$(basename "${chart}")_README.md"
+            cp "${chart}/README.md" "$generated"
 
-            # Generate README — fail the workflow if the generator errors
-            if ! readme-generator --values "${chart}/values.yaml" --readme "temp_readme_files/$(basename ${chart})_README.md"; then
+            if ! readme-generator --values "${chart}/values.yaml" --readme "$generated"; then
               echo "::error::readme-generator failed for ${chart}/values.yaml — check @param annotations"
               generator_failed=true
               continue
             fi
 
-            # Check if there are differences
-            if diff -q "${chart}/README.md" "temp_readme_files/$(basename ${chart})_README.md" > /dev/null; then
+            if diff -q "${chart}/README.md" "$generated" > /dev/null; then
               echo "No changes needed for ${chart}/README.md"
               changes_details+=("${chart}:no_changes")
             else
@@ -91,30 +106,63 @@ jobs:
             exit 1
           fi
 
-          # Join the array with commas
           changes_details_str=$(IFS=,; echo "${changes_details[*]}")
 
-          # Set outputs for use in later steps
-          echo "changes_needed=${changes_needed}" >> $GITHUB_OUTPUT
-          echo "changes_details=${changes_details_str}" >> $GITHUB_OUTPUT
+          echo "changes_needed=${changes_needed}" >> "$GITHUB_OUTPUT"
+          echo "changes_details=${changes_details_str}" >> "$GITHUB_OUTPUT"
 
-      - name: Save PR information
+      - name: Save check results
+        env:
+          HAS_CHANGES: ${{ steps.get-modified-charts.outputs.has_changes }}
+          MODIFIED_CHARTS: ${{ steps.get-modified-charts.outputs.charts }}
+          CHANGES_NEEDED: ${{ steps.check-changes.outputs.changes_needed }}
+          CHANGES_DETAILS: ${{ steps.check-changes.outputs.changes_details }}
         run: |
           mkdir -p ./pr-info
-          echo "${{ github.event.pull_request.number }}" > ./pr-info/PR_NUMBER
-          echo "${{ github.event.pull_request.head.sha }}" > ./pr-info/HEAD_SHA
-          echo "${{ github.event.pull_request.head.repo.fork }}" > ./pr-info/IS_FORK
-          echo "${{ steps.get-modified-charts.outputs.has_changes }}" > ./pr-info/HAS_CHANGES
-          echo "${{ steps.check-changes.outputs.changes_needed }}" > ./pr-info/CHANGES_NEEDED
-          echo "${{ steps.check-changes.outputs.changes_details }}" > ./pr-info/CHANGES_DETAILS
-          
-          # If there are modified charts, include them in the artifacts
-          if [[ -n "$paths" ]]; then
-            echo "$paths" > ./pr-info/MODIFIED_CHARTS
-          fi
+          printf '%s\n' "${HAS_CHANGES:-false}" > ./pr-info/HAS_CHANGES
+          printf '%s\n' "${CHANGES_NEEDED:-false}" > ./pr-info/CHANGES_NEEDED
+          printf '%s\n' "${MODIFIED_CHARTS}" > ./pr-info/MODIFIED_CHARTS
+          printf '%s\n' "${CHANGES_DETAILS}" > ./pr-info/CHANGES_DETAILS
 
-      - name: Upload PR information
+      - name: Upload check results
         uses: actions/upload-artifact@v4
         with:
           name: pr-readme-info
           path: pr-info/
+
+  # Same-repo PRs only; a fork PR is filtered out here and its token would be
+  # read-only in any case.
+  update:
+    needs: check
+    if: >-
+      needs.check.outputs.changes_needed == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Install readme-generator-for-helm
+        run: npm install -g @bitnami/readme-generator-for-helm
+
+      - name: Regenerate chart READMEs
+        env:
+          MODIFIED_CHARTS: ${{ needs.check.outputs.charts }}
+        run: |
+          IFS=' ' read -ra ADDR <<< "$MODIFIED_CHARTS"
+          echo "Updating READMEs for modified charts: ${ADDR[*]}"
+          for chart in "${ADDR[@]}"; do
+            echo "Updating README.md for ${chart}"
+            readme-generator --values "${chart}/values.yaml" --readme "${chart}/README.md"
+          done
+
+      - name: Commit and push README updates
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update README for modified charts
+          branch: ${{ github.head_ref }}
