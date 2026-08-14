@@ -29,8 +29,25 @@ jobs:
           BEFORE_SHA: ${{ github.event.before }}
           AFTER_SHA: ${{ github.event.after }}
         run: |
-          paths=$(git diff --name-only "$BEFORE_SHA" "$AFTER_SHA" | grep ^charts/ | cut -d/ -f1,2 | uniq | tr '\n' ' ')
-          echo "paths=${paths}" >> $GITHUB_OUTPUT
+          set -f
+          charts=()
+          while IFS= read -r -d '' file; do
+            [[ "$file" == charts/*/* ]] || continue
+            IFS=/ read -r _ name _ <<< "$file"
+            if [[ ! "$name" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+              echo "::error::Refusing to process chart directory with unexpected characters: ${file}"
+              exit 1
+            fi
+            charts+=("charts/${name}")
+          done < <(git diff --name-only -z "$BEFORE_SHA" "$AFTER_SHA")
+
+          paths=""
+          if [[ ${#charts[@]} -gt 0 ]]; then
+            paths=$(printf '%s\n' "${charts[@]}" | sort -u | tr '\n' ' ' | sed 's/ *$//')
+          fi
+
+          echo "Modified charts: ${paths}"
+          echo "paths=${paths}" >> "$GITHUB_OUTPUT"
 
   push-charts:
     needs: get-modified-charts
@@ -44,28 +61,29 @@ jobs:
         env:
           MODIFIED_PATHS: ${{ needs.get-modified-charts.outputs.paths }}
         run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
           IFS=' ' read -ra ADDR <<< "$MODIFIED_PATHS"
           for path in "${ADDR[@]}"; do
-            # Extract the chart name from the path
-            chart_name=$(basename $path)
-            
-            # Only capture the first occurrence of 'version:' to ignore dependencies
-            version=$(grep -m1 'version:' $path/Chart.yaml | awk '{print $2}')
-            
-            # Create the tag name by prepending the chart name and adding '-dev'
+            chart_name=$(basename "$path")
+
+            # Anchored so an indented dependency version can never win
+            version=$(grep -m1 '^version:' "${path}/Chart.yaml" | awk '{print $2}')
+            if [[ -z "$version" ]]; then
+              echo "::error::Could not determine chart version from ${path}/Chart.yaml"
+              exit 1
+            fi
+
             tag="${chart_name}-${version}"
 
-            # Configure git
-            git config user.name "GitHub Actions"
-            git config user.email "actions@github.com"
-            
             # Delete existing tag if exists
-            git tag -d $tag || true
-            git push origin :refs/tags/$tag || true
-            
+            git tag -d "$tag" || true
+            git push origin ":refs/tags/$tag" || true
+
             # Create and push new tag
-            git tag $tag
-            git push origin $tag
+            git tag "$tag"
+            git push origin "$tag"
           done
 
       - uses: a-thomas-22/helm-push-action@780d6973e12f5dd24dcd6f4a2975f14d87c62699 # v0.0.29

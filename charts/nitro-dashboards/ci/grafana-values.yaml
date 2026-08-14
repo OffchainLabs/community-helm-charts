@@ -1,0 +1,109 @@
+# Installs a throwaway Grafana with the same k8s-sidecar kube-prometheus-stack
+# deploys, so `ct install`'s helm test verifies every dashboard actually loads.
+grafanaFolder: Arbitrum
+
+tests:
+  grafanaUrl: http://ci-grafana:3000
+
+extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: ci-grafana
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: ci-grafana
+    rules:
+      - apiGroups: [""]
+        resources: ["configmaps"]
+        verbs: ["get", "list", "watch"]
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      name: ci-grafana
+    subjects:
+      - kind: ServiceAccount
+        name: ci-grafana
+    roleRef:
+      kind: Role
+      name: ci-grafana
+      apiGroup: rbac.authorization.k8s.io
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: ci-grafana-provider
+    data:
+      provider.yaml: |
+        apiVersion: 1
+        providers:
+          - name: sidecar
+            orgId: 1
+            type: file
+            updateIntervalSeconds: 10
+            allowUiUpdates: false
+            options:
+              path: /var/lib/grafana/dashboards
+              foldersFromFilesStructure: true
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: ci-grafana
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: ci-grafana
+      template:
+        metadata:
+          labels:
+            app: ci-grafana
+        spec:
+          serviceAccountName: ci-grafana
+          containers:
+            - name: grafana
+              image: grafana/grafana:12.3.1
+              env:
+                - name: GF_AUTH_ANONYMOUS_ENABLED
+                  value: "true"
+                - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+                  value: Viewer
+              ports:
+                - containerPort: 3000
+              volumeMounts:
+                - name: dashboards
+                  mountPath: /var/lib/grafana/dashboards
+                - name: provider
+                  mountPath: /etc/grafana/provisioning/dashboards
+            - name: sidecar
+              image: kiwigrid/k8s-sidecar:2.5.0
+              env:
+                - name: LABEL
+                  value: grafana_dashboard
+                - name: LABEL_VALUE
+                  value: "1"
+                - name: FOLDER
+                  value: /var/lib/grafana/dashboards
+                - name: FOLDER_ANNOTATION
+                  value: grafana_folder
+                - name: RESOURCE
+                  value: configmap
+              volumeMounts:
+                - name: dashboards
+                  mountPath: /var/lib/grafana/dashboards
+          volumes:
+            - name: dashboards
+              emptyDir: {}
+            - name: provider
+              configMap:
+                name: ci-grafana-provider
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: ci-grafana
+    spec:
+      selector:
+        app: ci-grafana
+      ports:
+        - port: 3000
+          targetPort: 3000

@@ -1,0 +1,7 @@
+This chart deployed one ConfigMap per community Grafana dashboard, labelled {{ .Values.sidecar.label }}={{ .Values.sidecar.labelValue }} so a Grafana dashboard sidecar (such as the one deployed by kube-prometheus-stack) picks them up automatically.
+
+List the deployed dashboards with:
+
+  kubectl get configmaps --namespace {{ .Release.Namespace }} --selector app.kubernetes.io/instance={{ .Release.Name }}
+
+To file the dashboards into a specific Grafana folder, set the grafanaFolder value. To skip individual dashboards, list their file names under excludeDashboards. See the dashboards/README.md packaged with this chart for the datasources and metric labels the dashboards expect.
