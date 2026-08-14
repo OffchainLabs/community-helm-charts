@@ -1,0 +1,28 @@
+{{- range $path, $_ := .Files.Glob "dashboards/*.json" }}
+{{- $name := trimSuffix ".json" (base $path) }}
+{{- if not (or (has $name $.Values.excludeDashboards) (has (base $path) $.Values.excludeDashboards)) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-%s" (include "nitro-dashboards.fullname" $) $name | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- include "nitro-dashboards.labels" $ | nindent 4 }}
+    {{ $.Values.sidecar.label }}: {{ $.Values.sidecar.labelValue | quote }}
+    {{- with $.Values.extraLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- if or $.Values.grafanaFolder $.Values.extraAnnotations }}
+  annotations:
+    {{- with $.Values.grafanaFolder }}
+    {{ $.Values.folderAnnotation }}: {{ . | quote }}
+    {{- end }}
+    {{- with $.Values.extraAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+data:
+  {{ base $path }}: |-
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+{{- end }}

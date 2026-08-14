@@ -1,0 +1,8 @@
+apiVersion: v2
+name: nitro-dashboards
+description: Community Grafana dashboards for Arbitrum Nitro, packaged as ConfigMaps for Grafana sidecar auto-discovery
+maintainers:
+  - name: OffchainLabs
+type: application
+version: 1.0.0
+appVersion: "7aa7dacdd6108194984c9e9c3461f982308ab8b2"

@@ -1,0 +1,746 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", type=\"Warning\", kind=\"Pod\", name=~\"$pod\"} | logfmt | line_format \"{{.reason}}: {{.name}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(130, 130, 140, 0.5)",
+        "name": "K8s Warning Events",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", type=\"Normal\", kind=\"Pod\", name=~\"$pod\"} | logfmt | reason=\"Killing\" | line_format \"Killing {{.name}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(140, 120, 180, 0.6)",
+        "name": "Pod Killed",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "uid": "$loki_datasource"
+        },
+        "enable": false,
+        "expr": "{job=\"integrations/kubernetes/eventhandler\", cluster=~\"$cluster\", namespace=~\"$namespacepattern\", kind=~\"Deployment|StatefulSet\", name=~\"($pod_controller).*\"} | logfmt | line_format \"{{.kind}} {{.name}}: {{.reason}} — {{.msg}}\"",
+        "hide": false,
+        "iconColor": "rgba(90, 150, 220, 0.7)",
+        "name": "Rollouts / Deployments",
+        "target": {
+          "limit": 1000,
+          "matchAny": false,
+          "tags": null,
+          "type": ""
+        }
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$Source"
+        },
+        "enable": false,
+        "expr": "increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}[$__rate_interval]) > 0",
+        "hide": false,
+        "iconColor": "rgba(235, 175, 60, 0.8)",
+        "name": "Pod Restarts",
+        "tagKeys": "namespace,pod,container,cluster",
+        "titleFormat": "{{pod}} / {{container}}"
+      },
+      {
+        "builtIn": 0,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$Source"
+        },
+        "enable": false,
+        "expr": "(increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\"}[$__rate_interval]) > 0) and on (cluster, namespace, pod, container) (kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", pod=~\"$pod\", reason=\"OOMKilled\"} == 1)",
+        "hide": false,
+        "iconColor": "rgba(220, 70, 70, 0.9)",
+        "name": "OOMKilled",
+        "tagKeys": "namespace,pod,container,cluster",
+        "titleFormat": "{{pod}} / {{container}}"
+      }
+    ]
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 0,
+      "panels": null,
+      "repeat": "nitronodejob",
+      "title": "Nitro Node RPC Summary [$nitronodejob]",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(rpc_duration_arb_getAggregator_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "arb_getAggregator - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_blockNumber_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_blockNumber - {{cluster}}",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_call_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_call - {{cluster}}",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_chainId_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_chainId - {{cluster}}",
+          "refId": "D"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_estimateGas_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_estimateGas - {{cluster}}",
+          "refId": "E"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_gasPrice_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_gasPrice - {{cluster}}",
+          "refId": "F"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getBalance_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getBalance - {{cluster}}",
+          "refId": "G"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getBlockByHash_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getBlockByHash - {{cluster}}",
+          "refId": "H"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getBlockByNumber_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getBlockByNumber - {{cluster}}",
+          "refId": "I"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getCode_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getCode - {{cluster}}",
+          "refId": "J"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getFilterChanges_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getFilterChanges - {{cluster}}",
+          "refId": "K"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getFilterLogs_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getFilterLogs - {{cluster}}",
+          "refId": "L"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getLogs_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getLogs - {{cluster}}",
+          "refId": "M"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getStorageAt_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getStorageAt - {{cluster}}",
+          "refId": "N"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getTransactionByHash_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getTransactionByHash - {{cluster}}",
+          "refId": "O"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getTransactionCount_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getTransactionCount - {{cluster}}",
+          "refId": "P"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getTransactionReceipt_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getTransactionReceipt - {{cluster}}",
+          "refId": "Q"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_newBlockFilter_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_newBlockFilter - {{cluster}}",
+          "refId": "R"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_newFilter_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_newFilter - {{cluster}}",
+          "refId": "S"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_sendRawTransaction_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_sendRawTransaction - {{cluster}}",
+          "refId": "T"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_net_version_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "net_version - {{cluster}}",
+          "refId": "U"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_timeboost_sendExpressLaneTransaction_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "timeboost_sendExpressLaneTransaction - {{cluster}}",
+          "refId": "V"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_web3_clientVersion_success_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "web3_clientVersion - {{cluster}}",
+          "refId": "W"
+        }
+      ],
+      "title": "RPC Methods - Success",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(rpc_duration_arb_getAggregator_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "arb_getAggregator - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_blockNumber_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_blockNumber - {{cluster}}",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_call_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_call - {{cluster}}",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_chainId_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_chainId - {{cluster}}",
+          "refId": "D"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_estimateGas_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_estimateGas - {{cluster}}",
+          "refId": "E"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_gasPrice_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_gasPrice - {{cluster}}",
+          "refId": "F"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getBalance_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getBalance - {{cluster}}",
+          "refId": "G"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getBlockByHash_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getBlockByHash - {{cluster}}",
+          "refId": "H"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getBlockByNumber_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getBlockByNumber - {{cluster}}",
+          "refId": "I"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getCode_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getCode - {{cluster}}",
+          "refId": "J"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getFilterChanges_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getFilterChanges - {{cluster}}",
+          "refId": "K"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getFilterLogs_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getFilterLogs - {{cluster}}",
+          "refId": "L"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getLogs_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getLogs - {{cluster}}",
+          "refId": "M"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getStorageAt_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getStorageAt - {{cluster}}",
+          "refId": "N"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getTransactionByHash_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getTransactionByHash - {{cluster}}",
+          "refId": "O"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getTransactionCount_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getTransactionCount - {{cluster}}",
+          "refId": "P"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_getTransactionReceipt_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_getTransactionReceipt - {{cluster}}",
+          "refId": "Q"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_newBlockFilter_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_newBlockFilter - {{cluster}}",
+          "refId": "R"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_newFilter_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_newFilter - {{cluster}}",
+          "refId": "S"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_eth_sendRawTransaction_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "eth_sendRawTransaction - {{cluster}}",
+          "refId": "T"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_net_version_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "net_version - {{cluster}}",
+          "refId": "U"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_timeboost_sendExpressLaneTransaction_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "timeboost_sendExpressLaneTransaction - {{cluster}}",
+          "refId": "V"
+        },
+        {
+          "expr": "sum(rate(rpc_duration_web3_clientVersion_failure_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "web3_clientVersion - {{cluster}}",
+          "refId": "W"
+        }
+      ],
+      "title": "RPC Methods - Failure",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "reqps"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(rpc_duration_all_count{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "Req/s - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "RPC Total Req/s",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(chain_head_block{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"}) - min(chain_head_block{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",job=\"$nitronodejob\"})",
+          "legendFormat": "{{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Block Number Range",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\", pod=~\"${nitronodejob}-[0-9a-f].*\", image!=\"\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "min(kube_pod_container_resource_limits{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\", pod=~\"${nitronodejob}-[0-9a-f].*\", container=~\".*nitro.*|.*lb.*\", resource=\"cpu\"}) by (cluster)",
+          "legendFormat": "Limit - {{cluster}}",
+          "refId": "B"
+        },
+        {
+          "expr": "min(kube_pod_container_resource_requests{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\", pod=~\"${nitronodejob}-[0-9a-f].*\", container=~\".*nitro.*|.*lb.*\", resource=\"cpu\"}) by (cluster)",
+          "legendFormat": "Request - {{cluster}}",
+          "refId": "C"
+        }
+      ],
+      "title": "CPU Usage",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineColor": "#FFFFFF",
+            "stacking": {}
+          },
+          "unit": "bytes"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(container_memory_rss{cluster=~\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", namespace=~\"$namespacepattern.*\",pod=~\"$nitronodejob-[0-9a-f].*\", container!=\"\"}) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "min(kube_pod_container_resource_limits{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",pod=~\"$nitronodejob-[0-9a-f].*\", container=~\".*nitro.*|.*lb.*\", resource=\"memory\"}) by (cluster)",
+          "legendFormat": "Limit - {{cluster}}",
+          "refId": "B"
+        },
+        {
+          "expr": "min(kube_pod_container_resource_requests{cluster=~\"$cluster\",namespace=~\"$namespacepattern.*\",pod=~\"$nitronodejob-[0-9a-f].*\", container=~\".*nitro.*|.*lb.*\", resource=\"memory\"}) by (cluster)",
+          "legendFormat": "Request - {{cluster}}",
+          "refId": "C"
+        }
+      ],
+      "title": "Memory Used",
+      "transparent": false,
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "label": "Source",
+        "multi": false,
+        "name": "Source",
+        "query": "prometheus",
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "arb1-.*"
+          ],
+          "value": [
+            "arb1-.*"
+          ]
+        },
+        "label": "Namespace Pattern",
+        "name": "namespacepattern",
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Clusters",
+        "multi": true,
+        "name": "cluster",
+        "query": "label_values(arb_feed_clients_current{namespace=~\"$namespacepattern\"}, cluster)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Nitro Node Jobs",
+        "multi": true,
+        "name": "nitronodejob",
+        "query": "label_values(chain_head_block{namespace=~\"$namespacepattern\", cluster=~\"$cluster\"}, job)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "hide": 0,
+        "label": "Loki Datasource",
+        "multi": false,
+        "name": "loki_datasource",
+        "query": "loki",
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "includeAll": true,
+        "label": "Pods",
+        "multi": true,
+        "name": "pod",
+        "query": "label_values(chain_head_block{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", job=~\"$nitronodejob\"}, pod)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "uid": "$Source"
+        },
+        "hide": 2,
+        "includeAll": true,
+        "label": "Pod Controller",
+        "multi": true,
+        "name": "pod_controller",
+        "query": "label_values(chain_head_block{cluster=~\"$cluster\", namespace=~\"$namespacepattern\", job=~\"$nitronodejob\", pod=~\"$pod\"}, pod)",
+        "refresh": 2,
+        "regex": "/^(.*?)(?:-[a-z0-9]+-[a-z0-9]{5}|-[0-9]+)$/",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "utc",
+  "title": "Nitro Node RPC Summary",
+  "uid": "community-nitro_summary"
+}
