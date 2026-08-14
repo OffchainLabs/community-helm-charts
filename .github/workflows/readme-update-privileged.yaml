@@ -6,15 +6,15 @@ on:
     types:
       - completed
 
-permissions:
-  actions: read
-  contents: write
-  pull-requests: write
-  checks: write
+permissions: {}
 
 jobs:
-  update-readme:
+  report:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pull-requests: write
+      checks: write
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'pull_request'
@@ -44,15 +44,9 @@ jobs:
               return;
             }
 
-            if (!/^[A-Za-z0-9._\/-]+$/.test(pr.head.ref)) {
-              core.setFailed('Unexpected characters in pull request branch name.');
-              return;
-            }
-
             core.setOutput('found', 'true');
             core.setOutput('number', String(pr.number));
             core.setOutput('head_sha', pr.head.sha);
-            core.setOutput('branch', pr.head.ref);
             core.setOutput('is_fork', String(pr.head.repo.full_name !== `${owner}/${repo}`));
 
       - name: Download check results
@@ -105,11 +99,7 @@ jobs:
             fi
           done
 
-          should_update=false
           should_comment=false
-          if [[ "$HAS_CHANGES" == "true" && "$CHANGES_NEEDED" == "true" && "$IS_FORK" == "false" ]]; then
-            should_update=true
-          fi
           if [[ "$HAS_CHANGES" == "true" && "$IS_FORK" == "true" ]]; then
             should_comment=true
           fi
@@ -119,39 +109,8 @@ jobs:
             echo "changes_needed=${CHANGES_NEEDED}"
             echo "charts=${charts}"
             echo "details=${details}"
-            echo "should_update=${should_update}"
             echo "should_comment=${should_comment}"
           } >> "$GITHUB_OUTPUT"
-
-      - name: Install readme-generator-for-helm
-        if: steps.results.outputs.should_update == 'true'
-        run: npm install -g @bitnami/readme-generator-for-helm
-
-      - name: Checkout pull request branch
-        if: steps.results.outputs.should_update == 'true'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.pr.outputs.branch }}
-          fetch-depth: 0
-
-      - name: Regenerate chart READMEs
-        if: steps.results.outputs.should_update == 'true'
-        env:
-          MODIFIED_CHARTS: ${{ steps.results.outputs.charts }}
-        run: |
-          IFS=' ' read -ra ADDR <<< "$MODIFIED_CHARTS"
-          echo "Updating READMEs for modified charts: ${ADDR[*]}"
-          for chart in "${ADDR[@]}"; do
-            echo "Updating README.md for ${chart}"
-            readme-generator --values "${chart}/values.yaml" --readme "${chart}/README.md"
-          done
-
-      - name: Commit and push README updates
-        if: steps.results.outputs.should_update == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: Update README for modified charts
-          branch: ${{ steps.pr.outputs.branch }}
 
       - name: Prepare comment content
         if: steps.results.outputs.should_comment == 'true'

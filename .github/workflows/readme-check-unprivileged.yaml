@@ -7,16 +7,22 @@ on:
     paths:
       - "charts/**"
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: readme-check-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:
-  check-readme-updates:
+  check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      has_changes: ${{ steps.get-modified-charts.outputs.has_changes }}
+      charts: ${{ steps.get-modified-charts.outputs.charts }}
+      changes_needed: ${{ steps.check-changes.outputs.changes_needed }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -123,3 +129,40 @@ jobs:
         with:
           name: pr-readme-info
           path: pr-info/
+
+  # Same-repo PRs only; a fork PR is filtered out here and its token would be
+  # read-only in any case.
+  update:
+    needs: check
+    if: >-
+      needs.check.outputs.changes_needed == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Install readme-generator-for-helm
+        run: npm install -g @bitnami/readme-generator-for-helm
+
+      - name: Regenerate chart READMEs
+        env:
+          MODIFIED_CHARTS: ${{ needs.check.outputs.charts }}
+        run: |
+          IFS=' ' read -ra ADDR <<< "$MODIFIED_CHARTS"
+          echo "Updating READMEs for modified charts: ${ADDR[*]}"
+          for chart in "${ADDR[@]}"; do
+            echo "Updating README.md for ${chart}"
+            readme-generator --values "${chart}/values.yaml" --readme "${chart}/README.md"
+          done
+
+      - name: Commit and push README updates
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update README for modified charts
+          branch: ${{ github.head_ref }}
