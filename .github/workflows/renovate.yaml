@@ -74,9 +74,11 @@ jobs:
           # Additional useful settings
           RENOVATE_DEPENDENCY_DASHBOARD: false
 
-          # Renovate app settings (when using GitHub App)
-          RENOVATE_USERNAME: ${{ github.repository_owner }}-renovate[bot]
-          RENOVATE_GIT_AUTHOR: ${{ github.repository_owner }}-renovate[bot] <${{ github.repository_owner }}-renovate[bot]@users.noreply.github.com>
+          # Must match the GitHub App's actual bot login: Renovate filters the
+          # issue/PR list by this username to find its own dashboard, and a
+          # mismatch makes it open a duplicate dashboard on every run.
+          RENOVATE_USERNAME: ocl-renovate[bot]
+          RENOVATE_GIT_AUTHOR: ocl-renovate[bot] <ocl-renovate[bot]@users.noreply.github.com>
 
       - name: Renovate Summary
         if: always()
