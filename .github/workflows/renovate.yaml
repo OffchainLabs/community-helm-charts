@@ -74,9 +74,8 @@ jobs:
           # Additional useful settings
           RENOVATE_DEPENDENCY_DASHBOARD: false
 
-          # Renovate app settings (when using GitHub App)
-          RENOVATE_USERNAME: ${{ github.repository_owner }}-renovate[bot]
-          RENOVATE_GIT_AUTHOR: ${{ github.repository_owner }}-renovate[bot] <${{ github.repository_owner }}-renovate[bot]@users.noreply.github.com>
+          RENOVATE_USERNAME: ocl-renovate[bot]
+          RENOVATE_GIT_AUTHOR: ocl-renovate[bot] <ocl-renovate[bot]@users.noreply.github.com>
 
       - name: Renovate Summary
         if: always()
