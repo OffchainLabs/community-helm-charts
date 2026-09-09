@@ -415,6 +415,114 @@
       },
       "id": 0,
       "panels": null,
+      "title": "Reserve Originator",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Every round the reserve originator either submits a bid or skips it, so submitted plus skipped should account for all rounds; a gap means the originator is erroring or down. reason=\"at-base\" is expected and benign - the dynamic price sits at the base reserve price, so a bid would be a no-op and is deliberately withheld. reason=\"stale-price\" is actionable: the originator is not getting fresh prices from the reserve pricer, so no dynamic reserve price is being set.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 14
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(cluster, namespace) (rate(timeboost_reserve_originator_bid_submission_successful_attempts_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"}[$__rate_interval]))",
+          "legendFormat": "submitted - {{ cluster }}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by(cluster, namespace, reason) (rate(timeboost_reserve_originator_bid_skipped_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"}[$__rate_interval]))",
+          "legendFormat": "skipped ({{ reason }}) - {{ cluster }}",
+          "refId": "B"
+        }
+      ],
+      "title": "Reserve Originator Bid Outcomes",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "The same bid flow seen from the auctioneer, and the metric the bid-not-received alert fires on. Zero here while Bid Outcomes shows skipped (at-base) is expected; zero while neither skips nor submissions are happening is not.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 14
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by(chain, cluster, namespace, pod) (changes(arb_auctioneer_reserve_originator_bid{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",pod=~\".*auctioneer.*\"}[5m]))",
+          "legendFormat": "{{ chain }} - {{ pod }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Reserve Originator Bids Received (auctioneer)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "id": 0,
+      "panels": null,
       "repeat": "tbjob",
       "title": "RPC Metrics - [$tbjob]",
       "type": "row"
@@ -436,7 +544,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 14
+        "y": 21
       },
       "options": {
         "legend": {
@@ -478,7 +586,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 14
+        "y": 21
       },
       "options": {
         "legend": {
@@ -521,7 +629,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 14
+        "y": 21
       },
       "options": {
         "legend": {
@@ -564,7 +672,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 14
+        "y": 21
       },
       "options": {
         "legend": {
@@ -606,7 +714,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 20
+        "y": 27
       },
       "options": {
         "legend": {
@@ -648,7 +756,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 20
+        "y": 27
       },
       "options": {
         "legend": {
