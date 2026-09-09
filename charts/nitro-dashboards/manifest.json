@@ -1,6 +1,6 @@
 {
-  "version": "1.0.2",
-  "sourceCommit": "cfcce9e68e9881f248ed529e7ec8009db2aacb90",
+  "version": "1.0.3",
+  "sourceCommit": "6e4c1de00a48b5b22e65d85f810f2ac95d4f65ce",
   "dashboards": [
     {
       "uid": "community-nitro_overview",
