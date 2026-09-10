@@ -567,7 +567,7 @@
       "datasource": {
         "uid": "$Source"
       },
-      "description": "Go relay (nitro-node) client connections dropped because its worker pool was exhausted (`arb_feed_clients_failed_worker`). The rust relay has no worker pool and exports no equivalent, so this panel is empty — *not zero* — on a rust relay job (`*-rust-relay`, `robinhood-feed-*`, `rh-test-v1-feed-*`).",
+      "description": "Client connections admitted per second, split by whether they asked for `permessage-deflate` (`arb_feed_clients_compression_negotiated` / `arb_feed_clients_compression_not_requested`). **negotiated** is uptake, not delivery: a client that negotiates and then fails to inflate still counts. **not requested** is counted whatever the `--compression` setting is, so while it keeps climbing some client is not asking. Under `--compression=off` negotiated is pinned at zero and every connection lands in not requested. Empty on Go relays and on rust relays before v0.7.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -582,6 +582,99 @@
         "w": 6,
         "x": 12,
         "y": 13
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_feed_clients_compression_negotiated{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "negotiated - {{cluster}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(arb_feed_clients_compression_not_requested{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "not requested - {{cluster}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Compression Negotiation (rust relay)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Share of connections admitted since pod start that negotiated compression. Read the inverse as the pre-flight for `--compression=required`: at 97% uptake, `required` would refuse the remaining 3%. Before flipping it, identify who they are — a chained arb-relay never offers compression on its own upstream connection, so it sits in the refused population. Counters are cumulative, so this resets when a pod restarts. Empty on Go relays and on rust relays before v0.7.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "max": 100,
+          "unit": "percent"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 13
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "100 * sum(arb_feed_clients_compression_negotiated{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) by (cluster) / (sum(arb_feed_clients_compression_negotiated{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"} + arb_feed_clients_compression_not_requested{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) by (cluster) > 0)",
+          "legendFormat": "negotiated - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Compression Uptake % (rust relay)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Go relay (nitro-node) client connections dropped because its worker pool was exhausted (`arb_feed_clients_failed_worker`). The rust relay has no worker pool and exports no equivalent, so this panel is empty — *not zero* — on a rust relay job (`*-rust-relay`, `robinhood-feed-*`, `rh-test-v1-feed-*`).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 19
       },
       "options": {
         "legend": {
@@ -622,8 +715,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 18,
-        "y": 13
+        "x": 6,
+        "y": 19
       },
       "options": {
         "legend": {
@@ -667,7 +760,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 0,
+        "x": 12,
         "y": 19
       },
       "options": {
@@ -715,7 +808,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 6,
+        "x": 18,
         "y": 19
       },
       "options": {
@@ -773,8 +866,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 12,
-        "y": 19
+        "x": 0,
+        "y": 25
       },
       "options": {
         "legend": {
@@ -816,8 +909,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 18,
-        "y": 19
+        "x": 6,
+        "y": 25
       },
       "options": {
         "legend": {
@@ -863,7 +956,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 0,
+        "x": 12,
         "y": 25
       },
       "options": {
