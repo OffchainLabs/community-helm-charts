@@ -327,6 +327,11 @@
           "expr": "sum(rate(arb_feed_clients_disconnect{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
           "legendFormat": "disconnect - {{cluster}}",
           "refId": "B"
+        },
+        {
+          "expr": "sum(rate(arb_feed_clients_lagged{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "lag drop - {{cluster}}",
+          "refId": "C"
         }
       ],
       "title": "Connect/Disconnect Rate",
@@ -438,6 +443,7 @@
       "datasource": {
         "uid": "$Source"
       },
+      "description": "Clients the relay disconnected for falling behind the broadcast (`arb_feed_clients_lagged`) — the client's send queue overflowed and it was evicted rather than allowed to stall the broadcaster. This is a *subset of disconnects*, which is why it also appears as a third series on **Connect/Disconnect Rate**; here it is broken out per pod.\n\nOne pod shedding laggards while its peers stay flat is local to that box — its egress, CPU or network path. Every pod shedding at once is not a relay fault: either demand the fleet cannot feed, or an upstream stall pushing a burst of backlogged messages through every broadcaster at once. Cross-read the fleet-wide case with **Block Rate** and **Total Transmit Rate**.\n\nDistinct from **Connection Limit Rate**, which refuses a connection up front; a lag drop kills one already being served.\n\nEmpty — *not zero* — on Go relays and on rust relays before v0.7.2, which export no such counter. A pod missing from this panel is unknown, not idle: check its image tag in **Version** on the same row before reading a gap as no drops.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -452,6 +458,48 @@
         "w": 6,
         "x": 18,
         "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_feed_clients_lagged{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Clients Dropped for Lag (rust relay)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 13
       },
       "options": {
         "legend": {
@@ -493,7 +541,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 0,
+        "x": 6,
         "y": 13
       },
       "options": {
@@ -537,7 +585,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 6,
+        "x": 12,
         "y": 13
       },
       "options": {
@@ -580,7 +628,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 12,
+        "x": 18,
         "y": 13
       },
       "options": {
@@ -630,8 +678,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 18,
-        "y": 13
+        "x": 0,
+        "y": 19
       },
       "options": {
         "legend": {
@@ -673,7 +721,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 0,
+        "x": 6,
         "y": 19
       },
       "options": {
@@ -715,7 +763,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 6,
+        "x": 12,
         "y": 19
       },
       "options": {
@@ -760,7 +808,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 12,
+        "x": 18,
         "y": 19
       },
       "options": {
@@ -808,8 +856,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 18,
-        "y": 19
+        "x": 0,
+        "y": 25
       },
       "options": {
         "legend": {
@@ -866,7 +914,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 0,
+        "x": 6,
         "y": 25
       },
       "options": {
@@ -909,7 +957,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 6,
+        "x": 12,
         "y": 25
       },
       "options": {
@@ -956,7 +1004,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 12,
+        "x": 18,
         "y": 25
       },
       "options": {
