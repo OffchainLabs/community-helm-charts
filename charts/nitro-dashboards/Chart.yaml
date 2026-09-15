@@ -4,5 +4,5 @@ description: Community Grafana dashboards for Arbitrum Nitro, packaged as Config
 maintainers:
   - name: OffchainLabs
 type: application
-version: 1.0.3
-appVersion: "6e4c1de00a48b5b22e65d85f810f2ac95d4f65ce"
+version: 1.0.4
+appVersion: "f3902421bd73067a3e873f3639831c54512dd281"
