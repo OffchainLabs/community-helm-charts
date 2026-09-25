@@ -327,6 +327,11 @@
           "expr": "sum(rate(arb_feed_clients_disconnect{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
           "legendFormat": "disconnect - {{cluster}}",
           "refId": "B"
+        },
+        {
+          "expr": "sum(rate(arb_feed_clients_lagged{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (cluster)",
+          "legendFormat": "lag drop - {{cluster}}",
+          "refId": "C"
         }
       ],
       "title": "Connect/Disconnect Rate",
@@ -438,6 +443,7 @@
       "datasource": {
         "uid": "$Source"
       },
+      "description": "Clients the relay disconnected for falling behind the broadcast (`arb_feed_clients_lagged`) — the client's send queue overflowed and it was evicted rather than allowed to stall the broadcaster. This is a *subset of disconnects*, which is why it also appears as a third series on **Connect/Disconnect Rate**; here it is broken out per pod.\n\nOne pod shedding laggards while its peers stay flat is local to that box — its egress, CPU or network path. Every pod shedding at once is not a relay fault: either demand the fleet cannot feed, or an upstream stall pushing a burst of backlogged messages through every broadcaster at once. Cross-read the fleet-wide case with **Block Rate** and **Total Transmit Rate**.\n\nDistinct from **Connection Limit Rate**, which refuses a connection up front; a lag drop kills one already being served.\n\nEmpty — *not zero* — on Go relays and on rust relays before v0.7.2, which export no such counter. A pod missing from this panel is unknown, not idle: check its image tag in **Version** on the same row before reading a gap as no drops.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -452,6 +458,48 @@
         "w": 6,
         "x": 18,
         "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_feed_clients_lagged{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Clients Dropped for Lag (rust relay)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 13
       },
       "options": {
         "legend": {
@@ -493,7 +541,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 0,
+        "x": 6,
         "y": 13
       },
       "options": {
@@ -523,7 +571,7 @@
       "datasource": {
         "uid": "$Source"
       },
-      "description": "Pod egress divided by connected clients — the average bandwidth one feed subscriber costs. Useful for capacity work (egress per additional client) and for spotting a feed whose per-client cost has jumped. Two caveats: the numerator is *total* pod egress from cAdvisor, so it also carries metric scrapes, health checks and upstream chatter — a fixed overhead that is negligible at thousands of clients but dominates at a handful (the arb1 Go feeds sit at ~12 KB/s with zero clients attached). And at zero connected clients the ratio is undefined, so the line breaks rather than spiking.",
+      "description": "Pod egress divided by connected clients — the average bandwidth one feed subscriber costs. Useful for capacity work (egress per additional client) and for spotting a feed whose per-client cost has jumped. Two caveats: the numerator is *total* pod egress from cAdvisor, so it also carries metric scrapes, health checks and upstream chatter — a fixed overhead that is negligible at thousands of clients but dominates at a handful (an idle relay with no clients attached still transmits on the order of 10 KB/s). And at zero connected clients the ratio is undefined, so the line breaks rather than spiking.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -537,7 +585,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 6,
+        "x": 12,
         "y": 13
       },
       "options": {
@@ -567,6 +615,94 @@
       "datasource": {
         "uid": "$Source"
       },
+      "description": "Relay CPU divided by connected clients, per pod — the average CPU one feed subscriber costs, in millicores. Useful for capacity work (CPU per additional client) and as the compression lever: a pod whose clients negotiated `permessage-deflate` spends a fraction of the CPU per client that a pod serving uncompressed clients does, so a pair of otherwise identical pods is the measurement. Pods on different hardware are not like for like — client mix, message rate and CPU clock all differ; **Clock-Normalised CPU per Connection** removes the clock part of that.\n\nThree caveats. The numerator is the container's cgroup, so kernel work outside it — softirq, where much of the fan-out cost lands — is only partly charged here; a pod can read as cheap while the host itself is short of CPU, so check host CPU before concluding otherwise. Fixed per-pod cost (upstream feed handling, backlog trimming, scrapes) is divided by whatever is attached, so at a handful of clients this reads as base cost per client, not the marginal cost of one more. And a pod absorbing a reconnect storm pays backlog sends here, so a spike can be churn rather than steady-state cost — cross-read **Connect/Disconnect Rate**.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "short"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 13
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "1000 * sum(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",image!=\"\"}[$__rate_interval]) and on (pod, cluster) arb_feed_clients_current{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) by (pod, cluster) / (sum(arb_feed_clients_current{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) by (pod, cluster) > 0)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU per Connection (mCPU)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "**CPU per Connection** multiplied by the host's rated CPU clock — per-client cost as cycles per second, so pods on hardware of different clock speeds can be compared. Where relays run on more than one class of host, raw millicores understate the per-client work done by whichever host has the slower clock.\n\nThe multiplier is `node_cpu_scaling_frequency_max_hertz`, a static hardware property, *not* the live scaling frequency: cores clock down when a host is idle, so normalising by the instantaneous value would divide out part of the saving being measured — a pod that got cheaper would report a lower clock and be credited for it twice.\n\nThis removes the clock confound, not the architecture one. Cycles are not equal work across microarchitectures, and turbo residency and SMT differ, so read a cross-hardware gap as indicative and keep the measurement to pods on matching hosts. Empty — *not zero* — wherever node_exporter reports no cpufreq, which is usual on virtualised instances; use **CPU per Connection (mCPU)** there.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "hertz"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 19
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",image!=\"\"}[$__rate_interval]) and on (pod, cluster) arb_feed_clients_current{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) by (pod, cluster, instance) / (sum(arb_feed_clients_current{cluster=~\"$cluster\",namespace=~\"$namespacepattern\", job=\"$relayjob\"}) by (pod, cluster, instance) > 0) * on (cluster, instance) group_left() avg(node_cpu_scaling_frequency_max_hertz{cluster=~\"$cluster\"}) by (cluster, instance)",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Clock-Normalised CPU per Connection",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
       "description": "Client connections admitted per second, split by whether they asked for `permessage-deflate` (`arb_feed_clients_compression_negotiated` / `arb_feed_clients_compression_not_requested`). **negotiated** is uptake, not delivery: a client that negotiates and then fails to inflate still counts. **not requested** is counted whatever the `--compression` setting is, so while it keeps climbing some client is not asking. Under `--compression=off` negotiated is pinned at zero and every connection lands in not requested. Empty on Go relays and on rust relays before v0.7.",
       "fieldConfig": {
         "defaults": {
@@ -580,8 +716,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 12,
-        "y": 13
+        "x": 6,
+        "y": 19
       },
       "options": {
         "legend": {
@@ -630,8 +766,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 18,
-        "y": 13
+        "x": 12,
+        "y": 19
       },
       "options": {
         "legend": {
@@ -660,7 +796,7 @@
       "datasource": {
         "uid": "$Source"
       },
-      "description": "Go relay (nitro-node) client connections dropped because its worker pool was exhausted (`arb_feed_clients_failed_worker`). The rust relay has no worker pool and exports no equivalent, so this panel is empty — *not zero* — on a rust relay job (`*-rust-relay`, `robinhood-feed-*`, `rh-test-v1-feed-*`).",
+      "description": "Go relay (nitro-node) client connections dropped because its worker pool was exhausted (`arb_feed_clients_failed_worker`). The rust relay has no worker pool and exports no equivalent, so this panel is empty — *not zero* — on any rust relay job. Check the image tag in **Version** on the same row before reading a gap here as no drops.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -673,7 +809,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 0,
+        "x": 18,
         "y": 19
       },
       "options": {
@@ -715,8 +851,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 6,
-        "y": 19
+        "x": 0,
+        "y": 25
       },
       "options": {
         "legend": {
@@ -760,8 +896,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 12,
-        "y": 19
+        "x": 6,
+        "y": 25
       },
       "options": {
         "legend": {
@@ -808,8 +944,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 18,
-        "y": 19
+        "x": 12,
+        "y": 25
       },
       "options": {
         "legend": {
@@ -866,7 +1002,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 0,
+        "x": 18,
         "y": 25
       },
       "options": {
@@ -909,8 +1045,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 6,
-        "y": 25
+        "x": 0,
+        "y": 31
       },
       "options": {
         "legend": {
@@ -956,8 +1092,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 12,
-        "y": 25
+        "x": 6,
+        "y": 31
       },
       "options": {
         "legend": {
