@@ -268,6 +268,8 @@ Option | Description | Default
 `conf.dump` | print out currently active configuration file | None
 `conf.env-prefix` | string                                                                        environment variables with given prefix will be loaded as configuration values | None
 `conf.file` | strings                                                                             name of configuration file | None
+`conf.max-version` | string                                                                       highest nitro version this configuration supports, as a semantic version (e.g. "v3.10.0"); a release build newer than this exits at startup (empty = no maximum) | None
+`conf.min-version` | string                                                                       lowest nitro version this configuration supports, as a semantic version (e.g. "v3.9.0"); a release build older than this exits at startup (empty = no minimum) | None
 `conf.reload-interval` | duration                                                                 how often to reload configuration (0=disable periodic reloading) | None
 `conf.s3.access-key` | string                                                                     S3 access key for fetching the node configuration file from S3 | None
 `conf.s3.bucket` | string                                                                         S3 bucket containing the node configuration file | None

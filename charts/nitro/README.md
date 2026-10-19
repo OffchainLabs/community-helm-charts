@@ -311,6 +311,8 @@ Option | Description | Default
 `conf.dump` | print out currently active configuration file | None
 `conf.env-prefix` | string                                                                                 environment variables with given prefix will be loaded as configuration values | None
 `conf.file` | strings                                                                                      name of configuration file | None
+`conf.max-version` | string                                                                                highest nitro version this configuration supports, as a semantic version (e.g. "v3.10.0"); a release build newer than this exits at startup (empty = no maximum) | None
+`conf.min-version` | string                                                                                lowest nitro version this configuration supports, as a semantic version (e.g. "v3.9.0"); a release build older than this exits at startup (empty = no minimum) | None
 `conf.reload-interval` | duration                                                                          how often to reload configuration (0=disable periodic reloading) | None
 `conf.s3.access-key` | string                                                                              S3 access key for fetching the node configuration file from S3 | None
 `conf.s3.bucket` | string                                                                                  S3 bucket containing the node configuration file | None
@@ -330,6 +332,7 @@ Option | Description | Default
 `execution.caching.head-rewind-blocks-limit` | uint                                                        maximum number of blocks rolled back to recover chain head (0 = use geth default limit) | `2419200`
 `execution.caching.max-amount-of-gas-to-skip-state-saving` | uint                                          maximum amount of gas in blocks to skip saving state to Persistent storage (archive node only) -- warning: this option seems to cause issues | None
 `execution.caching.max-number-of-blocks-to-skip-state-saving` | uint32                                     maximum number of blocks to skip state saving to persistent storage (archive node only) -- warning: this option seems to cause issues | None
+`execution.caching.node-full-value-checkpoint` | uint32                                                    rate at which trie nodes are encoded in full-value format in trienode history (path state-scheme only) | `8`
 `execution.caching.pathdb-max-diff-layers` | int                                                           maximum number of diff layers to keep in pathdb (path state-scheme only) | `128`
 `execution.caching.snapshot-cache` | int                                                                   amount of memory in megabytes to cache state snapshots with | `400`
 `execution.caching.snapshot-restore-gas-limit` | uint                                                      maximum gas rolled back to recover snapshot | `300000000000`
@@ -345,6 +348,7 @@ Option | Description | Default
 `execution.caching.trie-time-limit` | duration                                                             maximum block processing time before trie is written to hard-disk | `1h0m0s`
 `execution.caching.trie-time-limit-before-flush-maintenance` | duration                                    Execution will suggest that maintenance is run if the block processing time required to reach trie-time-limit is smaller or equal than trie-time-limit-before-flush-maintenance | None
 `execution.caching.trie-time-limit-random-offset` | duration                                               if greater then 0, the block processing time period of each trie write to hard-disk is shortened by a random value from range [0, trie-time-limit-random-offset) | None
+`execution.caching.trienode-history` | int                                                                 number of recent blocks to retain trienode history for (path state-scheme only). 0: full chain, negative: disable | `-1`
 `execution.consensus-rpc-client.arg-log-limit` | uint                                                      limit size of arguments in log entries | `2048`
 `execution.consensus-rpc-client.connection-wait` | duration                                                how long to wait for initial connection | None
 `execution.consensus-rpc-client.jwtsecret` | string                                                        path to file with jwtsecret for validation - ignored if url is self or self-auth | None
@@ -375,6 +379,7 @@ Option | Description | Default
 `execution.parent-chain-reader.tx-timeout` | duration                                                      timeout when waiting for a transaction | `5m0s`
 `execution.parent-chain-reader.use-finality-data` | use l1 data about finalized/safe blocks | `true`
 `execution.recording-database.max-prepared` | int                                                          max references to store in the recording database | `1000`
+`execution.recording-database.mode` | string                                                               block recorder mode for validation inputs (off, legacy, or chain-tip) | `legacy`
 `execution.recording-database.trie-clean-cache` | int                                                      like trie-clean-cache for the separate, recording database (used for validation) | `16`
 `execution.recording-database.trie-dirty-cache` | int                                                      like trie-dirty-cache for the separate, recording database (used for validation) | `1024`
 `execution.rpc-server.authenticated` | rpc is authenticated | `true`
@@ -407,6 +412,7 @@ Option | Description | Default
 `execution.sequencer.expected-surplus-gas-price-mode` | string                                             gas price setting to be used in calculating estimated surplus. Allowed values- CalldataPrice, BlobPrice and CalldataPrice7523 | `BlobPrice`
 `execution.sequencer.expected-surplus-hard-threshold` | string                                             if expected surplus is lower than this value, new incoming transactions will be denied | `default`
 `execution.sequencer.expected-surplus-soft-threshold` | string                                             if expected surplus is lower than this value, warnings are posted | `default`
+`execution.sequencer.filter-set-reporting-interval` | duration                                             interval at which the active sequencer reports its current address-filter set ids to the filtering-report service | `1m0s`
 `execution.sequencer.forwarder.connection-timeout` | duration                                              total time to wait before cancelling connection | `30s`
 `execution.sequencer.forwarder.idle-connection-timeout` | duration                                         time until idle connections are closed | `1m0s`
 `execution.sequencer.forwarder.max-idle-connections` | int                                                 maximum number of idle connections to keep open | `100`
@@ -415,14 +421,17 @@ Option | Description | Default
 `execution.sequencer.forwarder.update-interval` | duration                                                 forwarding target update interval | `1s`
 `execution.sequencer.max-acceptable-timestamp-delta` | duration                                            maximum acceptable time difference between the local time and the latest L1 block's timestamp | `1h0m0s`
 `execution.sequencer.max-block-speed` | duration                                                           minimum delay between blocks (sets a maximum speed of block production) | `250ms`
+`execution.sequencer.max-block-tx-candidates` | int                                                        maximum number of queued transactions considered for a block at the same time (e.g., during a single PGA round) | `3000`
 `execution.sequencer.max-revert-gas-reject` | uint                                                         maximum gas executed in a revert for the sequencer to reject the transaction instead of posting it (anti-DOS) | None
 `execution.sequencer.max-tx-data-size` | int                                                               maximum transaction size the sequencer will accept | `95000`
 `execution.sequencer.nonce-cache-size` | int                                                               size of the tx sender nonce cache | `1024`
 `execution.sequencer.nonce-failure-cache-expiry` | duration                                                maximum amount of time to wait for a predecessor before rejecting a tx with nonce too high | `1s`
 `execution.sequencer.nonce-failure-cache-size` | int                                                       number of transactions with too high of a nonce to keep in memory while waiting for their predecessor | `1024`
+`execution.sequencer.pga.dangerous-force-fifo` | force FIFO transaction ordering even when the chain collects tips, disabling the priority gas auction (PGA) | None
+`execution.sequencer.pga.rounds-per-block` | uint                                                          number of PGA rounds per block; the round length is max-block-speed divided by this value | `1`
+`execution.sequencer.poll-interval` | duration                                                             interval the sequencer waits before re-checking for pending work when idle | `10ms`
 `execution.sequencer.queue-size` | int                                                                     size of the pending tx queue | `1024`
 `execution.sequencer.queue-timeout` | duration                                                             maximum amount of time transaction can wait in queue | `12s`
-`execution.sequencer.read-from-tx-queue-timeout` | duration                                                timeout for reading new messages | `10ms`
 `execution.sequencer.sender-whitelist` | strings                                                           comma separated whitelist of authorized senders (if empty, everyone is allowed) | None
 `execution.sequencer.timeboost.auction-contract-address` | string                                          Address of the proxy pointing to the ExpressLaneAuction contract | None
 `execution.sequencer.timeboost.auctioneer-address` | string                                                Address of the Timeboost Autonomous Auctioneer | None
@@ -435,35 +444,36 @@ Option | Description | Default
 `execution.sequencer.timeboost.redis-url` | string                                                         the Redis URL for ExpressLaneService to coordinate via | `unset`
 `execution.sequencer.timeboost.sequencer-http-endpoint` | string                                           this sequencer's http endpoint | `http://localhost:8547`
 `execution.stylus-target.allow-fallback` | if true, fall back to an alternative compiler when compilation of a Stylus program fails | `true`
+`execution.stylus-target.allow-offchain-activation` | if true, serve Stylus activations requested by calls not executed onchain, such as eth_call and eth_estimateGas; onchain activation is always served | None
 `execution.stylus-target.amd64` | string                                                                   stylus programs compilation target for amd64 linux | `x86_64-linux-unknown+sse4.2+lzcnt+bmi`
 `execution.stylus-target.arm64` | string                                                                   stylus programs compilation target for arm64 linux | `arm64-linux-unknown+neon`
 `execution.stylus-target.extra-archs` | strings                                                            Comma separated list of extra architectures to cross-compile stylus program to and cache in wasm store (additionally to local target). Currently must include at least wavm. (supported targets: wavm, arm64, amd64, host) | `[wavm]`
 `execution.stylus-target.host` | string                                                                    stylus programs compilation target for system other than 64-bit ARM or 64-bit x86 | None
 `execution.stylus-target.max-open-pages` | uint16                                                          max open WASM pages per tx; exceeding the limit rejects non-on-chain calls and filters sequencer-committed txs (delayed inbox is exempt); 0 disables the limit | `128`
+`execution.stylus-target.max-singlepass-output-size` | uint                                                maximum Singlepass compiler output size in bytes per Stylus module (0 disables the limit) | `10485760`
+`execution.stylus-target.max-storage-cache-slots` | uint32                                                 maximum storage slots cached by one Stylus call frame. Exceeding the limit rejects calls not executed onchain and filters directly sequenced transactions. Chain following and delayed inbox processing are exempt. A value of 0 disables the limit | None
 `execution.stylus-target.max-stylus-call-depth` | uint16                                                   max number of Stylus frames simultaneously on the call stack (counts only Stylus frames; EVM frames between two Stylus frames do not decrement it); exceeding the limit rejects non-on-chain calls; 0 disables the limit | None
 `execution.stylus-target.native-stack-size` | uint                                                         initial native stack size in bytes for Wasmer coroutines used by Stylus execution (0 = default 1MB) | None
 `execution.sync-monitor.finalized-block-wait-for-block-validator` | wait for block validator to complete before returning finalized block number | None
 `execution.sync-monitor.msg-lag` | duration                                                                allowed message lag while still considered in sync | `1s`
 `execution.sync-monitor.safe-block-wait-for-block-validator` | wait for block validator to complete before returning safe block number | None
+`execution.transaction-feed.addr` | string                                                                 address to bind the transaction feed server | None
+`execution.transaction-feed.broadcast-buf` | int                                                           broadcast channel buffer size | `4096`
+`execution.transaction-feed.client-buf` | int                                                              per-client send buffer size | `256`
+`execution.transaction-feed.enable` | enable transaction feed server | None
+`execution.transaction-feed.handshake-timeout` | duration                                                  websocket handshake timeout | `5s`
+`execution.transaction-feed.ping-interval` | duration                                                      websocket ping interval | `30s`
+`execution.transaction-feed.port` | string                                                                 port for transaction feed server | `9646`
+`execution.transaction-feed.write-timeout` | duration                                                      write timeout per client | `2s`
 `execution.transaction-filtering.address-filter.address-checker-queue-size` | int                          work queue size for address checker | `8192`
 `execution.transaction-filtering.address-filter.address-checker-worker-count` | int                        number of workers for address checker | `4`
 `execution.transaction-filtering.address-filter.cache-size` | int                                          LRU cache size for address lookup results | `10000`
-`execution.transaction-filtering.address-filter.poll-interval` | duration                                  interval between polling S3 for hash list updates | `5m0s`
-`execution.transaction-filtering.address-filter.s3.access-key` | string                                    S3 access key | None
-`execution.transaction-filtering.address-filter.s3.bucket` | string                                        S3 bucket name | None
-`execution.transaction-filtering.address-filter.s3.chunk-size-mb` | int                                    S3 multipart download part size in MB | `32`
-`execution.transaction-filtering.address-filter.s3.concurrency` | int                                      S3 multipart download concurrency | `10`
-`execution.transaction-filtering.address-filter.s3.endpoint` | string                                      custom S3 endpoint URL (for MinIO, localstack, or other S3-compatible services) | None
-`execution.transaction-filtering.address-filter.s3.max-file-size-mb` | int                                 maximum allowed S3 object size in MB; if the object is larger, skip the download (0 disables the check) | None
-`execution.transaction-filtering.address-filter.s3.max-retries` | int                                      maximum retries for S3 part body download | `3`
-`execution.transaction-filtering.address-filter.s3.object-key` | string                                    S3 object key (path) to the file | None
-`execution.transaction-filtering.address-filter.s3.preallocate-memory` | preallocate the download buffer at startup, so downloads reuse it instead of allocating a per-object buffer; engages only when max-file-size-mb is set | `true`
-`execution.transaction-filtering.address-filter.s3.region` | string                                        S3 region | None
-`execution.transaction-filtering.address-filter.s3.secret-key` | string                                    S3 secret key | None
+`execution.transaction-filtering.address-filter.static-list` | string                                      hash-list JSON document given inline as a json string, with the same schema as the S3 hash-list files, e.g. {"id":"<uuid>","salt":"<uuid>","hashing_scheme":"sha256-stringinput|sha256-rawbytesinput|plaintext","hashes":["0x...."]}; applied in addition to any S3 files (an address is filtered if it appears in any list) and fixed for the lifetime of the node; when set, configuring S3 files becomes optional | None
 `execution.transaction-filtering.disable-delayed-sequencing-filter` | disable delayed sequencing filter | None
 `execution.transaction-filtering.enable` | enable transaction filtering | None
 `execution.transaction-filtering.enable-ethcall-filter` | enable address filtering for eth_estimateGas and eth_call | None
 `execution.transaction-filtering.event-filter.path` | string                                               path to JSON file containing event filter rules | None
+`execution.transaction-filtering.filtered-tx-full-retry-interval` | duration                               how often to do a full re-execution when halted on a filtered delayed message | `30s`
 `execution.transaction-filtering.filtering-report-rpc-client.arg-log-limit` | uint                         limit size of arguments in log entries | `2048`
 `execution.transaction-filtering.filtering-report-rpc-client.connection-wait` | duration                   how long to wait for initial connection | None
 `execution.transaction-filtering.filtering-report-rpc-client.jwtsecret` | string                           path to file with jwtsecret for validation - ignored if url is self or self-auth | None
@@ -521,8 +531,10 @@ Option | Description | Default
 `init.download-poll` | duration                                                                            how long to wait between polling attempts | `1m0s`
 `init.empty` | init with empty state | None
 `init.force` | if true: in case database exists init code will be reexecuted and genesis block compared to database | None
+`init.genesis-json` | string                                                                               genesis document identical in format to a genesis json file; in a config file it may be a nested json object; quote large numbers as hex strings | None
 `init.genesis-json-file` | string                                                                          path for genesis json file | None
 `init.genesis-json-file-directory` | string                                                                directory path for genesis json files - will search for a file named by the chain ID | None
+`init.genesis-mode` | string                                                                               genesis source to use: "inline" (init.genesis-json), "file" (init.genesis-json-file) or "directory" (init.genesis-json-file-directory); empty selects the first configured of those, in that order | None
 `init.import-file` | string                                                                                path for json data to import | None
 `init.import-wasm` | if set, import the wasm directory when downloading a database (contains executable code - only use with highly trusted source) | None
 `init.latest` | string                                                                                     if set, searches for the latest snapshot of the given kind (accepted values: "archive" | "pruned" | "genesis") | None
@@ -555,8 +567,8 @@ Option | Description | Default
 `node.batch-poster.dangerous.allow-posting-first-batch-when-sequencer-message-count-mismatch` | allow posting the first batch even if sequence number doesn't match chain (useful after force-inclusion) | None
 `node.batch-poster.dangerous.fixed-gas-limit` | uint                                                       use this gas limit for batch posting instead of estimating it | None
 `node.batch-poster.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
-`node.batch-poster.data-poster.blob-tx-replacement-times` | durationSlice                                  comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `[5m0s,10m0s,30m0s,1h0m0s,4h0m0s,8h0m0s,16h0m0s,22h0m0s]`
-`node.batch-poster.data-poster.dangerous.clear-dbstorage` | clear database storage | None
+`node.batch-poster.data-poster.blob-tx-replacement-times` | durationSlice                                  comma-separated list of durations since first posting a blob transaction to attempt a replace-by-fee | `[5m0s,10m0s,15m0s,20m0s,25m0s,30m0s,35m0s,40m0s,45m0s,50m0s,55m0s,1h0m0s,2h0m0s,4h0m0s,8h0m0s,16h0m0s]`
+`node.batch-poster.data-poster.dangerous.clear-dbstorage` | clear dataposter storage (database and redis) on startup | None
 `node.batch-poster.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.batch-poster.data-poster.elapsed-time-base` | duration                                               unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
 `node.batch-poster.data-poster.elapsed-time-importance` | float                                            weight given to the units of time elapsed used for maximum fee cap calculation | `10`
@@ -575,7 +587,7 @@ Option | Description | Default
 `node.batch-poster.data-poster.max-mempool-weight` | uint                                                  the maximum number of weight (weight = min(1, tx.blobs)) to have queued in the mempool at once (0 = unlimited) | `18`
 `node.batch-poster.data-poster.max-queued-transactions` | int                                              the maximum number of unconfirmed transactions to track at once (0 = unlimited) | None
 `node.batch-poster.data-poster.max-tip-cap-gwei` | float                                                   the maximum tip cap to post transactions at | `1.2`
-`node.batch-poster.data-poster.min-blob-tx-tip-cap-gwei` | float                                           the minimum tip cap to post EIP-4844 blob carrying transactions at | `1`
+`node.batch-poster.data-poster.min-blob-tx-tip-cap-gwei` | float                                           the minimum tip cap to post EIP-4844 blob carrying transactions at | `0.001`
 `node.batch-poster.data-poster.min-tip-cap-gwei` | float                                                   the minimum tip cap to post transactions at | `0.05`
 `node.batch-poster.data-poster.nonce-rbf-soft-confs` | uint                                                the maximum probable reorg depth, used to determine when a transaction will no longer likely need replaced-by-fee | `1`
 `node.batch-poster.data-poster.redis-signer.dangerous.disable-signature-verification` | disable message signature verification | None
@@ -596,7 +608,7 @@ Option | Description | Default
 `node.batch-poster.extra-batch-gas` | uint                                                                 use this much more gas than estimation says is necessary to post batches | `50000`
 `node.batch-poster.gas-estimate-base-fee-multiple-bips` | uint                                             for gas estimation, use this multiple of the basefee (measured in basis points) as the max fee per gas | `15000`
 `node.batch-poster.gas-refunder-address` | string                                                          The gas refunder contract address (optional) | None
-`node.batch-poster.ignore-blob-price` | if the parent chain supports 4844 blobs and ignore-blob-price is true, post 4844 blobs even if it's not price efficient | None
+`node.batch-poster.ignore-blob-price` | if the parent chain supports 4844 blobs and ignore-blob-price is true, post 4844 blobs even if it's not price efficient | `true`
 `node.batch-poster.l1-block-bound` | string                                                                only post messages to batches when they're within the max future block/timestamp as of this L1 block tag ("safe", "finalized", "latest", or "ignore" to ignore this check) | None
 `node.batch-poster.l1-block-bound-bypass` | duration                                                       post batches even if not within the layer 1 future bounds if we're within this margin of the max delay | `1h0m0s`
 `node.batch-poster.max-4844-batch-size` | int                                                              maximum estimated compressed 4844 blob enabled batch size | None
@@ -604,7 +616,7 @@ Option | Description | Default
 `node.batch-poster.max-delay` | duration                                                                   maximum batch posting delay | `1h0m0s`
 `node.batch-poster.max-empty-batch-delay` | duration                                                       maximum empty batch posting delay, batch poster will only be able to post an empty batch if this time period building a batch has passed; if 0, disable automatic empty batch posting | `72h0m0s`
 `node.batch-poster.max-size` | int                                                                         DEPRECATED: use node.batch-poster.max-calldata-batch-size instead | None
-`node.batch-poster.parent-chain-eip7623` | string                                                          if parent chain uses EIP7623 ("yes", "no", "auto") | `auto`
+`node.batch-poster.parent-chain-eip7623` | string                                                          DEPRECATED: if parent chain uses EIP7623 ("yes", "no", "auto"); the dynamic price comparison this feeds is deprecated, use ignore-blob-price instead | `auto`
 `node.batch-poster.parent-chain-wallet.account` | string                                                   account to use | `is first account in keystore`
 `node.batch-poster.parent-chain-wallet.only-create-key` | if true, creates new key then exits | None
 `node.batch-poster.parent-chain-wallet.password` | string                                                  wallet passphrase | `PASSWORD_NOT_SET`
@@ -635,13 +647,15 @@ Option | Description | Default
 `node.block-metadata-fetcher.source.url` | string                                                          url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
 `node.block-metadata-fetcher.source.websocket-message-size-limit` | int                                    websocket message size limit used by the RPC client. 0 means no limit | `268435456`
 `node.block-metadata-fetcher.sync-interval` | duration                                                     minimum time between blockMetadata requests | `1m0s`
+`node.block-recordings-pruner.enable` | enable pruning of chain-tip block recordings below the latest confirmed message | `true`
+`node.block-recordings-pruner.min-prune-interval` | duration                                               minimum time between runs of the block recordings pruner | `1m0s`
 `node.block-validator.batch-cache-limit` | uint32                                                          limit number of old batches to keep in block-validator | `20`
 `node.block-validator.block-inputs-file-path` | string                                                     directory to write block validation inputs files | `./target/validation_inputs`
 `node.block-validator.current-module-root` | string                                                        current wasm module root ('current' read from chain, 'latest' from machines/latest dir, or provide hash) | `current`
 `node.block-validator.dangerous.reset-block-validation` | resets block-by-block validation, starting again at genesis | None
-`node.block-validator.dangerous.revalidation.end-block` | uint                                             end revalidation at this block | None
+`node.block-validator.dangerous.revalidation.end-batch` | uint                                             batch number to end revalidation at (batch number, not block number); 0 keeps validating without stopping | None
 `node.block-validator.dangerous.revalidation.quit-after-revalidation` | exit node after revalidation is done | None
-`node.block-validator.dangerous.revalidation.start-block` | uint                                           start revalidation from this block | None
+`node.block-validator.dangerous.revalidation.start-batch` | uint                                           batch number to start revalidation from (batch number, not block number); 0 disables revalidation | None
 `node.block-validator.enable` | enable block-by-block validation | None
 `node.block-validator.failure-is-fatal` | failing a validation is treated as a fatal error | `true`
 `node.block-validator.forward-blocks` | uint                                                               prepare entries for up to that many blocks ahead of validation (stores batch-copy per block) | `128`
@@ -798,7 +812,6 @@ Option | Description | Default
 `node.data-availability.rpc-aggregator.rpc-client.rpc.url` | string                                        url of server, use self for loopback websocket, self-auth for loopback with authentication | `self-auth`
 `node.data-availability.rpc-aggregator.rpc-client.rpc.websocket-message-size-limit` | int                  websocket message size limit used by the RPC client. 0 means no limit | `268435456`
 `node.delayed-sequencer.enable` | enable delayed sequencer | None
-`node.delayed-sequencer.filtered-tx-full-retry-interval` | duration                                        how often to do a full re-execution when halted on a filtered delayed message | `30s`
 `node.delayed-sequencer.finalize-distance` | int                                                           how many blocks in the past L1 block is considered final (ignored when using Merge finality) | `20`
 `node.delayed-sequencer.require-full-finality` | whether to wait for full finality before sequencing delayed messages | None
 `node.delayed-sequencer.rescan-interval` | duration                                                        frequency to rescan for new delayed messages (the parent chain reader's poll-interval config is more important than this) | `1s`
@@ -817,6 +830,9 @@ Option | Description | Default
 `node.feed.input.reconnect-maximum-backoff` | duration                                                     maximum duration to wait before reconnect | `1m4s`
 `node.feed.input.require-chain-id` | require chain id to be present on connect | None
 `node.feed.input.require-feed-version` | require feed version to be present on connect | None
+`node.feed.input.rest.enable` | backfill feed gaps from the feed's REST chunk API, and advertise that capability when connecting to the feed | None
+`node.feed.input.rest.timeout` | duration                                                                  per-request timeout for feed backfill requests | `10s`
+`node.feed.input.rest.url` | string                                                                        base URL of the REST API serving the feed backlog, e.g. https://archive.example:9642; defaults to the host of the first feed url | None
 `node.feed.input.secondary-url` | strings                                                                  list of secondary URLs of sequencer feed source. Would be started in the order they appear in the list when primary feeds fails | None
 `node.feed.input.timeout` | duration                                                                       duration to wait before timing out connection to sequencer feed | `20s`
 `node.feed.input.url` | strings                                                                            list of primary URLs of sequencer feed source | None
@@ -865,6 +881,15 @@ Option | Description | Default
 `node.maintenance.lock.lockout-duration` | duration                                                        how long lock is held | `1m0s`
 `node.maintenance.lock.my-id` | string                                                                     this node's id prefix when acquiring the lock (optional) | None
 `node.maintenance.lock.refresh-duration` | duration                                                        how long between consecutive calls to redis | `10s`
+`node.mel-rpc-client.arg-log-limit` | uint                                                                 limit size of arguments in log entries | `2048`
+`node.mel-rpc-client.connection-wait` | duration                                                           how long to wait for initial connection | None
+`node.mel-rpc-client.jwtsecret` | string                                                                   path to file with jwtsecret for validation - ignored if url is self or self-auth | None
+`node.mel-rpc-client.retries` | uint                                                                       number of retries in case of failure(0 mean one attempt) | `3`
+`node.mel-rpc-client.retry-delay` | duration                                                               delay between retries | None
+`node.mel-rpc-client.retry-errors` | string                                                                Errors matching this regular expression are automatically retried | `websocket: close.*|dial tcp .*|.*i/o timeout|.*connection reset by peer|.*connection refused`
+`node.mel-rpc-client.timeout` | duration                                                                   per-response timeout (0-disabled) | None
+`node.mel-rpc-client.url` | string                                                                         url of server, use self for loopback websocket, self-auth for loopback with authentication | None
+`node.mel-rpc-client.websocket-message-size-limit` | int                                                   websocket message size limit used by the RPC client. 0 means no limit | `268435456`
 `node.message-extraction.blocks-to-prefetch` | uint                                                        the number of blocks to prefetch relevant logs from. Recommend using max allowed range for eth_getLogs rpc query | `499`
 `node.message-extraction.enable` | enable message extraction service | None
 `node.message-extraction.log-extraction-status-frequency-blocks` | uint                                    frequency of logging message extraction status in terms of number of blocks processed | `100`
@@ -918,7 +943,7 @@ Option | Description | Default
 `node.staker.dangerous.ignore-rollup-wasm-module-root` | DANGEROUS! make assertions even when the wasm module root is wrong | None
 `node.staker.dangerous.without-block-validator` | DANGEROUS! allows running an L1 validator without a block validator | None
 `node.staker.data-poster.allocate-mempool-balance` | if true, don't put transactions in the mempool that spend a total greater than the batch poster's balance | `true`
-`node.staker.data-poster.dangerous.clear-dbstorage` | clear database storage | None
+`node.staker.data-poster.dangerous.clear-dbstorage` | clear dataposter storage (database and redis) on startup | None
 `node.staker.data-poster.disable-new-tx` | disable posting new transactions, data poster will still keep confirming existing batches | None
 `node.staker.data-poster.elapsed-time-base` | duration                                                     unit to measure the time elapsed since creation of transaction used for maximum fee cap calculation | `10m0s`
 `node.staker.data-poster.elapsed-time-importance` | float                                                  weight given to the units of time elapsed used for maximum fee cap calculation | `10`
@@ -1001,19 +1026,19 @@ Option | Description | Default
 `persistent.log-dir` | string                                                                              directory to store log file | None
 `persistent.pebble.experimental.block-size` | int                                                          target uncompressed size in bytes of each table block | `4096`
 `persistent.pebble.experimental.bytes-per-sync` | int                                                      number of bytes to write to a SSTable before calling Sync on it in the background | `524288`
-`persistent.pebble.experimental.compaction-debt-concurrency` | uint                                        controls the threshold of compaction debt at which additional compaction concurrency slots are added. For every multiple of this value in compaction debt bytes, an additional concurrent compaction is added. This works "on top" of l0-compaction-concurrency, so the higher of the count of compaction concurrency slots as determined by the two options is chosen. | `1073741824`
+`persistent.pebble.experimental.compaction-debt-concurrency` | uint                                        controls the threshold of compaction debt at which additional compaction concurrency slots are added. For every multiple of this value in compaction debt bytes, an additional concurrent compaction is added. This works "on top" of l0-compaction-concurrency, so the higher of the count of compaction concurrency slots as determined by the two options is chosen. | `268435456`
 `persistent.pebble.experimental.disable-automatic-compactions` | disables automatic compactions | None
 `persistent.pebble.experimental.force-writer-parallelism` | force parallelism in the sstable Writer for the metamorphic tests. Even with the MaxWriterConcurrency option set, pebble only enables parallelism in the sstable Writer if there is enough CPU available, and this option bypasses that. | None
 `persistent.pebble.experimental.index-block-size` | int                                                    target uncompressed size in bytes of each index block. When the index block size is larger than this target, two-level indexes are automatically enabled. Setting this option to a large value (such as 2147483647) disables the automatic creation of two-level indexes. | `4096`
 `persistent.pebble.experimental.l-base-max-bytes` | int                                                    The maximum number of bytes for LBase. The base level is the level which L0 is compacted into. The base level is determined dynamically based on the existing data in the LSM. The maximum number of bytes for other levels is computed dynamically based on the base level's maximum size. When the maximum number of bytes for a level is exceeded, compaction is requested. | `67108864`
-`persistent.pebble.experimental.l0-compaction-concurrency` | int                                           threshold of L0 read-amplification at which compaction concurrency is enabled (if compaction-debt-concurrency was not already exceeded). Every multiple of this value enables another concurrent compaction up to max-concurrent-compactions. | `10`
+`persistent.pebble.experimental.l0-compaction-concurrency` | int                                           threshold of L0 read-amplification at which compaction concurrency is enabled (if compaction-debt-concurrency was not already exceeded). Every multiple of this value enables another concurrent compaction up to max-concurrent-compactions. | `1`
 `persistent.pebble.experimental.l0-compaction-file-threshold` | int                                        count of L0 files necessary to trigger an L0 compaction | `500`
 `persistent.pebble.experimental.l0-compaction-threshold` | int                                             amount of L0 read-amplification necessary to trigger an L0 compaction | `2`
 `persistent.pebble.experimental.l0-stop-writes-threshold` | int                                            hard limit on L0 read-amplification, computed as the number of L0 sublevels. Writes are stopped when this threshold is reached | `12`
 `persistent.pebble.experimental.max-writer-concurrency` | int                                              maximum number of compression workers the compression queue is allowed to use. If max-writer-concurrency > 0, then the Writer will use parallelism, to compress and write blocks to disk. Otherwise, the writer will compress and write blocks to disk synchronously. | None
-`persistent.pebble.experimental.mem-table-stop-writes-threshold` | int                                     hard limit on the number of queued of MemTables | `4`
+`persistent.pebble.experimental.mem-table-number` | int                                                    number used to calculate MemTable size, half of hard limit on the number of queued MemTables | `4`
 `persistent.pebble.experimental.read-compaction-rate` | AllowedSeeks                                       controls the frequency of read triggered compactions by adjusting AllowedSeeks in manifest.FileMetadata: AllowedSeeks = FileSize / ReadCompactionRate | `16000`
-`persistent.pebble.experimental.read-sampling-multiplier` | int                                            a multiplier for the readSamplingPeriod in iterator.maybeSampleRead() to control the frequency of read sampling to trigger a read triggered compaction. A value of -1 prevents sampling and disables read triggered compactions. Geth default is -1. The pebble default is 1 << 4. which gets multiplied with a constant of 1 << 16 to yield 1 << 20 (1MB). | `-1`
+`persistent.pebble.experimental.read-sampling-multiplier` | int                                            a multiplier for the readSamplingPeriod in iterator.maybeSampleRead() to control the frequency of read sampling to trigger a read triggered compaction. A value of -1 prevents sampling and disables read triggered compactions. Default is -1 for hash scheme, 1 for path scheme. | `-2`
 `persistent.pebble.experimental.target-byte-deletion-rate` | int                                           rate (in bytes per second) at which sstable file deletions are limited to (under normal circumstances). | None
 `persistent.pebble.experimental.target-file-size` | int                                                    target file size for the level 0 | `2097152`
 `persistent.pebble.experimental.target-file-size-equal-levels` | if true same target-file-size will be uses for all levels, otherwise target size for layer n = 2 * target size for layer n - 1 | None
