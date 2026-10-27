@@ -126,12 +126,14 @@ Option | Description | Default
 `conf.dump` | print out currently active configuration file | None
 `conf.env-prefix` | string                                                  environment variables with given prefix will be loaded as configuration values | None
 `conf.file` | strings                                                       name of configuration file | None
+`conf.max-version` | string                                                 highest nitro version this configuration supports, as a semantic version (e.g. "v3.10.0"); a release build newer than this exits at startup (empty = no maximum) | None
+`conf.min-version` | string                                                 lowest nitro version this configuration supports, as a semantic version (e.g. "v3.9.0"); a release build older than this exits at startup (empty = no minimum) | None
 `conf.reload-interval` | duration                                           how often to reload configuration (0=disable periodic reloading) | None
-`conf.s3.access-key` | string                                               S3 access key | None
-`conf.s3.bucket` | string                                                   S3 bucket | None
-`conf.s3.object-key` | string                                               S3 object key | None
-`conf.s3.region` | string                                                   S3 region | None
-`conf.s3.secret-key` | string                                               S3 secret key | None
+`conf.s3.access-key` | string                                               S3 access key for fetching the node configuration file from S3 | None
+`conf.s3.bucket` | string                                                   S3 bucket containing the node configuration file | None
+`conf.s3.object-key` | string                                               S3 object key of the node configuration file (JSON format) | None
+`conf.s3.region` | string                                                   S3 region of the bucket containing the node configuration file | None
+`conf.s3.secret-key` | string                                               S3 secret key for fetching the node configuration file from S3 (triggers S3 config loading) | None
 `conf.string` | string                                                      configuration as JSON string | None
 `log-level` | string                                                        log level, valid values are CRIT, ERROR, WARN, INFO, DEBUG, TRACE | `INFO`
 `log-type` | string                                                         log type | `plaintext`
@@ -144,6 +146,9 @@ Option | Description | Default
 `node.feed.input.reconnect-maximum-backoff` | duration                      maximum duration to wait before reconnect | `1m4s`
 `node.feed.input.require-chain-id` | require chain id to be present on connect | None
 `node.feed.input.require-feed-version` | require feed version to be present on connect | None
+`node.feed.input.rest.enable` | backfill feed gaps from the feed's REST chunk API, and advertise that capability when connecting to the feed | None
+`node.feed.input.rest.timeout` | duration                                   per-request timeout for feed backfill requests | `10s`
+`node.feed.input.rest.url` | string                                         base URL of the REST API serving the feed backlog, e.g. https://archive.example:9642; defaults to the host of the first feed url | None
 `node.feed.input.secondary-url` | strings                                   list of secondary URLs of sequencer feed source. Would be started in the order they appear in the list when primary feeds fails | None
 `node.feed.input.timeout` | duration                                        duration to wait before timing out connection to sequencer feed | `20s`
 `node.feed.input.url` | strings                                             list of primary URLs of sequencer feed source | None
@@ -174,7 +179,7 @@ Option | Description | Default
 `node.feed.output.read-timeout` | duration                                  duration to wait before timing out reading data (i.e. pings) from clients | `1s`
 `node.feed.output.require-compression` | require clients to use compression | None
 `node.feed.output.require-version` | don't connect if client version not present | None
-`node.feed.output.signed` | sign broadcast messages | None
+`node.feed.output.signed` | sign broadcast messages with the batch poster wallet | None
 `node.feed.output.workers` | int                                            number of threads to reserve for HTTP to WS upgrade | `100`
 `node.feed.output.write-timeout` | duration                                 duration to wait before timing out writing data to clients | `2s`
 `pprof` | enable pprof | None

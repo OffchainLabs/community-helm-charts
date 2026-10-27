@@ -20,7 +20,7 @@ metadata:
 spec:
   containers:
   - name: sre-nitro-test-suite
-    image: public.ecr.aws/f6s7v9z5/offchain-labs/sre-nitro-test:v0.0.7
+    image: public.ecr.aws/f6s7v9z5/offchain-labs/sre-nitro-test:nitro-testing-0.3.1
     imagePullPolicy: Always
     {{- if .Values.ci.debug.enabled }}
     command: ["/bin/sh", "-c", "--"]

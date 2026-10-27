@@ -39,10 +39,11 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       terminationGracePeriodSeconds: {{ $mergedValues.terminationGracePeriodSeconds | default 60 }}
+      {{- $affinity := include "nitro.validator.affinity" (dict "root" $ "merged" $mergedValues) | trim }}
+      {{- if $affinity }}
       affinity:
-        {{- with $mergedValues.affinity }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+        {{- $affinity | nindent 8 }}
+      {{- end }}
       tolerations:
         {{- with $mergedValues.tolerations }}
         {{- toYaml . | nindent 8 }}

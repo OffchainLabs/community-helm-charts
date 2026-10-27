@@ -58,6 +58,12 @@ configmap:
       env-prefix: "NITROCI"
     chain:
       id: 421614
+    # Workaround for NIT-4951: chains with a pre-BoLD genesis (e.g. Arbitrum
+    # Sepolia) fail the genesis-assertion check on startup as of nitro-node
+    # v3.10.1-d7f07be, which CrashLoops the staker in CI. Disabling the check
+    # restores the prior behavior. Remove once the upstream fix lands.
+    init:
+      validate-genesis-assertion: false
     node:
       staker:
         enable: true

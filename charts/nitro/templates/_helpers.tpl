@@ -101,6 +101,12 @@ nitro args
 {{- fail (printf "configmap.data.conf.env-prefix '%s' conflicts with service name '%s'. This will cause Kubernetes service environment variables like %s_SERVICE_HOST to be interpreted as configuration keys. Use a different env-prefix or release name." $envPrefix $fullName (upper $fullName)) -}}
 {{- end -}}
 
+{{/* MALLOC_ARENA_MAX */}}
+{{- if and .Values.env.nitro.mallocArenaMax (get .Values.env.nitro.mallocArenaMax "enabled") -}}
+- name: MALLOC_ARENA_MAX
+  value: {{ .Values.env.nitro.mallocArenaMax.value | default 2 | quote }}
+{{- end }}
+
 {{/* Memory-based environment variables */}}
 {{- if and .Values.resources .Values.resources.limits .Values.resources.limits.memory .Values.env.nitro.goMemLimit.enabled -}}
 {{- $memory := .Values.resources.limits.memory -}}
@@ -111,9 +117,68 @@ nitro args
   {{- $valueMi = mulf $value 1024 -}}
 {{- else if eq $unit "Mi" -}}
   {{- $valueMi = $value -}}
-{{- end }}
+{{- end -}}
+
+{{/* Calculate non-Go memory subtraction if enabled */}}
+{{- $nonGoMiB := 0.0 -}}
+{{- if and .Values.env.nitro.goMemLimit.nonGoMemory (get .Values.env.nitro.goMemLimit.nonGoMemory "enabled") -}}
+
+  {{/* Read database-cache from configmap or use default */}}
+  {{- $databaseCache := float64 (.Values.env.nitro.goMemLimit.nonGoMemory.defaults.databaseCache | default 2048) -}}
+  {{- if and .Values.configmap.data.execution .Values.configmap.data.execution.caching -}}
+    {{- if hasKey .Values.configmap.data.execution.caching "database-cache" -}}
+      {{- $databaseCache = index .Values.configmap.data.execution.caching "database-cache" | float64 -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/* Pebble memtables = database-cache / 2 (derived, not directly configurable) */}}
+  {{- $memtables := divf $databaseCache 2.0 -}}
+
+  {{/* Read trie-clean-cache from configmap or use default */}}
+  {{- $trieCleanCache := float64 (.Values.env.nitro.goMemLimit.nonGoMemory.defaults.trieCleanCache | default 600) -}}
+  {{- if and .Values.configmap.data.execution .Values.configmap.data.execution.caching -}}
+    {{- if hasKey .Values.configmap.data.execution.caching "trie-clean-cache" -}}
+      {{- $trieCleanCache = index .Values.configmap.data.execution.caching "trie-clean-cache" | float64 -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/* Read snapshot-cache from configmap or use default */}}
+  {{- $snapshotCache := float64 (.Values.env.nitro.goMemLimit.nonGoMemory.defaults.snapshotCache | default 400) -}}
+  {{- if and .Values.configmap.data.execution .Values.configmap.data.execution.caching -}}
+    {{- if hasKey .Values.configmap.data.execution.caching "snapshot-cache" -}}
+      {{- $snapshotCache = index .Values.configmap.data.execution.caching "snapshot-cache" | float64 -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/* Read stylus-lru-cache-capacity from configmap or use default */}}
+  {{- $stylusLruCache := float64 (.Values.env.nitro.goMemLimit.nonGoMemory.defaults.stylusLruCache | default 256) -}}
+  {{- if and .Values.configmap.data.execution .Values.configmap.data.execution.caching -}}
+    {{- if hasKey .Values.configmap.data.execution.caching "stylus-lru-cache-capacity" -}}
+      {{- $stylusLruCache = index .Values.configmap.data.execution.caching "stylus-lru-cache-capacity" | float64 -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/* Malloc arena overhead: MALLOC_ARENA_MAX * arenaSize (default 64 MB per arena) */}}
+  {{- $arenaOverhead := 0.0 -}}
+  {{- if and .Values.env.nitro.mallocArenaMax (get .Values.env.nitro.mallocArenaMax "enabled") -}}
+    {{- $arenaCount := float64 (.Values.env.nitro.mallocArenaMax.value | default 2) -}}
+    {{- $arenaSize := float64 (.Values.env.nitro.goMemLimit.nonGoMemory.defaults.mallocArenaSize | default 64) -}}
+    {{- $arenaOverhead = mulf $arenaCount $arenaSize -}}
+  {{- end -}}
+
+  {{/* Total non-Go memory in MiB */}}
+  {{- $nonGoMiB = addf $databaseCache $memtables $trieCleanCache $snapshotCache $stylusLruCache $arenaOverhead -}}
+
+{{- end -}}
+
+{{/* GOMEMLIMIT = (memoryLimitMiB - nonGoMiB) * multiplier */}}
+{{/* When nonGoMemory is disabled, nonGoMiB is 0, so formula reduces to memoryLimitMiB * multiplier */}}
+{{- $goAvailable := subf $valueMi $nonGoMiB -}}
+{{- if le $goAvailable 0.0 -}}
+{{- fail (printf "non-Go memory (%dMiB) exceeds or equals container memory limit (%dMiB). Reduce cache sizes or increase memory limit." (int $nonGoMiB) (int $valueMi)) -}}
+{{- end -}}
 - name: GOMEMLIMIT
-  value: {{ printf "%dMiB" (int (mulf $valueMi ($.Values.env.nitro.goMemLimit.multiplier | default 0.9))) | quote }}
+  value: {{ printf "%dMiB" (int (mulf $goAvailable ($.Values.env.nitro.goMemLimit.multiplier | default 0.9))) | quote }}
 {{- end }}
 
 {{- if and .Values.resources .Values.resources.limits .Values.resources.limits.memory .Values.env.resourceMgmtMemFreeLimit.enabled -}}
@@ -145,10 +210,15 @@ nitro args
 {{- end }}
 
 {{/* CPU-based environment variables */}}
-{{- if .Values.env.nitro.goMaxProcs.enabled -}}
+{{- if and .Values.env.nitro.goMaxProcs.enabled .Values.env.nitro.goMaxProcs.value -}}
+{{/* Explicit override: pin GOMAXPROCS regardless of the CPU request/limit */}}
+- name: GOMAXPROCS
+  value: {{ .Values.env.nitro.goMaxProcs.value | quote }}
+{{- else if .Values.env.nitro.goMaxProcs.enabled -}}
 {{- $cpuRequest := 0.0 -}}
 {{- $cpuLimit := 0.0 -}}
 {{- $multiplier := $.Values.env.nitro.goMaxProcs.multiplier | default 2 -}}
+{{- $rounding := $.Values.env.nitro.goMaxProcs.rounding | default "ceil" -}}
 
 {{/* Get CPU request if set */}}
 {{- if and .Values.resources .Values.resources.requests .Values.resources.requests.cpu -}}
@@ -183,12 +253,18 @@ nitro args
 {{- if or (gt $cpuRequest 0.0) (gt $cpuLimit 0.0) -}}
   {{/* Use the higher value between CPU request*multiplier and CPU limit */}}
   {{- $maxProcs := 0 -}}
+  {{- $rawProcs := 0.0 -}}
   {{- if gt $cpuRequest $cpuLimit -}}
-    {{- $maxProcs = ceil $cpuRequest | int -}}
+    {{- $rawProcs = $cpuRequest -}}
   {{- else if gt $cpuLimit 0.0 -}}
-    {{- $maxProcs = ceil $cpuLimit | int -}}
+    {{- $rawProcs = $cpuLimit -}}
   {{- else if gt $cpuRequest 0.0 -}}
-    {{- $maxProcs = ceil $cpuRequest | int -}}
+    {{- $rawProcs = $cpuRequest -}}
+  {{- end -}}
+  {{- if eq $rounding "floor" -}}
+    {{- $maxProcs = floor $rawProcs | int -}}
+  {{- else -}}
+    {{- $maxProcs = ceil $rawProcs | int -}}
   {{- end -}}
 
   {{/* Ensure GOMAXPROCS is at least 1 */}}
@@ -218,10 +294,15 @@ nitro args
 {{- end }}
 
 {{/* CPU-based environment variables */}}
-{{- if .Values.env.splitvalidator.goMaxProcs.enabled -}}
+{{- if and .Values.env.splitvalidator.goMaxProcs.enabled .Values.env.splitvalidator.goMaxProcs.value -}}
+{{/* Explicit override: pin GOMAXPROCS regardless of the CPU request/limit */}}
+- name: GOMAXPROCS
+  value: {{ .Values.env.splitvalidator.goMaxProcs.value | quote }}
+{{- else if .Values.env.splitvalidator.goMaxProcs.enabled -}}
 {{- $cpuRequest := 0.0 -}}
 {{- $cpuLimit := 0.0 -}}
 {{- $multiplier := $.Values.env.splitvalidator.goMaxProcs.multiplier | default 2 -}}
+{{- $rounding := $.Values.env.splitvalidator.goMaxProcs.rounding | default "ceil" -}}
 
 {{/* Get CPU request if set */}}
 {{- if and .Values.validator.splitvalidator.global.resources .Values.validator.splitvalidator.global.resources.requests .Values.validator.splitvalidator.global.resources.requests.cpu -}}
@@ -256,12 +337,18 @@ nitro args
 {{- if or (gt $cpuRequest 0.0) (gt $cpuLimit 0.0) -}}
   {{/* Use the higher value between CPU request*multiplier and CPU limit */}}
   {{- $maxProcs := 0 -}}
+  {{- $rawProcs := 0.0 -}}
   {{- if gt $cpuRequest $cpuLimit -}}
-    {{- $maxProcs = ceil $cpuRequest | int -}}
+    {{- $rawProcs = $cpuRequest -}}
   {{- else if gt $cpuLimit 0.0 -}}
-    {{- $maxProcs = ceil $cpuLimit | int -}}
+    {{- $rawProcs = $cpuLimit -}}
   {{- else if gt $cpuRequest 0.0 -}}
-    {{- $maxProcs = ceil $cpuRequest | int -}}
+    {{- $rawProcs = $cpuRequest -}}
+  {{- end -}}
+  {{- if eq $rounding "floor" -}}
+    {{- $maxProcs = floor $rawProcs | int -}}
+  {{- else -}}
+    {{- $maxProcs = ceil $rawProcs | int -}}
   {{- end -}}
 
   {{/* Ensure GOMAXPROCS is at least 1 */}}
@@ -313,9 +400,16 @@ Currently primarily used for stateless validator configuration
 
     {{- /* Create the validation server config list in the configmap */ -}}
     {{- $valconfig := dict "configmap" (dict "data" (dict "node" (dict "block-validator" (dict "validation-server-configs-list" (toJson $deployments | replace "\\" "")))) ) -}}
-    
+
     {{- /* Merge the new validation config into the original values */ -}}
     {{- $values = merge $values $valconfig -}}
+  {{- end -}}
+
+  {{- /* Auto-inject event-filter path when eventFilter.enabled is true */ -}}
+  {{- if .Values.eventFilter.enabled -}}
+    {{- $filterPath := printf "%s/%s" (trimSuffix "/" .Values.eventFilter.mountPath) .Values.eventFilter.fileName -}}
+    {{- $efConfig := dict "configmap" (dict "data" (dict "execution" (dict "transaction-filtering" (dict "event-filter" (dict "path" $filterPath))))) -}}
+    {{- $values = merge $values $efConfig -}}
   {{- end -}}
 {{- end -}}
 
@@ -362,4 +456,95 @@ Currently primarily used for stateless validator configuration
 {{- end -}}
 
 {{- define "nitro.lifecycle" -}}
+{{- end -}}
+
+{{/*
+Render the pod affinity object that co-locates validator pods with the
+nitro statefulset pods.
+
+The defaults (topology.kubernetes.io/zone, kubernetes.io/hostname) are the
+standard Kubernetes well-known labels — populated identically by AWS, GCP,
+Azure, and other CNCF-conformant providers. Override the topology keys for
+vendor-specific labels; set to empty to disable that term.
+
+Accepts a dict with `root` (the Helm root context for selectorLabels) and
+`stsAffinity` (the user config block). Emits only the `podAffinity`
+mapping when stsAffinity.enabled is true; otherwise emits nothing. The
+caller is responsible for merging this with any user-provided affinity.
+*/}}
+{{- define "nitro.validator.stsAffinity.podAffinity" -}}
+{{- $root := .root -}}
+{{- $sts := .stsAffinity -}}
+{{- if not $sts.enabled -}}
+{{- else -}}
+{{- $zoneKey := $sts.zoneTopologyKey -}}
+{{- $nodeKey := $sts.nodeTopologyKey -}}
+{{- $weight := $sts.weight | default 100 -}}
+{{- $mode := $sts.zoneMode | default "preferred" -}}
+{{- if not (or (eq $mode "required") (eq $mode "preferred")) -}}
+  {{- fail (printf "validator.splitvalidator.global.stsAffinity.zoneMode must be 'required' or 'preferred', got %q" $mode) -}}
+{{- end -}}
+{{- $selectorLabels := fromYaml (include "nitro.selectorLabels" $root) -}}
+{{- $matchLabels := merge (dict "function" "nitro") $selectorLabels -}}
+{{- $required := list -}}
+{{- $preferred := list -}}
+{{- if $zoneKey -}}
+  {{- $term := dict "labelSelector" (dict "matchLabels" $matchLabels) "topologyKey" $zoneKey -}}
+  {{- if eq $mode "required" -}}
+    {{- $required = append $required $term -}}
+  {{- else -}}
+    {{- $preferred = append $preferred (dict "weight" $weight "podAffinityTerm" $term) -}}
+  {{- end -}}
+{{- end -}}
+{{- if $nodeKey -}}
+  {{- $term := dict "labelSelector" (dict "matchLabels" $matchLabels) "topologyKey" $nodeKey -}}
+  {{- $preferred = append $preferred (dict "weight" $weight "podAffinityTerm" $term) -}}
+{{- end -}}
+{{- $podAff := dict -}}
+{{- if $required -}}
+  {{- $podAff = set $podAff "requiredDuringSchedulingIgnoredDuringExecution" $required -}}
+{{- end -}}
+{{- if $preferred -}}
+  {{- $podAff = set $podAff "preferredDuringSchedulingIgnoredDuringExecution" $preferred -}}
+{{- end -}}
+{{- if $podAff -}}
+podAffinity:
+{{ toYaml $podAff | indent 2 }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render the full affinity object for a validator deployment, merging the
+stsAffinity podAffinity with any user-provided affinity. User-provided
+podAffinity terms are preserved alongside the generated ones.
+
+Accepts a dict with `root` (Helm root context) and `merged` (the merged
+global+deployment values).
+*/}}
+{{- define "nitro.validator.affinity" -}}
+{{- $root := .root -}}
+{{- $merged := .merged -}}
+{{- $userAffinity := $merged.affinity | default dict -}}
+{{- $sts := $merged.stsAffinity | default dict -}}
+{{- $generated := fromYaml (include "nitro.validator.stsAffinity.podAffinity" (dict "root" $root "stsAffinity" $sts)) -}}
+{{- if and (not $generated) (not $userAffinity) -}}
+{{- else if not $generated -}}
+{{ toYaml $userAffinity }}
+{{- else -}}
+  {{- $result := deepCopy $userAffinity -}}
+  {{- $existingPodAff := $result.podAffinity | default dict -}}
+  {{- $generatedPodAff := $generated.podAffinity -}}
+  {{- $required := concat ($existingPodAff.requiredDuringSchedulingIgnoredDuringExecution | default list) ($generatedPodAff.requiredDuringSchedulingIgnoredDuringExecution | default list) -}}
+  {{- $preferred := concat ($existingPodAff.preferredDuringSchedulingIgnoredDuringExecution | default list) ($generatedPodAff.preferredDuringSchedulingIgnoredDuringExecution | default list) -}}
+  {{- $merged := dict -}}
+  {{- if $required -}}
+    {{- $merged = set $merged "requiredDuringSchedulingIgnoredDuringExecution" $required -}}
+  {{- end -}}
+  {{- if $preferred -}}
+    {{- $merged = set $merged "preferredDuringSchedulingIgnoredDuringExecution" $preferred -}}
+  {{- end -}}
+  {{- $_ := set $result "podAffinity" $merged -}}
+{{ toYaml $result }}
+{{- end -}}
 {{- end -}}

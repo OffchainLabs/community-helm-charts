@@ -72,7 +72,7 @@ spec:
           command: {{ .Values.commandOverride.command | toJson }}
           args: {{ .Values.commandOverride.args | toJson }}
           {{- else }}
-          command: [/usr/local/bin/daserver]
+          command: [/usr/local/bin/anytrustserver]
           args:
             {{- if .Values.configmap.data.metrics}}
             - --metrics

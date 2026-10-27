@@ -53,10 +53,22 @@ updateStrategy:
 ## @param env.splitvalidator.goMemLimit.multiplier The multiplier of available memory to use for the split validator
 ## @param env.splitvalidator.goMaxProcs.enabled Enable setting GOMAXPROCS for the split validator
 ## @param env.splitvalidator.goMaxProcs.multiplier The multiplier to use for CPU request (default 2)
+## @param env.splitvalidator.goMaxProcs.value Explicit GOMAXPROCS for the split validator; when set (and enabled), overrides the CPU-based calculation
+## @param env.splitvalidator.goMaxProcs.rounding Rounding mode for the split validator GOMAXPROCS calculation: "ceil" (default) or "floor"
 ## @param env.nitro.goMemLimit.enabled Enable setting the garbage cleanup limit in Go for nitro
 ## @param env.nitro.goMemLimit.multiplier The multiplier of available memory to use for nitro
+## @param env.nitro.goMemLimit.nonGoMemory.enabled Enable non-Go memory subtraction from GOMEMLIMIT calculation
+## @param env.nitro.goMemLimit.nonGoMemory.defaults.databaseCache Default Pebble block cache size in MiB (CGO)
+## @param env.nitro.goMemLimit.nonGoMemory.defaults.trieCleanCache Default trie-clean-cache size in MiB (fastcache/mmap)
+## @param env.nitro.goMemLimit.nonGoMemory.defaults.snapshotCache Default snapshot-cache size in MiB (fastcache/mmap)
+## @param env.nitro.goMemLimit.nonGoMemory.defaults.stylusLruCache Default stylus-lru-cache size in MiB (Rust/jemalloc)
+## @param env.nitro.goMemLimit.nonGoMemory.defaults.mallocArenaSize Default glibc malloc arena size in MiB
+## @param env.nitro.mallocArenaMax.enabled Enable setting MALLOC_ARENA_MAX to limit glibc arena count
+## @param env.nitro.mallocArenaMax.value Value for MALLOC_ARENA_MAX
 ## @param env.nitro.goMaxProcs.enabled Enable setting GOMAXPROCS for nitro
 ## @param env.nitro.goMaxProcs.multiplier The multiplier to use for CPU request (default 2)
+## @param env.nitro.goMaxProcs.value Explicit GOMAXPROCS for nitro; when set (and enabled), overrides the CPU-based calculation
+## @param env.nitro.goMaxProcs.rounding Rounding mode for the nitro GOMAXPROCS calculation: "ceil" (default) or "floor"
 ## @param env.resourceMgmtMemFreeLimit.enabled Enable nitro resource management
 ## @param env.resourceMgmtMemFreeLimit.multiplier The multiplier of available memory to use
 ## @param env.blockValidatorMemFreeLimit.enabled Enable block validator memory management
@@ -69,13 +81,28 @@ env:
     goMaxProcs:
       enabled: true
       multiplier: 2
+      value: ""
+      rounding: ceil
   nitro:
     goMemLimit:
       enabled: true
       multiplier: 0.9
+      nonGoMemory:
+        enabled: true
+        defaults:
+          databaseCache: 2048
+          trieCleanCache: 600
+          snapshotCache: 400
+          stylusLruCache: 256
+          mallocArenaSize: 64
+    mallocArenaMax:
+      enabled: true
+      value: 2
     goMaxProcs:
       enabled: false
       multiplier: 2
+      value: ""
+      rounding: ceil
   resourceMgmtMemFreeLimit:
     enabled: false
     multiplier: 0.05
@@ -86,22 +113,26 @@ env:
 ## @param persistence.enabled Enable persistence
 ## @param persistence.size Size of the persistent volume claim
 ## @param persistence.storageClassName [string, nullable] Storage class of the persistent volume claim
+## @param persistence.volumeAttributesClassName [string, nullable] Volume attributes class to apply to the persistent volume claim
 ## @param persistence.accessModes Access modes of the persistent volume claim
 persistence:
   enabled: true
   size: 500Gi
   storageClassName: null
+  volumeAttributesClassName: null
   accessModes:
     - ReadWriteOnce
 
 ## @param blobPersistence.enabled Enable blob persistence
 ## @param blobPersistence.size Size of the blob persistent volume claim
 ## @param blobPersistence.storageClassName [string, nullable] Storage class of the blob persistent volume claim
+## @param blobPersistence.volumeAttributesClassName [string, nullable] Volume attributes class to apply to the blob persistent volume claim
 ## @param blobPersistence.accessModes Access modes of the blob persistent volume claim
 blobPersistence:
   enabled: false
   size: 100Gi
   storageClassName: null
+  volumeAttributesClassName: null
   accessModes:
     - ReadWriteOnce
 
@@ -212,10 +243,11 @@ service:
   loadBalancerClass: null
   loadBalancerSourceRanges: null
 
-## @param resources Resources for the container
+## @extra resources Resources for the container
 resources:
-  ## @param resources.requests Resource requests for the container
+  ## @extra resources.requests Resource requests for the container
   requests:
+    ## @param resources.requests.ephemeral-storage Ephemeral storage request for the container
     ephemeral-storage: 100Mi
 
 
@@ -248,6 +280,16 @@ wallet:
 
 ## @param enableAutoConfigProcessing Enable intelligent automatic configuration processing
 enableAutoConfigProcessing: true
+
+## @param eventFilter.enabled Render an event-filter ConfigMap and wire it into the pod. Also auto-injects `execution.transaction-filtering.event-filter.path`; listing that key in `configmap.removeKeys` will strip the path from the rendered config even though the volume is still mounted.
+## @param eventFilter.rules Inline rules list, serialized to JSON as `{"rules": [...]}` and written to the ConfigMap. Schema is defined by Nitro.
+## @param eventFilter.mountPath Path inside the container where the rules file is mounted
+## @param eventFilter.fileName File name of the rules JSON inside the mount
+eventFilter:
+  enabled: false
+  rules: []
+  mountPath: /etc/nitro/event-filter
+  fileName: event-filter.json
 
 configmap:
   ## @param configmap.enabled Enable a configmap for the nitro container
@@ -500,6 +542,18 @@ validator:
 
       ## @param validator.splitvalidator.global.priorityClassName Priority class name for the stateless validator pod
       priorityClassName: ""
+
+      stsAffinity:
+        ## @param validator.splitvalidator.global.stsAffinity.enabled Co-locate validator pods with the nitro statefulset pods. The statefulset is the anchor (its PVC pins it to one zone); validator pods follow it to reduce cross-AZ traffic and latency.
+        enabled: false
+        ## @param validator.splitvalidator.global.stsAffinity.zoneTopologyKey Topology key for the zone-level same-zone rule. Default is the standard Kubernetes well-known label, which is populated by AWS, GCP, Azure, and other CNCF-conformant providers. Override for vendor-specific labels; set to empty string to disable zone affinity.
+        zoneTopologyKey: topology.kubernetes.io/zone
+        ## @param validator.splitvalidator.global.stsAffinity.nodeTopologyKey Topology key for the node-level same-node preference. Default is the standard Kubernetes well-known label. Override for vendor-specific labels; set to empty string to disable node affinity.
+        nodeTopologyKey: kubernetes.io/hostname
+        ## @param validator.splitvalidator.global.stsAffinity.zoneMode 'preferred' (default) favors same-zone scheduling but allows fallback to other zones if the preferred zone is unavailable. 'required' enforces same-zone strictly — validator pods will stay Pending on first install until the statefulset pod is scheduled (Helm creates Deployments before StatefulSets), and on disruption events validator pods may remain Pending if no capacity is available in the statefulset's zone.
+        zoneMode: preferred
+        ## @param validator.splitvalidator.global.stsAffinity.weight Weight (1-100) for preferred affinity rules (same-node preference, and same-zone preference when zoneMode is 'preferred').
+        weight: 100
 
 ## @skip ci
 ci:

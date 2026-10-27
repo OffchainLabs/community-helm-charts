@@ -1,0 +1,136 @@
+name: Release Nitro Dashboards
+
+# push-chart.yaml creates nitro-dashboards-* tags with the workflow GITHUB_TOKEN,
+# and GitHub does not fire push events for refs pushed with that token. The
+# workflow_run trigger covers the normal merge flow; the tag trigger covers
+# manually pushed tags and workflow_dispatch covers backfills/re-releases.
+on:
+  push:
+    tags:
+      - "nitro-dashboards-*"
+  workflow_run:
+    workflows: ["Build & Push Updated Charts (PROD)"]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing nitro-dashboards-* tag to (re)create the release for"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-dashboards
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tag
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          proceed=true
+          case "$EVENT_NAME" in
+            push)
+              tag="$GITHUB_REF_NAME"
+              ;;
+            workflow_dispatch)
+              tag="$INPUT_TAG"
+              if [[ "$tag" != nitro-dashboards-* ]]; then
+                echo "::error::Tag '${tag}' does not match nitro-dashboards-*"
+                exit 1
+              fi
+              ;;
+            workflow_run)
+              version=$(git show "${RUN_HEAD_SHA}:charts/nitro-dashboards/Chart.yaml" 2>/dev/null | grep -m1 '^version:' | awk '{print $2}' || true)
+              tag="nitro-dashboards-${version}"
+              if [[ -z "$version" ]]; then
+                echo "charts/nitro-dashboards/Chart.yaml not present at ${RUN_HEAD_SHA}; nothing to release"
+                proceed=false
+              elif [[ "$(git rev-parse -q --verify "refs/tags/${tag}^{commit}" || true)" != "$RUN_HEAD_SHA" ]]; then
+                echo "Tag ${tag} does not point at ${RUN_HEAD_SHA}; nitro-dashboards was not updated in this push"
+                proceed=false
+              fi
+              ;;
+          esac
+          if [[ "$proceed" == "true" ]] && ! git rev-parse -q --verify "refs/tags/${tag}^{commit}" >/dev/null; then
+            echo "::error::Tag ${tag} not found"
+            exit 1
+          fi
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "proceed=${proceed}" >> "$GITHUB_OUTPUT"
+
+      - name: Check out tag
+        if: steps.resolve.outputs.proceed == 'true'
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
+        run: git checkout --quiet "refs/tags/${TAG}"
+
+      - name: Build release assets
+        if: steps.resolve.outputs.proceed == 'true'
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
+        run: |
+          version="${TAG#nitro-dashboards-}"
+          mkdir -p release-assets
+          cp charts/nitro-dashboards/dashboards/*.json release-assets/
+          (cd charts/nitro-dashboards/dashboards && tar -czf "${GITHUB_WORKSPACE}/release-assets/nitro-dashboards-${version}.tar.gz" ./*.json)
+
+      - name: Build release notes
+        if: steps.resolve.outputs.proceed == 'true'
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
+        run: |
+          manifest=charts/nitro-dashboards/manifest.json
+          version="${TAG#nitro-dashboards-}"
+          {
+            echo "Community Grafana dashboards for Arbitrum Nitro, version \`${version}\`."
+            echo
+            if [[ -f "$manifest" ]]; then
+              source_commit=$(jq -r '.sourceCommit // empty' "$manifest")
+              if [[ -n "$source_commit" ]]; then
+                echo "Rendered from [OffchainLabs/ocl-dashboards@${source_commit:0:7}](https://github.com/OffchainLabs/ocl-dashboards/commit/${source_commit})."
+                echo
+              fi
+              echo "| UID | Title | Description |"
+              echo "|---|---|---|"
+              jq -r '.dashboards[] | "| `\(.uid)` | \(.title) | \(.description // "") |"' "$manifest"
+              echo
+            fi
+            echo "Import the attached JSON files into Grafana via **Dashboards → New → Import** (or grab the tarball of all of them), or install the [\`nitro-dashboards\` Helm chart](https://github.com/${GITHUB_REPOSITORY}/tree/${TAG}/charts/nitro-dashboards) to provision them through a Grafana dashboard sidecar."
+          } > release-notes.md
+          cat release-notes.md
+
+      # push-chart.yaml deletes and recreates tags, so replace any existing
+      # release (including drafts orphaned by tag deletion) instead of failing
+      - name: Create or update release
+        if: steps.resolve.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.resolve.outputs.tag }}
+        run: |
+          version="${TAG#nitro-dashboards-}"
+          gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate \
+            --jq ".[] | select(.tag_name == \"${TAG}\") | .id" |
+          while read -r release_id; do
+            echo "Deleting existing release ${release_id} for ${TAG}"
+            gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/${release_id}"
+          done
+          gh release create "$TAG" \
+            --title "Nitro Dashboards ${version}" \
+            --notes-file release-notes.md \
+            release-assets/*

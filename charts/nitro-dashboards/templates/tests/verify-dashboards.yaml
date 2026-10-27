@@ -1,0 +1,46 @@
+{{- if .Values.tests.grafanaUrl }}
+{{- $manifest := .Files.Get "manifest.json" | fromJson }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ printf "%s-test-grafana" (include "nitro-dashboards.fullname" .) | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- include "nitro-dashboards.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  restartPolicy: Never
+  containers:
+    - name: verify-dashboards
+      image: curlimages/curl:8.11.1
+      env:
+        - name: GRAFANA_URL
+          value: {{ .Values.tests.grafanaUrl | quote }}
+        - name: DASHBOARD_UIDS
+          value: "{{ range $i, $d := $manifest.dashboards }}{{ if $i }} {{ end }}{{ $d.uid }}{{ end }}"
+        - name: EXPECTED_FOLDER
+          value: {{ .Values.grafanaFolder | quote }}
+      command:
+        - /bin/sh
+        - -ec
+        - |
+          for uid in $DASHBOARD_UIDS; do
+            tries=0
+            until curl -sf "$GRAFANA_URL/api/dashboards/uid/$uid" -o /tmp/dash.json; do
+              tries=$((tries+1))
+              if [ "$tries" -ge 36 ]; then
+                echo "FAIL: dashboard $uid not loaded in Grafana after 180s"
+                exit 1
+              fi
+              sleep 5
+            done
+            if [ -n "$EXPECTED_FOLDER" ] && ! grep -q "\"folderTitle\":\"$EXPECTED_FOLDER\"" /tmp/dash.json; then
+              echo "FAIL: dashboard $uid is not in folder $EXPECTED_FOLDER"
+              cat /tmp/dash.json
+              exit 1
+            fi
+            echo "OK: $uid"
+          done
+          echo "all dashboards loaded"
+{{- end }}

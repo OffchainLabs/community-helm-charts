@@ -31,28 +31,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Generate GitHub App Token (if using GitHub App)
         id: generate-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         with:
           app-id: ${{ secrets.RENOVATE_APP_ID }}
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: community-helm-charts
 
-      # Commit all changed files back to the repository
-      - uses: stefanzweifel/git-auto-commit-action@v5
-
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@v43.0.7
+        uses: renovatebot/github-action@316d7cd859606d6039a2182b7d69199e9b036835 # v46.2.1
         with:
           token: ${{ steps.generate-token.outputs.token || secrets.RENOVATE_TOKEN || secrets.GITHUB_TOKEN }}
           renovate-version: 41.59.0
           docker-cmd-file: .github/renovate-entrypoint.sh
-          docker-user: root
-          mount-docker-socket: true
+          docker-user: root  # Required: entrypoint installs packages via apt-get and writes to /usr/local/bin/
+          mount-docker-socket: true  # Required: readmecli.py runs `docker run` to scrape CLI --help output
           env-regex: "^(?:RENOVATE_\\w+|LOG_LEVEL|GITHUB_COM_TOKEN)$"
         env:
           # Core configuration
@@ -75,20 +74,23 @@ jobs:
           # Additional useful settings
           RENOVATE_DEPENDENCY_DASHBOARD: false
 
-          # Renovate app settings (when using GitHub App)
-          RENOVATE_USERNAME: ${{ github.repository_owner }}-renovate[bot]
-          RENOVATE_GIT_AUTHOR: ${{ github.repository_owner }}-renovate[bot] <${{ github.repository_owner }}-renovate[bot]@users.noreply.github.com>
+          RENOVATE_USERNAME: ocl-renovate[bot]
+          RENOVATE_GIT_AUTHOR: ocl-renovate[bot] <ocl-renovate[bot]@users.noreply.github.com>
 
       - name: Renovate Summary
         if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          TARGET_REPOSITORIES: ${{ github.event.inputs.repositories || 'OffchainLabs/community-helm-charts' }}
+          RUN_LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
         run: |
-          echo "## Renovate Run Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Triggered**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Repository Owner**: ${{ github.repository_owner }}" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ github.event.inputs.repositories }}" != "" ]; then
-            echo "- **Target Repositories**: ${{ github.event.inputs.repositories }}" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- **Target Repositories**: OffchainLabs/community-helm-charts" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "- **Log Level**: ${{ github.event.inputs.log_level || 'info' }}" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Renovate Run Summary"
+            echo "- **Status**: ${JOB_STATUS}"
+            echo "- **Triggered**: ${EVENT_NAME}"
+            echo "- **Repository Owner**: ${REPO_OWNER}"
+            echo "- **Target Repositories**: ${TARGET_REPOSITORIES}"
+            echo "- **Log Level**: ${RUN_LOG_LEVEL}"
+          } >> "$GITHUB_STEP_SUMMARY"
