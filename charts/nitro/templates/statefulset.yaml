@@ -64,9 +64,6 @@ spec:
           args:
             - -c
             - |
-              #!/usr/bin/env bash
-              set -e pipefail
-
               trap 'exit 0' TERM
 
               sleep infinity &
