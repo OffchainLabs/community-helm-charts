@@ -368,6 +368,114 @@
       "datasource": {
         "uid": "$Source"
       },
+      "description": "Submissions the sequencer turned away because a transaction from the same sender and nonce is still in flight. **Already known**: the identical transaction was resubmitted. **Nonce pending**: a different transaction for that sender and nonce arrived; outside PGA ordering it is rejected as nonce too low. **Replace underpriced**: under PGA ordering, a replacement did not raise the fee by the required bump. **Replaced**: under PGA ordering, a replacement was accepted. A rising rejection line is clients resubmitting rather than a fault in the sequencer. Empty on node versions that do not track pending submissions.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "reqps"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(arb_sequencer_pending_rejected_alreadyknown_counter{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}} - Already known",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(arb_sequencer_pending_rejected_noncepending_counter{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}} - Nonce pending",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(arb_sequencer_pending_rejected_replaceunderpriced_counter{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}} - Replace underpriced",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(arb_sequencer_pending_replaced_counter{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}[$__rate_interval])) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}} - Replaced",
+          "refId": "D"
+        }
+      ],
+      "title": "Pending Tx Rejections & Replacements",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Distinct sender and nonce pairs with a submission still in flight at the sequencer. **Current** is the value at scrape time; **p9999** comes from the node's sample of recent values, so it catches peaks that fall between scrapes. Only the active sequencer carries a non-zero count. Empty on node versions that do not track pending submissions.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(arb_sequencer_pending_count_gauge{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\"}) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}} - Current",
+          "refId": "A"
+        },
+        {
+          "expr": "max(arb_sequencer_pending_count_histogram{cluster=~\"$cluster\",namespace=~\"$namespacepattern\",job=\"$sequencerjob\",quantile=\"0.9999\"}) by (pod, cluster)",
+          "legendFormat": "{{pod}} - {{cluster}} - p9999",
+          "refId": "B"
+        }
+      ],
+      "title": "Pending Tx Count",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -380,8 +488,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 12,
-        "y": 7
+        "x": 0,
+        "y": 13
       },
       "options": {
         "legend": {
@@ -422,8 +530,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 18,
-        "y": 7
+        "x": 6,
+        "y": 13
       },
       "options": {
         "legend": {
@@ -469,7 +577,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 0,
+        "x": 12,
         "y": 13
       },
       "options": {
@@ -516,7 +624,7 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 6,
+        "x": 18,
         "y": 13
       },
       "options": {
@@ -563,8 +671,8 @@
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 12,
-        "y": 13
+        "x": 0,
+        "y": 19
       },
       "options": {
         "legend": {
