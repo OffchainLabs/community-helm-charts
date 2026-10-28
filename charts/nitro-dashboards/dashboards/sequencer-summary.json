@@ -185,6 +185,150 @@
       },
       "id": 0,
       "panels": null,
+      "title": "Batch Poster",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Balance of the wallet each batch poster posts from. The pods are selected by the batch-poster metric itself rather than by workload name, so this covers both a dedicated batch-poster workload and a chain whose sequencer pods post their own batches. A high-availability pair posting from one wallet reads the same balance on both pods.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          }
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max by (pod, cluster) (arb_batchposter_wallet_eth{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"} and on (cluster, namespace, pod) (arb_batchposter_l1gasprice{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"} > 0))",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Batch Poster Wallet (ETH)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "Batches landing on the parent chain per minute: how fast the poster wallet's on-chain nonce (`arb_dataposter_nonce_unconfirmed`) advances. Each batch is one transaction from that wallet, so this is the posting cadence. Zero while **Batch Poster Estimated Backlog** climbs means batches are not landing. Pods that post from the same wallet track the same nonce, so this does not show which pod of a high-availability pair is posting.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": "short"
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "60 * max by (pod, cluster) (rate((arb_dataposter_nonce_unconfirmed{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"} > 0)[$__rate_interval:]) and on (cluster, namespace, pod) (arb_batchposter_l1gasprice{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"} > 0))",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Batch Poster Batches Landed (per min)",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$Source"
+      },
+      "description": "The poster's own estimate of how many batches it is behind. Zero is the healthy steady state; a rising line means batches are being produced faster than they are getting onto the parent chain.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "stacking": {}
+          },
+          "unit": ""
+        },
+        "overrides": null
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 8
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max by (pod, cluster) (arb_batchposter_estimated_batch_backlog{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"} and on (cluster, namespace, pod) (arb_batchposter_l1gasprice{cluster=~\"$cluster\",namespace=~\"$namespacepattern\"} > 0))",
+          "legendFormat": "{{pod}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Batch Poster Estimated Backlog",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 0,
+      "panels": null,
       "repeat": "sequencerjob",
       "title": "Sequencer Summary [$sequencerjob]",
       "type": "row"
@@ -207,7 +351,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 8
+        "y": 15
       },
       "options": {
         "legend": {
@@ -255,7 +399,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 8
+        "y": 15
       },
       "options": {
         "legend": {
@@ -303,7 +447,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 8
+        "y": 15
       },
       "options": {
         "legend": {
@@ -351,7 +495,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 8
+        "y": 15
       },
       "options": {
         "legend": {
@@ -399,7 +543,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 14
+        "y": 21
       },
       "options": {
         "legend": {
@@ -442,7 +586,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 14
+        "y": 21
       },
       "options": {
         "legend": {
@@ -485,7 +629,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 14
+        "y": 21
       },
       "options": {
         "legend": {
@@ -527,7 +671,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 14
+        "y": 21
       },
       "options": {
         "legend": {
