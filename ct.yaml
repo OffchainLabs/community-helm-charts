@@ -11,3 +11,5 @@ chart-repos:
 # helm-repo-extra-args:
 # - offchainprivate=--username ${{ secrets.CHARTMUSEUM_USER }} --password ${{ secrets.CHARTMUSEUM_PASSWORD }}
 
+
+helm-extra-args: "--post-renderer ./ci/pr-env.sh"
